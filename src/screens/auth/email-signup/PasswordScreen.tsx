@@ -37,7 +37,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
   }, [password, passwordConfirm]);
 
   const handleNext = () => {
-    navigation.navigate('NicknameScreen');
+    navigation.navigate('Nickname');
   };
 
   return (
