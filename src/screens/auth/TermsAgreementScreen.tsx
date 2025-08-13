@@ -18,7 +18,7 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
   const agreeAll = agreeTerms && agreePrivacy && agreeMarketing;
 
   const handleNext = () => {
-    navigation.navigate('WelcomeScreen', { ...route.params });
+    navigation.navigate('Welcome', { ...route.params });
   };
 
   const handleAgreeAll = () => {
