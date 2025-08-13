@@ -66,7 +66,7 @@ const EmailLoginText = styled.Text`
 `;
 
 // --- 로그인 화면 컴포넌트 ---
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }: { navigation: any }) => {
   return (
     <GradientContainer>
       <Wrapper>
@@ -92,7 +92,9 @@ const LoginScreen = () => {
             onPress={() => console.log('네이버 로그인')}
           />
 
-          <EmailLoginButton>
+          <EmailLoginButton
+            onPress={() => navigation.navigate('EmailLoginScreen')}
+          >
             <EmailLoginText>이메일로 로그인</EmailLoginText>
           </EmailLoginButton>
         </BottomContent>
