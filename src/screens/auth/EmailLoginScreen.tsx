@@ -67,7 +67,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
         </FormContainer>
 
         <Footer>
-          <FooterLink onPress={() => navigation.navigate('EmailSignup')}>
+          <FooterLink onPress={() => navigation.navigate('EmailInputScreen')}>
             회원가입
           </FooterLink>
           <Separator>|</Separator>
