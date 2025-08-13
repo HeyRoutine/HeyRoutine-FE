@@ -35,7 +35,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
         <TitleWrapper>
           <SubTitle>나만의 루틴 어플</SubTitle>
           <MainTitle>
-            <HighlightText>헤이</HighlightText>루틴
+            <HighlightText>헤이루틴</HighlightText>
           </MainTitle>
         </TitleWrapper>
 
@@ -96,8 +96,6 @@ const Header = styled.View`
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom-width: 1px;
-  border-color: ${theme.colors.gray100};
 `;
 
 const BackButton = styled.TouchableOpacity`
@@ -129,20 +127,24 @@ const ContentWrapper = styled.ScrollView.attrs({
 })``;
 
 const TitleWrapper = styled.View`
-  align-items: center;
+  align-items: flex-start;
   margin-top: 40px;
   margin-bottom: 60px;
 `;
 
 const SubTitle = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 20px;
+  font-family: ${theme.fonts.Bold};
+  font-size: 32px;
+  font-style: normal;
+  line-height: normal;
   color: ${theme.colors.gray900};
 `;
 
 const MainTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
-  font-size: 36px;
+  font-size: 32px;
+  font-style: normal;
+  line-height: normal;
   color: ${theme.colors.gray900};
 `;
 
