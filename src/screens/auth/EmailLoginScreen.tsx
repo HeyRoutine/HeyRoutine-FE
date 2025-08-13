@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, Alert, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -86,7 +87,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
 export default EmailLoginScreen;
 
-const Container = styled.SafeAreaView`
+const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
 `;
@@ -135,16 +136,12 @@ const TitleWrapper = styled.View`
 const SubTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
   font-size: 32px;
-  font-style: normal;
-  line-height: normal;
   color: ${theme.colors.gray900};
 `;
 
 const MainTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
   font-size: 32px;
-  font-style: normal;
-  line-height: normal;
   color: ${theme.colors.gray900};
 `;
 

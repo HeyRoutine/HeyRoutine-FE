@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 import { theme } from '../../../styles/theme';
@@ -49,7 +49,7 @@ const EmailInputScreen = ({ navigation }: any) => {
 
 export default EmailInputScreen;
 
-const Container = styled.SafeAreaView`
+const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
 `;
