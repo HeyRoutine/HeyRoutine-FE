@@ -10,11 +10,11 @@ const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
 
   // 간단한 이메일 형식 유효성 검사
-  const isEmailValid = email.includes('@') && email.includes('.');
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
   const handleNext = () => {
     if (isEmailValid) {
-      navigation.navigate('VerificationScreen', { email });
+      navigation.navigate('EmailVerification', { email });
     }
   };
 
@@ -89,5 +89,4 @@ const Title = styled.Text`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
-  // TODO: KeyboardAvoidingView 적용 필요
 `;

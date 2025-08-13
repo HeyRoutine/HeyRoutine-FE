@@ -92,9 +92,7 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
             onPress={() => console.log('네이버 로그인')}
           />
 
-          <EmailLoginButton
-            onPress={() => navigation.navigate('EmailLoginScreen')}
-          >
+          <EmailLoginButton onPress={() => navigation.navigate('EmailLogin')}>
             <EmailLoginText>이메일로 로그인</EmailLoginText>
           </EmailLoginButton>
         </BottomContent>
