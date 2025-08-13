@@ -23,7 +23,7 @@
 1.  **저장소 복제 (Clone)**
 
     ```bash
-    git clone https://github.com/rhfo0509/shinhan-HeyRoutine.git
+    git clone https://github.com/HeyRoutine/HeyRoutine-FE.git
     cd shinhan-HeyRoutine
     ```
 
@@ -31,13 +31,6 @@
 
     ```bash
     npm install
-    ```
-
-    **2.1 Husky 세팅**
-    ```bash
-    npm install --save-dev lint-staged
-    echo "npx lint-staged" > .husky/pre-commit
-    chmod +x .husky/pre-commit
     ```
 
 3.  **개발 서버 실행 (Run)**
@@ -82,7 +75,7 @@ src/
 - 함수형 컴포넌트와 화살표 함수 사용을 원칙으로 합니다.
 
   ```tsx
-  import React from "react";
+  import React from 'react';
 
   const MyComponent = () => {
     return <View />;
@@ -125,11 +118,11 @@ src/
 - `feature/기능명`: 기능 개발 (예: `feature/login-screen`)
 - `fix/수정내용`: 버그 수정 (예: `fix/header-style-bug`)
 
-1.  **브랜치 생성:** `main` 브랜치에서 시작하여, 자신의 작업에 맞는 이름으로 새 브랜치를 만듭니다.
+1.  **브랜치 생성:** `develop` 브랜치에서 시작하여, 자신의 작업에 맞는 이름으로 새 브랜치를 만듭니다.
     ```bash
     # main 브랜치에서 최신 코드를 받아온 후, 새 브랜치를 생성합니다.
-    git checkout main
-    git pull origin main
+    git checkout develop
+    git pull origin develop
     git checkout -b feature/my-new-feature
     ```
 2.  **개발:** 새로 만든 브랜치 안에서 자유롭게 코드를 작성하고 커밋합니다.
@@ -137,8 +130,8 @@ src/
     ```bash
     git push origin feature/my-new-feature
     ```
-4.  **Pull Request (PR):** GitHub에서 `main` 브랜치로 합쳐달라는 Pull Request를 생성합니다.
-5.  **코드 리뷰 및 Merge:** 다른 팀원이 코드를 검토하고, 이상이 없으면 `main` 브랜치에 최종적으로 병합(Merge)합니다.
+4.  **Pull Request (PR):** GitHub에서 `develop` 브랜치로 합쳐달라는 Pull Request를 생성합니다.
+5.  **코드 리뷰 및 Merge:** 다른 팀원이 코드를 검토하고, 이상이 없으면 `develop` 브랜치에 최종적으로 병합(Merge)합니다.
 
 ### 커밋 메시지 규칙
 
