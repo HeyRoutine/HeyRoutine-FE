@@ -19,4 +19,7 @@ export const colors = {
   gray700: '#5C5D61',
   gray800: '#3F3F42',
   gray900: '#1F2021',
+
+  white: '#FFFFFF',
+  black: '#000000',
 };

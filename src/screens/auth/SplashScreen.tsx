@@ -2,14 +2,17 @@ import React, { ReactNode } from 'react';
 import { SafeAreaView } from 'react-native';
 import styled from 'styled-components/native';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { theme } from '../../styles/theme';
 interface IProps {
   children: ReactNode;
 }
 
 const GradientContainer = ({ children }: IProps) => {
   return (
-    <LinearGradient colors={['#6D73EE', '#E585E3']} style={{ flex: 1 }}>
+    <LinearGradient
+      colors={[theme.colors.landing.start, theme.colors.landing.end]}
+      style={{ flex: 1 }}
+    >
       {children}
     </LinearGradient>
   );
@@ -41,8 +44,8 @@ const BottomContent = styled.View`
 `;
 
 const SubTitle = styled.Text`
-  font-size: 20px; /* 👈 theme.fonts.subtitle 대신 직접 입력 */
-  font-family: 'Pretendard-SemiBold'; /* 👈 theme.fonts.SemiBold 대신 직접 입력 */
+  font-size: ${theme.fonts.subtitle}px;
+  font-family: ${theme.fonts.SemiBold};
   line-height: 28px;
   letter-spacing: 0.1px;
   word-wrap: break-word;
@@ -50,8 +53,8 @@ const SubTitle = styled.Text`
 
 const Title = styled.Text`
   font-size: 64px;
-  font-family: 'Pretendard-Bold'; /* 👈 theme.fonts.Bold 대신 직접 입력 */
-  color: '#FFFFFF'; /* 👈 theme.colors.white 대신 직접 입력 */
+  font-family: ${theme.fonts.Bold};
+  color: ${theme.colors.white};
 `;
 
 const CharacterImage = styled.Image`
