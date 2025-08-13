@@ -6,6 +6,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import EmailLoginScreen from '../screens/auth/EmailLoginScreen';
 import EmailInputScreen from '../screens/auth/email-signup/EmailInputScreen';
 import EmailVerificationScreen from '../screens/auth/email-signup/EmailVerificationScreen';
+import PasswordScreen from '../screens/auth/email-signup/PasswordScreen';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -23,7 +24,7 @@ const AuthNavigator = () => {
         name="EmailVerification"
         component={EmailVerificationScreen}
       />
-      {/* <Stack.Screen name="PasswordReset" component={PasswordResetScreen} /> */}
+      <Stack.Screen name="Password" component={PasswordScreen} />
     </Stack.Navigator>
   );
 };
