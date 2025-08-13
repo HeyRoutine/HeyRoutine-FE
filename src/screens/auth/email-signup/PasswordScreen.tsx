@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 import { theme } from '../../../styles/theme';
@@ -41,66 +41,58 @@ const PasswordScreen = ({ navigation, route }: any) => {
   };
 
   return (
-    <KeyboardAvoidingContainer
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <Container>
-        <Header>
-          <BackButton onPress={() => navigation.goBack()}>
-            <BackButtonText>&lt;</BackButtonText>
-          </BackButton>
-          <ProgressText>2/5</ProgressText>
-        </Header>
+    <Container>
+      <Header>
+        <BackButton onPress={() => navigation.goBack()}>
+          <BackButtonText>&lt;</BackButtonText>
+        </BackButton>
+        <ProgressText>2/5</ProgressText>
+      </Header>
 
-        <Content>
-          <Title>
-            안전한 사용을 위해{'\n'}
-            비밀번호를 입력해주세요.
-          </Title>
-          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+      <Content>
+        <Title>
+          안전한 사용을 위해{'\n'}
+          비밀번호를 입력해주세요.
+        </Title>
+        {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
 
-          <FormGroup>
-            <Label>비밀번호</Label>
-            <AuthTextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="비밀번호를 입력해주세요."
-              isPassword
-              maxLength={20}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>비밀번호 확인</Label>
-            <AuthTextInput
-              value={passwordConfirm}
-              onChangeText={setPasswordConfirm}
-              placeholder="비밀번호를 입력해주세요."
-              isPassword
-              maxLength={20}
-            />
-          </FormGroup>
-        </Content>
-
-        <ButtonWrapper>
-          <AuthButton
-            text="다음"
-            onPress={handleNext}
-            disabled={!isPasswordValid || !doPasswordsMatch}
+        <FormGroup>
+          <Label>비밀번호</Label>
+          <AuthTextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="비밀번호를 입력해주세요."
+            isPassword
+            maxLength={20}
           />
-        </ButtonWrapper>
-      </Container>
-    </KeyboardAvoidingContainer>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>비밀번호 확인</Label>
+          <AuthTextInput
+            value={passwordConfirm}
+            onChangeText={setPasswordConfirm}
+            placeholder="비밀번호를 입력해주세요."
+            isPassword
+            maxLength={20}
+          />
+        </FormGroup>
+      </Content>
+
+      <ButtonWrapper>
+        <AuthButton
+          text="다음"
+          onPress={handleNext}
+          disabled={!isPasswordValid || !doPasswordsMatch}
+        />
+      </ButtonWrapper>
+    </Container>
   );
 };
 
 export default PasswordScreen;
 
-const KeyboardAvoidingContainer = styled.KeyboardAvoidingView`
-  flex: 1;
-`;
-
-const Container = styled.SafeAreaView`
+const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
 `;
