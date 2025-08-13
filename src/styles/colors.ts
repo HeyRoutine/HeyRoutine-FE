@@ -7,6 +7,7 @@ export const colors = {
     start: '#6D73EE',
     end: '#A051CA',
   },
+  error: '#FC4646', // 에러 메시지나 경고에 사용
 
   // Grayscale Palette
   gray50: '#F7F8FA',
