@@ -9,6 +9,7 @@ import EmailVerificationScreen from '../screens/auth/email-signup/EmailVerificat
 import PasswordScreen from '../screens/auth/email-signup/PasswordScreen';
 import NicknameScreen from '../screens/auth/NicknameScreen';
 import ProfileImageScreen from '../screens/auth/ProfileImageScreen';
+import TermsAgreementScreen from '../screens/auth/TermsAgreementScreen';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -29,6 +30,7 @@ const AuthNavigator = () => {
       <Stack.Screen name="Password" component={PasswordScreen} />
       <Stack.Screen name="Nickname" component={NicknameScreen} />
       <Stack.Screen name="ProfileImage" component={ProfileImageScreen} />
+      <Stack.Screen name="TermsAgreeMent" component={TermsAgreementScreen} />
     </Stack.Navigator>
   );
 };
