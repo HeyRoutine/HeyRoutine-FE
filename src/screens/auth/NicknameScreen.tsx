@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +27,7 @@ const NicknameScreen = ({ navigation }: any) => {
   }, [nickname]);
 
   const handleNext = () => {
-    navigation.navigate('ProfileImageScreen', { nickname });
+    navigation.navigate('ProfileImage', { nickname });
   };
 
   const clearNickname = () => {
