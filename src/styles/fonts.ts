@@ -4,6 +4,9 @@ export const fontWeights = {
   Medium: 'Pretendard-Medium', // 500
   SemiBold: 'Pretendard-SemiBold', // 600
   Bold: 'Pretendard-Bold', // 700
+  SchoolsafeRegular: 'SchoolSafe-Regular',
+  SchoolsafeBold: 'SchoolSafe-Bold',
+
 };
 
 export const fontSizes = {
