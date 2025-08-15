@@ -49,6 +49,7 @@ const SubTitle = styled.Text`
   line-height: 28px;
   letter-spacing: 0.1px;
   word-wrap: break-word;
+  color: ${theme.colors.white};
 `;
 
 const Title = styled.Text`
