@@ -21,6 +21,10 @@ export default function App() {
     'Pretendard-Medium': require('./assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-SemiBold': require('./assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Bold': require('./assets/fonts/Pretendard-Bold.otf'),
+    // 'SchoolSafe-Regular': require('./assets/fonts/Hakgyoansim Dunggeunmiso OTF R.otf'),
+    // 'SchoolSafe-Bold': require('./assets/fonts/Hakgyoansim Dunggeunmiso OTF B.otf'),
+    'SchoolSafe-Regular': require('./assets/fonts/Hakgyoansim-Dunggeunmiso-TTF-R.ttf'),
+    'SchoolSafe-Bold': require('./assets/fonts/Hakgyoansim-Dunggeunmiso-TTF-B.ttf'),
   });
 
   useEffect(() => {
@@ -29,6 +33,7 @@ export default function App() {
       setTimeout(() => {
         setIsLoading(false);
       }, 2000);
+      console.log("폰트 로드 완료");
     }
   }, [fontsLoaded]);
 

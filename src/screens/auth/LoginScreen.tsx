@@ -46,7 +46,7 @@ const SubTitle = styled.Text`
 
 const Title = styled.Text`
   font-size: 40px;
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SchoolsafeBold};
   color: #ffffff;
 `;
 
