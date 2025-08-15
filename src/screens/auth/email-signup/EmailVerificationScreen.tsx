@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, Image } from 'react-native';
+import { TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -60,22 +60,22 @@ const EmailVerificationScreen = ({ navigation }: any) => {
           <TimerText>{formatTime(timeLeft)}</TimerText>
         </TimerContainer>
 
-        {/* TODO: TextInput과 연동하여 OTP 입력 컴포넌트 넣기 */}
         <OtpInputContainer>
           {[0, 1, 2, 3].map((index) => (
             <OtpBox key={index} isFocused={index === code.length}>
               <OtpText>{code[index] || ''}</OtpText>
             </OtpBox>
           ))}
+          <HiddenTextInput
+            ref={inputRef}
+            value={code}
+            onChangeText={handleCodeChange}
+            maxLength={4}
+            keyboardType="number-pad"
+            autoFocus={true}
+            caretHidden={true}
+          />
         </OtpInputContainer>
-        <HiddenTextInput
-          ref={inputRef}
-          value={code}
-          onChangeText={handleCodeChange}
-          maxLength={4}
-          keyboardType="number-pad"
-          autoFocus={true}
-        />
 
         <ResendButton>
           <ResendText>인증번호 재발송</ResendText>
@@ -153,10 +153,22 @@ const TimerText = styled.Text`
 `;
 
 const OtpInputContainer = styled.View`
+  position: relative;
   flex-direction: row;
   justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
+`;
+
+const HiddenTextInput = styled.TextInput`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 `;
 
 const OtpBox = styled.View`
@@ -171,13 +183,6 @@ const OtpBox = styled.View`
 const OtpText = styled.Text`
   font-size: ${theme.fonts.title}px;
   font-family: ${theme.fonts.Medium};
-`;
-
-const HiddenTextInput = styled.TextInput`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
 `;
 
 const ResendButton = styled.TouchableOpacity`
