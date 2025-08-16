@@ -27,10 +27,13 @@ const PasswordScreen = ({ navigation, route }: any) => {
     const isMatch = password === passwordConfirm;
     setDoPasswordsMatch(isMatch);
 
+    // 에러 메시지 설정
     if (password && !isValid) {
       setErrorMessage(
         '비밀번호는 영문 소문자, 숫자를 포함하여 8~20자여야 합니다.',
       );
+    } else if (passwordConfirm && !isMatch) {
+      setErrorMessage('비밀번호가 서로 일치하지 않습니다');
     } else {
       setErrorMessage('');
     }
@@ -54,8 +57,12 @@ const PasswordScreen = ({ navigation, route }: any) => {
           안전한 사용을 위해{'\n'}
           비밀번호를 입력해주세요.
         </Title>
-        {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        <ErrorContainer>
+          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        </ErrorContainer>
+      </Content>
 
+      <CenterContent>
         <FormGroup>
           <Label>비밀번호</Label>
           <AuthTextInput
@@ -77,7 +84,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
             maxLength={20}
           />
         </FormGroup>
-      </Content>
+      </CenterContent>
 
       <ButtonWrapper>
         <AuthButton
@@ -117,7 +124,6 @@ const ProgressText = styled.Text`
 `;
 
 const Content = styled.View`
-  flex: 1;
   padding: 24px;
 `;
 
@@ -130,11 +136,22 @@ const Title = styled.Text`
   margin-bottom: 12px;
 `;
 
+const ErrorContainer = styled.View`
+  height: 20px;
+  justify-content: center;
+`;
+
 const ErrorMessage = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
-  margin-bottom: 24px;
+`;
+
+const CenterContent = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`
