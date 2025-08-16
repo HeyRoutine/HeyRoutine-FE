@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import AuthButton from '../../components/domain/auth/AuthButton';
 
 const ProfileImageScreen = ({ navigation, route }: any) => {
   const { nickname } = route.params;
@@ -73,7 +73,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
       </Content>
 
       <ButtonWrapper>
-        <AuthButton
+        <CustomButton
           text={imageUri ? '다음' : '건너뛰기'}
           onPress={handleNext}
         />

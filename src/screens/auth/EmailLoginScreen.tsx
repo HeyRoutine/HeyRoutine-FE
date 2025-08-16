@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
+import CustomInput from '../../components/common/CustomInput';
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-
-import AuthTextInput from '../../components/domain/auth/AuthTextInput';
-import AuthButton from '../../components/domain/auth/AuthButton';
 import { FormGroup, Label } from '../../components/domain/auth/authFormStyles';
 
 const EmailLoginScreen = ({ navigation }: any) => {
@@ -43,7 +42,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
         <FormContainer>
           <FormGroup>
             <Label>이메일</Label>
-            <AuthTextInput
+            <CustomInput
               value={email}
               onChangeText={setEmail}
               placeholder="example@example.com"
@@ -52,7 +51,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
           <FormGroup>
             <Label>비밀번호</Label>
-            <AuthTextInput
+            <CustomInput
               value={password}
               onChangeText={setPassword}
               placeholder="비밀번호를 입력해주세요."
@@ -60,7 +59,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
             />
           </FormGroup>
 
-          <AuthButton
+          <CustomButton
             text="로그인"
             onPress={handleLogin}
             disabled={!isFormValid}

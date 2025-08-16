@@ -1,26 +1,37 @@
-// src/components/domain/auth/authTextInput.tsx
-
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import styled from 'styled-components/native';
-import { theme } from '../../../styles/theme';
+import { theme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 
-interface IAuthTextInputProps {
+/**
+ * CustomInput의 props 인터페이스
+ */
+interface ICustomInputProps {
+  /** 입력값 */
   value: string;
+  /** 플레이스홀더 */
   placeholder: string;
+  /** 최대 길이 */
   maxLength?: number;
+  /** 비밀번호 입력 여부 */
   isPassword?: boolean;
+  /** 텍스트 변경 핸들러 */
   onChangeText: (text: string) => void;
 }
 
-const AuthTextInput = ({
+/**
+ * 공통 커스텀 텍스트 입력 컴포넌트
+ * @param props - 컴포넌트 props
+ * @returns 커스텀 텍스트 입력 컴포넌트
+ */
+const CustomInput = ({
   value,
   placeholder,
   maxLength,
   onChangeText,
   isPassword = false,
-}: IAuthTextInputProps) => {
+}: ICustomInputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   return (
@@ -52,8 +63,9 @@ const AuthTextInput = ({
   );
 };
 
-export default AuthTextInput;
+export default CustomInput;
 
+// 스타일 컴포넌트 정의
 const Container = styled.View`
   flex-direction: row;
   align-items: center;
