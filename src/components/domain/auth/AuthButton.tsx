@@ -30,7 +30,7 @@ const Container = styled.TouchableOpacity`
 `;
 
 const ButtonText = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
 
   color: ${(props: { disabled: boolean }) =>
