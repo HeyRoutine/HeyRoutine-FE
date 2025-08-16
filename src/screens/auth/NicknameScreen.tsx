@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
+import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
@@ -44,12 +45,10 @@ const NicknameScreen = ({ navigation }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>3/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>3/5</ProgressText>}
+      />
 
       <Content>
         <Title>
@@ -99,21 +98,8 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
-`;
-
 const ProgressText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -123,8 +109,8 @@ const Content = styled.View`
 `;
 
 const Title = styled.Text`
-  font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
   line-height: 34px;
   margin-top: 16px;
@@ -137,7 +123,7 @@ const ErrorContainer = styled.View`
 `;
 
 const ErrorMessage = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
 `;
@@ -150,14 +136,15 @@ const CenterContent = styled.View`
 `;
 
 const InputContainer = styled.View`
-  position: relative;
   width: 100%;
+  position: relative;
 `;
 
 const ClearButton = styled.TouchableOpacity`
   position: absolute;
-  right: 40px;
-  top: 15px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-10px);
 `;
 
 const ButtonWrapper = styled.View`

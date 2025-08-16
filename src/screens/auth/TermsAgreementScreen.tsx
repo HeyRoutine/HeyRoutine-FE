@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import TermItem from '../../components/domain/auth/TermItem';
@@ -30,12 +31,10 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>5/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>5/5</ProgressText>}
+      />
 
       <Content>
         <TopWrapper>
@@ -106,21 +105,8 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
-`;
-
 const ProgressText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -130,18 +116,18 @@ const Content = styled.View`
   padding: 24px;
 `;
 
-const TopWrapper = styled.View``;
-
-const BottomWrapper = styled.View`
-  margin-top: auto;
+const TopWrapper = styled.View`
+  flex: 1;
+  justify-content: center;
 `;
 
 const Title = styled.Text`
-  font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.SemiBold};
+  font-family: ${theme.fonts.Bold};
+  font-size: 24px;
   color: ${theme.colors.gray900};
+  text-align: center;
   line-height: 34px;
-  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const HighlightText = styled.Text`
@@ -149,47 +135,55 @@ const HighlightText = styled.Text`
 `;
 
 const SubTitle = styled.Text`
-  font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
+  font-size: 16px;
   color: ${theme.colors.gray600};
+  text-align: center;
   line-height: 24px;
-  margin-top: 8px;
-  margin-bottom: 48px;
 `;
 
-const TermsContainer = styled.View``;
+const BottomWrapper = styled.View`
+  flex: 1;
+  justify-content: flex-end;
+`;
+
+const TermsContainer = styled.View`
+  margin-bottom: 24px;
+`;
 
 const Divider = styled.View`
   height: 1px;
-  background-color: ${theme.colors.gray100};
-  margin: 16px 0;
+  background-color: ${theme.colors.gray200};
+  margin: 24px 0;
 `;
 
 const AllTermsRow = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
+  padding: 16px 0;
 `;
 
 const CheckButton = styled.View`
   margin-right: 12px;
 `;
 
-const AllTermTextContainer = styled.View``;
+const AllTermTextContainer = styled.View`
+  flex: 1;
+`;
 
 const AllTermTitle = styled.Text`
-  font-size: ${theme.fonts.body}px;
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
   color: ${theme.colors.gray900};
+  margin-bottom: 4px;
 `;
 
 const AllTermSubText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
+  font-size: 14px;
   color: ${theme.colors.gray600};
-  margin-top: 4px;
 `;
 
 const ButtonWrapper = styled.View`
   padding: 24px;
-  margin-top: auto;
 `;

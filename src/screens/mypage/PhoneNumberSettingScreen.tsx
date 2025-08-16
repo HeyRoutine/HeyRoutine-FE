@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
+import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
 
 interface IPhoneNumberSettingScreenProps {
@@ -14,17 +14,7 @@ const PhoneNumberSettingScreen = ({
 }: IPhoneNumberSettingScreenProps) => {
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={theme.colors.gray900}
-          />
-        </BackButton>
-        <HeaderTitle>전화번호 설정</HeaderTitle>
-        <Spacer />
-      </Header>
+      <Header title="전화번호 설정" onBackPress={() => navigation.goBack()} />
 
       <Content>
         <Title>전화번호 설정</Title>
@@ -39,29 +29,6 @@ export default PhoneNumberSettingScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
-`;
-
-const Header = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
-`;
-
-const BackButton = styled.TouchableOpacity`
-  padding: 4px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-family: ${theme.fonts.SemiBold};
-  color: ${theme.colors.gray900};
-`;
-
-const Spacer = styled.View`
-  width: 32px;
 `;
 
 const Content = styled.View`

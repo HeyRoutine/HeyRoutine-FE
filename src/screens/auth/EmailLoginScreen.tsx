@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
@@ -23,13 +24,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText> &lt; </BackButtonText>
-        </BackButton>
-        <ScreenTitle>이메일로 로그인</ScreenTitle>
-        <RightPlaceholder />
-      </Header>
+      <Header title="이메일로 로그인" onBackPress={() => navigation.goBack()} />
 
       <ContentWrapper>
         <TitleWrapper>
@@ -91,56 +86,26 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-`;
-
-const BackButton = styled.TouchableOpacity`
+const ContentWrapper = styled.View`
   flex: 1;
+  padding: 24px;
 `;
-
-const BackButtonText = styled.Text`
-  font-size: 20px;
-`;
-
-const ScreenTitle = styled.Text`
-  flex: 2;
-  text-align: center;
-  font-size: 16px;
-  font-family: ${theme.fonts.SemiBold};
-  color: ${theme.colors.gray800};
-`;
-
-const RightPlaceholder = styled.View`
-  flex: 1;
-`;
-
-const ContentWrapper = styled.ScrollView.attrs({
-  contentContainerStyle: {
-    padding: 24,
-    flexGrow: 1,
-  },
-  keyboardShouldPersistTaps: 'handled',
-})``;
 
 const TitleWrapper = styled.View`
-  align-items: flex-start;
-  margin-top: 40px;
-  margin-bottom: 60px;
+  align-items: center;
+  margin-bottom: 48px;
 `;
 
 const SubTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 32px;
-  color: ${theme.colors.gray900};
+  font-size: 16px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
+  margin-bottom: 8px;
 `;
 
 const MainTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
   font-size: 32px;
+  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
 `;
 
@@ -149,22 +114,25 @@ const HighlightText = styled.Text`
 `;
 
 const FormContainer = styled.View`
-  width: 100%;
+  flex: 1;
 `;
 
 const Footer = styled.View`
   flex-direction: row;
   justify-content: center;
+  align-items: center;
   margin-top: 24px;
 `;
 
 const FooterLink = styled.Text`
-  font-family: ${theme.fonts.Regular};
   font-size: 14px;
-  color: ${theme.colors.gray600};
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.primary};
 `;
 
 const Separator = styled.Text`
-  margin: 0 12px;
-  color: ${theme.colors.gray300};
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray400};
+  margin: 0 8px;
 `;

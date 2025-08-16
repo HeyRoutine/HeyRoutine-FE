@@ -5,9 +5,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
+import Header from '../../components/common/Header';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 
@@ -128,17 +128,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={theme.colors.gray900}
-          />
-        </BackButton>
-        <HeaderTitle>내 정보 관리</HeaderTitle>
-        <Spacer />
-      </Header>
+      <Header title="내 정보 관리" onBackPress={() => navigation.goBack()} />
 
       <Content>
         <ProfileSection>
@@ -179,29 +169,6 @@ export default ProfileEditScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
-`;
-
-const Header = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
-`;
-
-const BackButton = styled.TouchableOpacity`
-  padding: 4px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-family: ${theme.fonts.SemiBold};
-  color: ${theme.colors.gray900};
-`;
-
-const Spacer = styled.View`
-  width: 32px;
 `;
 
 const Content = styled.View`

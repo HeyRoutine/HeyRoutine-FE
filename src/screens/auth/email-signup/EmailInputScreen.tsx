@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
@@ -30,12 +31,10 @@ const EmailInputScreen = ({ navigation }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>1/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>1/5</ProgressText>}
+      />
 
       <Content>
         <Title>
@@ -71,19 +70,6 @@ export default EmailInputScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
-`;
-
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
 `;
 
 const ProgressText = styled.Text`

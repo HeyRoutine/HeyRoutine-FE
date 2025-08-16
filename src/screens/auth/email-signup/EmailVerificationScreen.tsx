@@ -4,13 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import Header from '../../../components/common/Header';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
 import { formatTime } from '../../../utils/timeFormat';
 
 const EmailVerificationScreen = ({ navigation }: any) => {
   const [code, setCode] = useState('');
-  const [timeLeft, setTimeLeft] = useState(10); // 3분 타이머
+  const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
 
   const isButtonEnabled = code.length === 4;
   const isTimeUp = timeLeft === 0;
@@ -44,12 +45,10 @@ const EmailVerificationScreen = ({ navigation }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>2/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>1/5</ProgressText>}
+      />
 
       <Content>
         <Title>
@@ -113,21 +112,8 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
-`;
-
 const ProgressText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -135,88 +121,88 @@ const ProgressText = styled.Text`
 const Content = styled.View`
   flex: 1;
   padding: 24px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Title = styled.Text`
-  font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
+  text-align: center;
   line-height: 34px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 32px;
 `;
 
 const TimerContainer = styled.View`
   flex-direction: row;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 `;
 
 const TimerText = styled.Text<{ isTimeUp: boolean }>`
-  font-size: ${theme.fonts.body}px;
+  font-size: 16px;
   font-family: ${theme.fonts.Regular};
-  color: ${({ isTimeUp }) =>
-    isTimeUp ? theme.colors.error : theme.colors.gray600};
+  color: ${(props) =>
+    props.isTimeUp ? theme.colors.error : theme.colors.gray600};
+  margin-left: 8px;
 `;
 
 const OtpInputContainer = styled.View`
-  position: relative;
   flex-direction: row;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
   margin-bottom: 24px;
+  position: relative;
+`;
+
+const OtpBox = styled.View<{ isFocused: boolean }>`
+  width: 60px;
+  height: 60px;
+  border-width: 2px;
+  border-color: ${(props) =>
+    props.isFocused ? theme.colors.primary : theme.colors.gray300};
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 0 8px;
+  background-color: ${theme.colors.white};
+`;
+
+const OtpText = styled.Text`
+  font-size: 24px;
+  font-family: ${theme.fonts.Bold};
+  color: ${theme.colors.gray900};
 `;
 
 const HiddenTextInput = styled.TextInput`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
 `;
 
-const OtpBox = styled.View`
-  width: 60px;
-  height: 50px;
-  border-bottom-width: 2px;
-  border-color: ${theme.colors.gray300};
-  justify-content: center;
-  align-items: center;
-`;
-
-const OtpText = styled.Text`
-  font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.Medium};
-`;
-
 const ResendButton = styled.TouchableOpacity`
-  align-self: flex-start;
+  margin-bottom: 24px;
 `;
 
 const ResendText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
-  font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray600};
-  text-decoration-line: underline;
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.primary};
 `;
 
 const ErrorMessage = styled.Text`
-  margin-top: 8px;
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
+  margin-bottom: 24px;
 `;
 
-// 오른쪽 아래, 아래보다는 조금 위
 const CharacterImage = styled.Image`
-  position: absolute;
-  bottom: -24px;
-  right: -240px;
-  height: 280px;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 48px;
 `;
 
 const ButtonWrapper = styled.View`

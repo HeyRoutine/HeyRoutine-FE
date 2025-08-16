@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 
@@ -36,12 +37,10 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>4/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>4/5</ProgressText>}
+      />
 
       <Content>
         <Title>
@@ -89,21 +88,8 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
-`;
-
 const ProgressText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -111,14 +97,17 @@ const ProgressText = styled.Text`
 const Content = styled.View`
   flex: 1;
   padding: 24px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Title = styled.Text`
-  font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.SemiBold};
+  font-family: ${theme.fonts.Bold};
+  font-size: 24px;
   color: ${theme.colors.gray900};
+  text-align: center;
   line-height: 34px;
-  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const HighlightText = styled.Text`
@@ -126,40 +115,37 @@ const HighlightText = styled.Text`
 `;
 
 const SubTitle = styled.Text`
-  font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
+  font-size: 16px;
   color: ${theme.colors.gray600};
-  margin-top: 8px;
-  margin-bottom: 60px;
+  text-align: center;
+  line-height: 24px;
+  margin-bottom: 48px;
 `;
 
 const ProfileImageContainer = styled.TouchableOpacity`
-  align-self: center;
   position: relative;
+  margin-bottom: 48px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 150px;
-  height: 150px;
-  border-radius: 75px;
-  background-color: ${theme.colors.gray100};
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
 `;
 
 const EditIconWrapper = styled.View`
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background-color: ${theme.colors.primary};
+  bottom: 0;
+  right: 0;
   width: 32px;
   height: 32px;
   border-radius: 16px;
+  background-color: ${theme.colors.primary};
   justify-content: center;
   align-items: center;
-  border-width: 2px;
-  border-color: ${theme.colors.white};
 `;
 
 const ButtonWrapper = styled.View`
   padding: 24px;
-  margin-top: auto;
 `;

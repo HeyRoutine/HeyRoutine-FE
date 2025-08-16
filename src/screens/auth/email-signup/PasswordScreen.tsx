@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
@@ -45,12 +46,10 @@ const PasswordScreen = ({ navigation, route }: any) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackButtonText>&lt;</BackButtonText>
-        </BackButton>
-        <ProgressText>2/5</ProgressText>
-      </Header>
+      <Header
+        onBackPress={() => navigation.goBack()}
+        rightComponent={<ProgressText>2/5</ProgressText>}
+      />
 
       <Content>
         <Title>
@@ -104,19 +103,6 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-`;
-
-const BackButton = styled.TouchableOpacity``;
-
-const BackButtonText = styled.Text`
-  font-size: 24px;
-`;
-
 const ProgressText = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
@@ -129,7 +115,7 @@ const Content = styled.View`
 
 const Title = styled.Text`
   font-size: 24px;
-  font-family: ${theme.fonts.SemiBold};
+  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
   line-height: 34px;
   margin-top: 16px;
