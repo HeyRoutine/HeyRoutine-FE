@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from './styles/theme';
@@ -12,8 +13,8 @@ import AuthNavigator from './navigation/AuthNavigator';
 export default function App() {
   // 1. 앱 로딩 상태 (폰트 등 비동기 작업 처리)
   const [isLoading, setIsLoading] = useState(true);
-  // 2. 로그인 상태 (false로 초기화)
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 2. 로그인 상태 (true로 초기화하여 MainNavigator 렌더링)
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const [fontsLoaded] = useFonts({
     'Pretendard-Light': require('./assets/fonts/Pretendard-Light.otf'),
@@ -38,14 +39,16 @@ export default function App() {
 
   // 4. 로그인 상태에 따라 다른 화면 렌더링
   return (
-    <ThemeProvider theme={theme}>
-      {isLoading ? (
-        <SplashScreen />
-      ) : (
-        <NavigationContainer>
-          {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
-        </NavigationContainer>
-      )}
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider theme={theme}>
+        {isLoading ? (
+          <SplashScreen />
+        ) : (
+          <NavigationContainer>
+            {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
+          </NavigationContainer>
+        )}
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
