@@ -132,7 +132,7 @@ const Content = styled.View`
 
 const Title = styled.Text`
   font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
   line-height: 34px;
   margin-top: 16px;
