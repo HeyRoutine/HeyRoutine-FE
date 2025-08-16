@@ -12,15 +12,23 @@ const NicknameScreen = ({ navigation }: any) => {
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 닉네임 유효성 검사 (한글, 영어, 숫자만 허용)
+  // 닉네임 유효성 검사 (한글, 영어, 숫자만 허용, 2~10자)
   useEffect(() => {
     const nicknameRegex = /^[가-힣a-zA-Z0-9]{2,10}$/;
     const isValid = nicknameRegex.test(nickname);
     setIsNicknameValid(isValid);
 
     // 에러 메시지 처리
-    if (nickname.length > 0 && !isValid) {
-      setErrorMessage('닉네임에는 한글, 영어, 숫자만 사용 가능합니다.');
+    if (nickname.length > 0) {
+      if (nickname.length < 2) {
+        setErrorMessage('닉네임은 2자 이상 입력해주세요.');
+      } else if (nickname.length > 10) {
+        setErrorMessage('닉네임은 10자 이하로 입력해주세요.');
+      } else if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
+        setErrorMessage('닉네임에는 한글, 영어, 숫자만 사용 가능합니다.');
+      } else {
+        setErrorMessage('');
+      }
     } else {
       setErrorMessage('');
     }
@@ -43,15 +51,17 @@ const NicknameScreen = ({ navigation }: any) => {
         <ProgressText>3/5</ProgressText>
       </Header>
 
-      <TopContent>
+      <Content>
         <Title>
           사용자님을{'\n'}
           어떻게 불러드리면 될까요?
         </Title>
-        {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
-      </TopContent>
+        <ErrorContainer>
+          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        </ErrorContainer>
+      </Content>
 
-      <MiddleContent>
+      <CenterContent>
         <InputContainer>
           <AuthTextInput
             value={nickname}
@@ -69,7 +79,7 @@ const NicknameScreen = ({ navigation }: any) => {
             </ClearButton>
           )}
         </InputContainer>
-      </MiddleContent>
+      </CenterContent>
 
       <ButtonWrapper>
         <AuthButton
@@ -95,24 +105,21 @@ const Header = styled.View`
   align-items: center;
   padding: 12px 20px;
 `;
+
 const BackButton = styled.TouchableOpacity``;
+
 const BackButtonText = styled.Text`
   font-size: 24px;
 `;
+
 const ProgressText = styled.Text`
   font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
 
-const TopContent = styled.View`
+const Content = styled.View`
   padding: 24px;
-`;
-
-const MiddleContent = styled.View`
-  flex: 1;
-  padding: 0 24px;
-  justify-content: center;
 `;
 
 const Title = styled.Text`
@@ -124,13 +131,22 @@ const Title = styled.Text`
   margin-bottom: 12px;
 `;
 
+const ErrorContainer = styled.View`
+  height: 20px;
+  justify-content: center;
+`;
+
 const ErrorMessage = styled.Text`
   font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
-  position: absolute;
-  top: 120px;
-  left: 24px;
+`;
+
+const CenterContent = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
 `;
 
 const InputContainer = styled.View`
