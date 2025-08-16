@@ -5,31 +5,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../styles/theme';
 
 /**
- * HomeScreen의 props 인터페이스
+ * AnalysisScreen의 props 인터페이스
  */
-interface IHomeScreenProps {
+interface IAnalysisScreenProps {
   /** 네비게이션 객체 */
   navigation: any;
 }
 
 /**
- * 홈 화면 컴포넌트
- * 사용자의 메인 대시보드를 표시합니다.
+ * 분석 화면 컴포넌트
+ * 사용자의 소비 분석 및 추천을 제공합니다.
  * @param props - 컴포넌트 props
- * @returns 홈 화면 컴포넌트
+ * @returns 분석 화면 컴포넌트
  */
-const HomeScreen = ({ navigation }: IHomeScreenProps) => {
+const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   return (
     <Container>
       <Content>
-        <Title>홈</Title>
-        <Subtitle>메인 홈 화면입니다.</Subtitle>
+        <Title>분석</Title>
+        <Subtitle>분석 화면입니다.</Subtitle>
       </Content>
     </Container>
   );
 };
 
-export default HomeScreen;
+export default AnalysisScreen;
 
 // 스타일 컴포넌트 정의
 const Container = styled(SafeAreaView)`
