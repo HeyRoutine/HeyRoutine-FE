@@ -1,13 +1,26 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/home/HomeScreen';
+import AnalysisScreen from '../screens/analysis/AnalysisScreen';
 import MyPageScreen from '../screens/mypage/MyPageScreen';
+import ProfileEditScreen from '../screens/mypage/ProfileEditScreen';
 import { theme } from '../styles/theme';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MyPage" component={MyPageScreen} />
+      <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
+    </Stack.Navigator>
+  );
+};
 
 const MainNavigator = () => {
   const insets = useSafeAreaInsets();
@@ -47,7 +60,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen
         name="Analysis"
-        component={HomeScreen}
+        component={AnalysisScreen}
         options={{ tabBarLabel: '분석' }}
       />
       <Tab.Screen
@@ -56,8 +69,8 @@ const MainNavigator = () => {
         options={{ tabBarLabel: '홈' }}
       />
       <Tab.Screen
-        name="MyPage"
-        component={MyPageScreen}
+        name="Profile"
+        component={ProfileStack}
         options={{ tabBarLabel: '내 정보' }}
       />
     </Tab.Navigator>
