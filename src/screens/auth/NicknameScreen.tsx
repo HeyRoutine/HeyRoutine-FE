@@ -3,9 +3,9 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
+import CustomInput from '../../components/common/CustomInput';
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import AuthTextInput from '../../components/domain/auth/AuthTextInput';
-import AuthButton from '../../components/domain/auth/AuthButton';
 
 const NicknameScreen = ({ navigation }: any) => {
   const [nickname, setNickname] = useState('');
@@ -63,7 +63,7 @@ const NicknameScreen = ({ navigation }: any) => {
 
       <CenterContent>
         <InputContainer>
-          <AuthTextInput
+          <CustomInput
             value={nickname}
             onChangeText={setNickname}
             placeholder="닉네임을 입력해주세요."
@@ -82,7 +82,7 @@ const NicknameScreen = ({ navigation }: any) => {
       </CenterContent>
 
       <ButtonWrapper>
-        <AuthButton
+        <CustomButton
           text="다음"
           onPress={handleNext}
           disabled={!isNicknameValid}

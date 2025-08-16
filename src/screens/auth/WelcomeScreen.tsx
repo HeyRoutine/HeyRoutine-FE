@@ -2,8 +2,8 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import AuthButton from '../../components/domain/auth/AuthButton';
 
 // 유저 닉네임을 props로 받는다고 가정
 const WelcomeScreen = ({ navigation, route }: any) => {
@@ -34,7 +34,7 @@ const WelcomeScreen = ({ navigation, route }: any) => {
       </Content>
 
       <ButtonWrapper>
-        <AuthButton text="시작하기" onPress={handleStart} />
+        <CustomButton text="시작하기" onPress={handleStart} />
       </ButtonWrapper>
     </Container>
   );

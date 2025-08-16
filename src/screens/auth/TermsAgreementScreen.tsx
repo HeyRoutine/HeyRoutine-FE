@@ -3,8 +3,8 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import AuthButton from '../../components/domain/auth/AuthButton';
 import TermItem from '../../components/domain/auth/TermItem';
 
 const TermsAgreementScreen = ({ navigation, route }: any) => {
@@ -89,7 +89,7 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
       </Content>
 
       <ButtonWrapper>
-        <AuthButton
+        <CustomButton
           text="완료"
           onPress={handleNext}
           disabled={!isButtonEnabled}

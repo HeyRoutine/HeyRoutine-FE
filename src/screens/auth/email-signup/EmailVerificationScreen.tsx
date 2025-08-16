@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
-import AuthButton from '../../../components/domain/auth/AuthButton';
 import { formatTime } from '../../../utils/timeFormat';
 
 const EmailVerificationScreen = ({ navigation }: any) => {
@@ -96,7 +96,7 @@ const EmailVerificationScreen = ({ navigation }: any) => {
 
       {/* 하단 버튼 */}
       <ButtonWrapper>
-        <AuthButton
+        <CustomButton
           text="인증하기"
           onPress={handleVerify}
           disabled={!isButtonEnabled || isTimeUp}

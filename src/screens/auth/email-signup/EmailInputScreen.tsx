@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CustomInput from '../../../components/common/CustomInput';
+import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
-import AuthTextInput from '../../../components/domain/auth/AuthTextInput';
-import AuthButton from '../../../components/domain/auth/AuthButton';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -47,7 +47,7 @@ const EmailInputScreen = ({ navigation }: any) => {
       {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
 
       <CenterContent>
-        <AuthTextInput
+        <CustomInput
           value={email}
           onChangeText={setEmail}
           placeholder="example@example.com"
@@ -56,7 +56,11 @@ const EmailInputScreen = ({ navigation }: any) => {
       </CenterContent>
 
       <ButtonWrapper>
-        <AuthButton text="다음" onPress={handleNext} disabled={!isEmailValid} />
+        <CustomButton
+          text="다음"
+          onPress={handleNext}
+          disabled={!isEmailValid}
+        />
       </ButtonWrapper>
     </Container>
   );

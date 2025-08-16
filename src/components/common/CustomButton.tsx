@@ -1,14 +1,29 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import { theme } from '../../../styles/theme';
+import { theme } from '../../styles/theme';
 
-interface IAuthButtonProps {
+/**
+ * CustomButton의 props 인터페이스
+ */
+interface ICustomButtonProps {
+  /** 버튼 텍스트 */
   text: string;
+  /** 클릭 핸들러 */
   onPress: () => void;
+  /** 비활성화 여부 */
   disabled?: boolean;
 }
 
-const AuthButton = ({ text, onPress, disabled = false }: IAuthButtonProps) => {
+/**
+ * 공통 커스텀 버튼 컴포넌트
+ * @param props - 컴포넌트 props
+ * @returns 커스텀 버튼 컴포넌트
+ */
+const CustomButton = ({
+  text,
+  onPress,
+  disabled = false,
+}: ICustomButtonProps) => {
   return (
     <Container onPress={onPress} disabled={disabled}>
       <ButtonText active={!disabled}>{text}</ButtonText>
@@ -16,8 +31,9 @@ const AuthButton = ({ text, onPress, disabled = false }: IAuthButtonProps) => {
   );
 };
 
-export default AuthButton;
+export default CustomButton;
 
+// 스타일 컴포넌트 정의
 const Container = styled.TouchableOpacity`
   width: 100%;
   padding: 18px;

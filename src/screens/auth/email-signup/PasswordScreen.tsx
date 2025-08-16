@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CustomInput from '../../../components/common/CustomInput';
+import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
-import AuthTextInput from '../../../components/domain/auth/AuthTextInput';
-import AuthButton from '../../../components/domain/auth/AuthButton';
 import {
   FormGroup,
   Label,
@@ -65,7 +65,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
       <CenterContent>
         <FormGroup>
           <Label>비밀번호</Label>
-          <AuthTextInput
+          <CustomInput
             value={password}
             onChangeText={setPassword}
             placeholder="비밀번호를 입력해주세요."
@@ -76,7 +76,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
 
         <FormGroup>
           <Label>비밀번호 확인</Label>
-          <AuthTextInput
+          <CustomInput
             value={passwordConfirm}
             onChangeText={setPasswordConfirm}
             placeholder="비밀번호를 입력해주세요."
@@ -87,7 +87,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
       </CenterContent>
 
       <ButtonWrapper>
-        <AuthButton
+        <CustomButton
           text="다음"
           onPress={handleNext}
           disabled={!isPasswordValid || !doPasswordsMatch}
