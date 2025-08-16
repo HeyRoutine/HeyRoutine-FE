@@ -120,15 +120,16 @@ src/
 
 1.  **브랜치 생성:** `develop` 브랜치에서 시작하여, 자신의 작업에 맞는 이름으로 새 브랜치를 만듭니다.
     ```bash
-    # main 브랜치에서 최신 코드를 받아온 후, 새 브랜치를 생성합니다.
+    # develop 브랜치에서 최신 코드를 받아온 후, 새 브랜치를 생성합니다.
     git checkout develop
-    git pull origin develop
+    git pull --rebase origin develop
     git checkout -b feature/my-new-feature
     ```
 2.  **개발:** 새로 만든 브랜치 안에서 자유롭게 코드를 작성하고 커밋합니다.
 3.  **Push:** 작업이 끝나면 자신의 브랜치를 원격 저장소(GitHub)에 올립니다.
     ```bash
     git push origin feature/my-new-feature
+    git push origin fix/my-new-feature
     ```
 4.  **Pull Request (PR):** GitHub에서 `develop` 브랜치로 합쳐달라는 Pull Request를 생성합니다.
 5.  **코드 리뷰 및 Merge:** 다른 팀원이 코드를 검토하고, 이상이 없으면 `develop` 브랜치에 최종적으로 병합(Merge)합니다.
@@ -154,18 +155,18 @@ chore: React Navigation 라이브러리 추가
 
 ## 확장 프로그램
 
-`Expo Tools`: Expo 전용 기능. app.json이나 app.config.js 파일 자동완성, 디버깅 설정 등 Expo 개발에 특화된 기능들을 제공
+- `Expo Tools`: Expo 전용 기능. app.json이나 app.config.js 파일 자동완성, 디버깅 설정 등 Expo 개발에 특화된 기능들을 제공
 
-`ES7+ React/Redux/React-Native snippets`: 코드 자동 완성. rfc (컴포넌트), useState, useEffect 등 자주 사용하는 리액트 및 리액트 네이티브 코드 조각을 단축키로 빠르게 생성
+- `ES7+ React/Redux/React-Native snippets`: 코드 자동 완성. rfc (컴포넌트), useState, useEffect 등 자주 사용하는 리액트 및 리액트 네이티브 코드 조각을 단축키로 빠르게 생성
 
-`Prettier - Code formatter`: 코드 자동 정렬. 저장할 때마다 코드를 설정된 스타일 가이드에 맞춰 자동으로 정리해 줘서, 항상 일관된 코드 스타일을 유지할 수 있음
+- `Prettier - Code formatter`: 코드 자동 정렬. 저장할 때마다 코드를 설정된 스타일 가이드에 맞춰 자동으로 정리해 줘서, 항상 일관된 코드 스타일을 유지할 수 있음
 
-`ESLint`: 문법 교정 및 에러 감지. 코드를 작성하는 동안 잠재적인 버그나 안티 패턴을 실시간으로 찾아내고, 일부는 자동으로 수정해 줘서 코드 품질을 높여줌. Prettier와 조합
+- `ESLint`: 문법 교정 및 에러 감지. 코드를 작성하는 동안 잠재적인 버그나 안티 패턴을 실시간으로 찾아내고, 일부는 자동으로 수정해 줘서 코드 품질을 높여줌. Prettier와 조합
 
-`vscode-styled-components`: 만약 Styled Components를 사용한다면, CSS 문법 하이라이팅과 자동완성을 지원해서 스타일 작성이 훨씬 편해짐
+- `vscode-styled-components`: 만약 Styled Components를 사용한다면, CSS 문법 하이라이팅과 자동완성을 지원해서 스타일 작성이 훨씬 편해짐
 
-`Path Intellisense`: 파일 경로 자동완성
+- `Path Intellisense`: 파일 경로 자동완성
 
-`GitLens — Git supercharged`: Git 연동 강화. 코드 한 줄 한 줄마다 누가, 언제, 왜 수정했는지 바로 확인할 수 있어 협업하거나 코드 히스토리를 추적할 때 유용함
+- `GitLens — Git supercharged`: Git 연동 강화. 코드 한 줄 한 줄마다 누가, 언제, 왜 수정했는지 바로 확인할 수 있어 협업하거나 코드 히스토리를 추적할 때 유용함
 
-`DotENV`: API 키 등을 관리할 때 편리
+- `DotENV`: API 키 등을 관리할 때 편리
