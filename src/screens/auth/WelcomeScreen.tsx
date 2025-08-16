@@ -63,7 +63,7 @@ const PartyPopperImage = styled.Image`
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   font-size: ${theme.fonts.title}px;
   color: ${theme.colors.gray900};
   text-align: center;
