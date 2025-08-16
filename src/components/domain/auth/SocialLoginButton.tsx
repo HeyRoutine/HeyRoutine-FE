@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
-import { theme } from '../../styles/theme';
+import { theme } from '../../../styles/theme';
 
 interface IButtonProps {
   type: 'kakao' | 'naver';
@@ -45,13 +45,13 @@ const socialConfig = {
     backgroundColor: '#FEE500',
     textColor: theme.colors.gray900,
     text: '카카오 로그인',
-    icon: require('../../assets/images/Kakao.png'),
+    icon: require('../../../assets/images/Kakao.png'),
   },
   naver: {
     backgroundColor: '#03C75A',
     textColor: theme.colors.white,
     text: '네이버 로그인',
-    icon: require('../../assets/images/Naver.png'),
+    icon: require('../../../assets/images/Naver.png'),
   },
 };
 

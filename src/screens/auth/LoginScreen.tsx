@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import SocialLoginButton from '../../components/common/SocialLoginButton';
+import SocialLoginButton from '../../components/domain/auth/SocialLoginButton';
 import { theme } from '../../styles/theme';
 
 const GradientContainer = styled(LinearGradient).attrs({
