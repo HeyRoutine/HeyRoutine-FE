@@ -43,7 +43,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       console.log('계좌 삭제');
     } else {
       // 계좌 등록 화면으로 이동
-      console.log('계좌 등록 화면으로 이동');
+      navigation.navigate('AccountRegistration');
     }
   };
 
@@ -66,19 +66,19 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       id: 'email',
       type: 'item',
       title: '이메일 설정',
-      onPress: () => navigation.navigate('EmailSettings'),
+      onPress: () => navigation.navigate('EmailSetting'),
     },
     {
       id: 'nickname',
       type: 'item',
       title: '닉네임 설정',
-      onPress: () => navigation.navigate('NicknameSettings'),
+      onPress: () => navigation.navigate('NicknameSetting'),
     },
     {
       id: 'phone',
       type: 'item',
       title: '전화번호 설정',
-      onPress: () => navigation.navigate('PhoneSettings'),
+      onPress: () => navigation.navigate('PhoneNumberSetting'),
     },
     {
       id: 'notification',

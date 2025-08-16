@@ -8,6 +8,12 @@ import HomeScreen from '../screens/home/HomeScreen';
 import AnalysisScreen from '../screens/analysis/AnalysisScreen';
 import MyPageScreen from '../screens/mypage/MyPageScreen';
 import ProfileEditScreen from '../screens/mypage/ProfileEditScreen';
+import AccountRegistrationScreen from '../screens/mypage/AccountRegistrationScreen';
+import PointGifticonScreen from '../screens/mypage/PointGifticonScreen';
+import PointCashoutScreen from '../screens/mypage/PointCashoutScreen';
+import NicknameSettingScreen from '../screens/mypage/NicknameSettingScreen';
+import EmailSettingScreen from '../screens/mypage/EmailSettingScreen';
+import PhoneNumberSettingScreen from '../screens/mypage/PhoneNumberSettingScreen';
 import { theme } from '../styles/theme';
 
 const Tab = createBottomTabNavigator();
@@ -18,6 +24,18 @@ const ProfileStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MyPage" component={MyPageScreen} />
       <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
+      <Stack.Screen
+        name="AccountRegistration"
+        component={AccountRegistrationScreen}
+      />
+      <Stack.Screen name="PointGifticon" component={PointGifticonScreen} />
+      <Stack.Screen name="PointCashout" component={PointCashoutScreen} />
+      <Stack.Screen name="NicknameSetting" component={NicknameSettingScreen} />
+      <Stack.Screen name="EmailSetting" component={EmailSettingScreen} />
+      <Stack.Screen
+        name="PhoneNumberSetting"
+        component={PhoneNumberSettingScreen}
+      />
     </Stack.Navigator>
   );
 };
