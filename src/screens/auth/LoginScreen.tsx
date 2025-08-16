@@ -60,9 +60,10 @@ const EmailLoginButton = styled.TouchableOpacity`
 `;
 
 const EmailLoginText = styled.Text`
-  font-size: ${theme.fonts.caption}px;
+  font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
   color: #ffffff;
+  text-decoration-line: underline;
 `;
 
 // --- 로그인 화면 컴포넌트 ---

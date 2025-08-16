@@ -51,7 +51,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
         <SubTitle>
           {imageUri
             ? '사람들에게 나를 보여줄 수 있어요.'
-            : '그 그룹 구성원들에게 알려줄 수도 있어요!'}
+            : '그룹 구성원들에게 알려줄 수도 있어요!'}
         </SubTitle>
 
         <ProfileImageContainer onPress={handlePickImage}>
@@ -115,7 +115,7 @@ const Content = styled.View`
 
 const Title = styled.Text`
   font-size: ${theme.fonts.title}px;
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
   line-height: 34px;
   margin-top: 16px;
