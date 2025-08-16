@@ -30,25 +30,24 @@ const ButtonContainer = styled(TouchableOpacity)<IStyleProps>`
 const ButtonIcon = styled.Image`
   width: 24px;
   height: 24px;
-  position: absolute;
-  left: 20px;
+  margin-right: 8px
 `;
 
 const ButtonText = styled.Text<ITextProps>`
   font-size: ${theme.fonts.body}px;
-  font-family: ${theme.fonts.SemiBold};
-  color: ${theme.colors.white};
+  font-family: ${theme.fonts.Regular};
+  color: ${(props:ITextProps) => props.color};
 `;
 
 const socialConfig = {
   kakao: {
-    backgroundColor: '#FEE500',
-    textColor: theme.colors.gray900,
+    backgroundColor: '#FAE100',
+    textColor: theme.colors.black,
     text: '카카오 로그인',
     icon: require('../../assets/images/Kakao.png'),
   },
   naver: {
-    backgroundColor: '#03C75A',
+    backgroundColor: '#03BF19',
     textColor: theme.colors.white,
     text: '네이버 로그인',
     icon: require('../../assets/images/Naver.png'),
