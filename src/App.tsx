@@ -33,7 +33,6 @@ export default function App() {
       setTimeout(() => {
         setIsLoading(false);
       }, 2000);
-      console.log("폰트 로드 완료");
     }
   }, [fontsLoaded]);
 

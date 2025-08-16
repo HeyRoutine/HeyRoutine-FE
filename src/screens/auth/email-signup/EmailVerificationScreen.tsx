@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,14 +10,14 @@ import { formatTime } from '../../../utils/timeFormat';
 
 const EmailVerificationScreen = ({ navigation }: any) => {
   const [code, setCode] = useState('');
-  const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
-  const inputRef = useRef<TextInput>(null);
+  const [timeLeft, setTimeLeft] = useState(10); // 3분 타이머
 
   const isButtonEnabled = code.length === 4;
+  const isTimeUp = timeLeft === 0;
 
   // 타이머 로직 (UI 표시용)
   useEffect(() => {
-    if (timeLeft === 0) return;
+    if (isTimeUp) return;
     const intervalId = setInterval(() => {
       setTimeLeft(timeLeft - 1);
     }, 1000);
@@ -34,6 +34,12 @@ const EmailVerificationScreen = ({ navigation }: any) => {
   const handleCodeChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, ''); // 숫자만 허용
     setCode(numericText);
+  };
+
+  const handleResendCode = () => {
+    // TODO: 인증번호 재발송 로직 구현
+    setTimeLeft(180);
+    setCode('');
   };
 
   return (
@@ -55,31 +61,32 @@ const EmailVerificationScreen = ({ navigation }: any) => {
           <MaterialCommunityIcons
             name="clock-outline"
             size={20}
-            color={theme.colors.gray600}
+            color={isTimeUp ? theme.colors.error : theme.colors.gray600}
           />
-          <TimerText>{formatTime(timeLeft)}</TimerText>
+          <TimerText isTimeUp={isTimeUp}>{formatTime(timeLeft)}</TimerText>
         </TimerContainer>
 
-        {/* TODO: TextInput과 연동하여 OTP 입력 컴포넌트 넣기 */}
         <OtpInputContainer>
           {[0, 1, 2, 3].map((index) => (
             <OtpBox key={index} isFocused={index === code.length}>
               <OtpText>{code[index] || ''}</OtpText>
             </OtpBox>
           ))}
+          <HiddenTextInput
+            value={code}
+            onChangeText={handleCodeChange}
+            maxLength={4}
+            keyboardType="number-pad"
+            autoFocus={true}
+            caretHidden={true}
+          />
         </OtpInputContainer>
-        <HiddenTextInput
-          ref={inputRef}
-          value={code}
-          onChangeText={handleCodeChange}
-          maxLength={4}
-          keyboardType="number-pad"
-          autoFocus={true}
-        />
 
-        <ResendButton>
+        <ResendButton onPress={handleResendCode}>
           <ResendText>인증번호 재발송</ResendText>
         </ResendButton>
+
+        {isTimeUp && <ErrorMessage>인증 시간이 만료되었습니다.</ErrorMessage>}
 
         <CharacterImage
           source={require('../../../assets/images/character_shoo.png')}
@@ -92,7 +99,7 @@ const EmailVerificationScreen = ({ navigation }: any) => {
         <AuthButton
           text="인증하기"
           onPress={handleVerify}
-          disabled={!isButtonEnabled}
+          disabled={!isButtonEnabled || isTimeUp}
         />
       </ButtonWrapper>
     </Container>
@@ -146,17 +153,30 @@ const TimerContainer = styled.View`
   margin-bottom: 40px;
 `;
 
-const TimerText = styled.Text`
+const TimerText = styled.Text<{ isTimeUp: boolean }>`
   font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray600};
+  color: ${({ isTimeUp }) =>
+    isTimeUp ? theme.colors.error : theme.colors.gray600};
 `;
 
 const OtpInputContainer = styled.View`
+  position: relative;
   flex-direction: row;
   justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
+`;
+
+const HiddenTextInput = styled.TextInput`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 `;
 
 const OtpBox = styled.View`
@@ -173,13 +193,6 @@ const OtpText = styled.Text`
   font-family: ${theme.fonts.Medium};
 `;
 
-const HiddenTextInput = styled.TextInput`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-`;
-
 const ResendButton = styled.TouchableOpacity`
   align-self: flex-start;
 `;
@@ -189,6 +202,13 @@ const ResendText = styled.Text`
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray600};
   text-decoration-line: underline;
+`;
+
+const ErrorMessage = styled.Text`
+  margin-top: 8px;
+  font-size: ${theme.fonts.caption}px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.error};
 `;
 
 // 오른쪽 아래, 아래보다는 조금 위
