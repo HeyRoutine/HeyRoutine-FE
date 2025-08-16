@@ -22,10 +22,10 @@ const AuthNavigator = () => {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
       <Stack.Screen name="EmailInput" component={EmailInputScreen} />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="EmailVerification"
         component={EmailVerificationScreen}
-      />
+      /> */}
       <Stack.Screen name="Password" component={PasswordScreen} />
       <Stack.Screen name="Nickname" component={NicknameScreen} />
       <Stack.Screen name="ProfileImage" component={ProfileImageScreen} />

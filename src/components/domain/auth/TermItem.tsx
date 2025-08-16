@@ -26,10 +26,15 @@ const TermItem = ({
           color={isChecked ? theme.colors.primary : theme.colors.gray300}
         />
       </CheckButton>
-      <TermText>
-        <TermHighlightText>({isOptional ? '선택' : '필수'})</TermHighlightText>{' '}
-        {text}
-      </TermText>
+      <TermTextContainer>
+        <TermText>
+          <TermHighlightText>
+            ({isOptional ? '선택' : '필수'})
+            </TermHighlightText>{' '}
+          {text}
+          {!isOptional && <RequiredStar>*</RequiredStar>}
+        </TermText>
+      </TermTextContainer>
       <ViewDetailsButton>
         <ViewDetailsText>보기</ViewDetailsText>
       </ViewDetailsButton>
@@ -67,3 +72,14 @@ const ViewDetailsText = styled.Text`
   color: ${theme.colors.gray500};
   text-decoration-line: underline;
 `;
+
+
+const TermTextContainer = styled.View`
+  flex: 1;
+  flex-direction: row;
+`
+
+const RequiredStar = styled.View`
+  color: red;
+  margin-left: 4px;
+`

@@ -23,7 +23,8 @@ const EmailInputScreen = ({ navigation }: any) => {
 
   const handleNext = () => {
     if (isEmailValid) {
-      navigation.navigate('EmailVerification', { email });
+      // navigation.navigate('EmailVerification', { email });
+      navigation.navigate('Password');
     }
   };
 

@@ -134,13 +134,13 @@ const TitleWrapper = styled.View`
 `;
 
 const SubTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 32px;
   color: ${theme.colors.gray900};
 `;
 
 const MainTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 32px;
   color: ${theme.colors.gray900};
 `;
