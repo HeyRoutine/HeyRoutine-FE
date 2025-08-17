@@ -7,6 +7,7 @@ import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
+import { useUserStore } from '../../store';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -17,6 +18,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [isValidNickname, setIsValidNickname] = useState(false);
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
+
+  // Zustand 스토어에서 사용자 정보 가져오기
+  const { userInfo, updateUserInfo } = useUserStore();
 
   // 탭바 숨기기
   useFocusEffect(
@@ -33,11 +37,12 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     }, [navigation]),
   );
 
-  // 현재 사용자 닉네임 가져오기 (실제로는 API나 스토어에서 가져와야 함)
+  // 현재 사용자 닉네임 가져오기 (Zustand 스토어에서 가져오기)
   useEffect(() => {
-    // TODO: 실제 사용자 닉네임을 가져오는 로직으로 교체
-    setCurrentNickname('기존닉네임');
-  }, []);
+    if (userInfo?.nickname) {
+      setCurrentNickname(userInfo.nickname);
+    }
+  }, [userInfo?.nickname]);
 
   const validateNickname = (text: string) => {
     // 빈 문자열 체크
@@ -86,7 +91,8 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
         title: '변경 완료',
         description: '닉네임을 성공적으로 변경했어요',
         onComplete: () => {
-          // TODO: 실제 닉네임 변경 API 호출
+          // Zustand 스토어에 닉네임 업데이트
+          updateUserInfo({ nickname: nickname });
           console.log('닉네임 변경 완료:', nickname);
           navigation.navigate('ProfileEdit');
         },
