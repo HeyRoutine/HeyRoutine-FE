@@ -5,6 +5,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -137,12 +138,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
             onEditPress={handleProfileEdit}
             size={100}
           />
-          <ProfileInfo>
-            <UserName>사용자</UserName>
-            <UserEmail>user@example.com</UserEmail>
-          </ProfileInfo>
         </ProfileSection>
-        <Separator />
 
         <ListContainer>
           <FlatList
@@ -182,9 +178,8 @@ const Content = styled.View`
 `;
 
 const ProfileSection = styled.View`
-  flex-direction: row;
   align-items: center;
-  padding: 24px;
+  padding: 48px 0;
 `;
 
 const ProfileInfo = styled.View`
@@ -207,7 +202,6 @@ const UserEmail = styled.Text`
 
 const ListContainer = styled.View`
   flex: 1;
-  padding-bottom: 120px;
 `;
 
 const Separator = styled.View`
@@ -218,7 +212,7 @@ const Separator = styled.View`
 
 const FooterSection = styled.View`
   position: absolute;
-  bottom: 0;
+  bottom: -80px;
   left: 0;
   right: 0;
   flex-direction: row;

@@ -14,7 +14,7 @@ export default function App() {
   // 1. 앱 로딩 상태 (폰트 등 비동기 작업 처리)
   const [isLoading, setIsLoading] = useState(true);
   // 2. 로그인 상태 (true로 초기화하여 MainNavigator 렌더링)
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const [fontsLoaded] = useFonts({
     'Pretendard-Light': require('./assets/fonts/Pretendard-Light.otf'),
