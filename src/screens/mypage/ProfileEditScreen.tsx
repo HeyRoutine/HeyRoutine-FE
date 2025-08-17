@@ -11,6 +11,7 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
+import { useAuthStore, useUserStore } from '../../store';
 
 /**
  * ProfileEditScreen의 props 인터페이스
@@ -31,6 +32,10 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const [marketingConsent, setMarketingConsent] = useState(true);
   const [notificationConsent, setNotificationConsent] = useState(true);
   const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
+
+  // Zustand 스토어에서 사용자 정보와 인증 상태 가져오기
+  const { userInfo } = useUserStore();
+  const { logout } = useAuthStore();
 
   // 계좌 정보 (임시 데이터)
   const accountInfo = {
@@ -102,7 +107,8 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   };
 
   const handleLogout = () => {
-    // 로그아웃 로직
+    // Zustand 스토어의 logout 함수 사용
+    logout();
     console.log('로그아웃');
   };
 
@@ -134,7 +140,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       <Content>
         <ProfileSection>
           <ProfileImage
-            imageUri={profileImageUri}
+            imageUri={userInfo?.profileImage || profileImageUri}
             onEditPress={handleProfileEdit}
             size={100}
           />
@@ -212,7 +218,7 @@ const Separator = styled.View`
 
 const FooterSection = styled.View`
   position: absolute;
-  bottom: -80px;
+  bottom: 0;
   left: 0;
   right: 0;
   flex-direction: row;
