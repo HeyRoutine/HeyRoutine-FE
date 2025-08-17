@@ -6,10 +6,14 @@ import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
+import { useSignupStore } from '../../../store';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Zustand 회원가입 스토어에서 이메일 설정 함수 가져오기
+  const { setEmail: setSignupEmail } = useSignupStore();
 
   // 이메일 형식 유효성 검사
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -24,8 +28,9 @@ const EmailInputScreen = ({ navigation }: any) => {
 
   const handleNext = () => {
     if (isEmailValid) {
-      navigation.navigate('EmailVerification', { email });
-      // navigation.navigate('Password');
+      // Zustand 스토어에 이메일 저장
+      setSignupEmail(email);
+      navigation.navigate('EmailVerification');
     }
   };
 

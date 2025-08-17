@@ -10,14 +10,18 @@ import {
   FormGroup,
   Label,
 } from '../../../components/domain/auth/authFormStyles';
+import { useSignupStore } from '../../../store';
 
-const PasswordScreen = ({ navigation, route }: any) => {
+const PasswordScreen = ({ navigation }: any) => {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [doPasswordsMatch, setDoPasswordsMatch] = useState(false);
+
+  // Zustand 회원가입 스토어에서 비밀번호 설정 함수 가져오기
+  const { setPassword: setSignupPassword } = useSignupStore();
 
   // 비밀번호 유효성 검사를 위한 useEffect
   useEffect(() => {
@@ -41,6 +45,8 @@ const PasswordScreen = ({ navigation, route }: any) => {
   }, [password, passwordConfirm]);
 
   const handleNext = () => {
+    // Zustand 스토어에 비밀번호 저장
+    setSignupPassword(password);
     navigation.navigate('Nickname');
   };
 

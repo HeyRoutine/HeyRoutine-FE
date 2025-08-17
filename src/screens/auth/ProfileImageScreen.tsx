@@ -7,10 +7,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import { useSignupStore } from '../../store';
 
-const ProfileImageScreen = ({ navigation, route }: any) => {
-  const { nickname } = route.params;
+const ProfileImageScreen = ({ navigation }: any) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
+
+  // Zustand 회원가입 스토어에서 데이터 가져오기
+  const { signupData, setProfileImage: setSignupProfileImage } =
+    useSignupStore();
+  const { nickname } = signupData;
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -32,7 +37,9 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
   };
 
   const handleNext = () => {
-    navigation.navigate('TermsAgreeMent', { nickname, imageUri });
+    // Zustand 스토어에 프로필 이미지 저장
+    setSignupProfileImage(imageUri);
+    navigation.navigate('TermsAgreeMent');
   };
 
   return (
