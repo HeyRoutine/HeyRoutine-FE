@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'react-native';
 
 import Header from '../../components/common/Header';
+import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 
 interface IGifticonProductScreenProps {
@@ -11,20 +13,66 @@ interface IGifticonProductScreenProps {
 }
 
 const GifticonProductScreen = ({ navigation, route }: IGifticonProductScreenProps) => {
-	const { product } = route.params || {};
+	const { product, userPoints } = route.params || {};
+
+	const brand = product?.brand ?? '브랜드';
+	const title = product?.title ?? '상품명';
+	const price = product?.price ?? 0;
+	const remain = product?.remain ?? 20;
+	const imageSource = product?.image ?? null; // require(...) 또는 { uri }
+
+	const myPoints: number = typeof userPoints === 'number' ? userPoints : 0;
+	const hasEnoughPoints = myPoints >= price;
+
+	const handlePurchase = () => {
+		if (!hasEnoughPoints) return;
+		// TODO: 구매 로직 연동
+		console.log('구매하기:', product);
+	};
 
 	return (
 		<Container>
 			<Header title={product?.title ?? '상품 상세'} onBackPress={() => navigation.goBack()} />
 
-			<Content>
-				<ImagePlaceholder>
-					<PlaceholderText>이미지</PlaceholderText>
-				</ImagePlaceholder>
-				<ProductTitle>{product?.title}</ProductTitle>
-				<BrandText>{product?.brand}</BrandText>
-				<PriceText>{product?.price.toLocaleString()}P</PriceText>
-			</Content>
+			<ScrollContent>
+				<ImageBox>
+					{imageSource ? (
+						<ProductImage resizeMode="contain" source={imageSource} />
+					) : (
+						<PlaceholderText>이미지</PlaceholderText>
+					)}
+				</ImageBox>
+
+				<InfoTable>
+					<Row>
+						<Label>브랜드</Label>
+						<Value>{brand}</Value>
+					</Row>
+					<Divider />
+					<Row>
+						<Label>상품명</Label>
+						<Value numberOfLines={1}>{title}</Value>
+					</Row>
+					<Divider />
+					<Row>
+						<Label>포인트</Label>
+						<Value>{price.toLocaleString()}P</Value>
+					</Row>
+					<Divider />
+					<Row>
+						<Label>남은수량</Label>
+						<Value>{remain}개</Value>
+					</Row>
+				</InfoTable>
+			</ScrollContent>
+
+			<Footer>
+				<CustomButton
+					text={hasEnoughPoints ? '구매하기' : '잔액이 부족합니다'}
+					onPress={handlePurchase}
+					disabled={!hasEnoughPoints}
+				/>
+			</Footer>
 		</Container>
 	);
 };
@@ -36,18 +84,29 @@ const Container = styled(SafeAreaView)`
 	background-color: ${theme.colors.white};
 `;
 
-const Content = styled.View`
+const ScrollContent = styled.ScrollView`
 	flex: 1;
-	padding: 24px;
+	padding: 0 24px;
 `;
 
-const ImagePlaceholder = styled.View`
-	height: 220px;
-	background-color: ${theme.colors.gray100};
-	border-radius: 12px;
+const ImageBox = styled.View`
+	margin-top: 16px;
+	margin-bottom: 24px;
 	align-items: center;
 	justify-content: center;
-	margin-bottom: 20px;
+	border-width: 1px;
+	border-color: ${theme.colors.gray200};
+	border-radius: 12px;
+	overflow: hidden;
+	align-self: center;
+	width: 280px;
+	height: 280px;
+	background-color: ${theme.colors.white};
+`;
+
+const ProductImage = styled(Image)`
+	width: 80%;
+	height: 80%;
 `;
 
 const PlaceholderText = styled.Text`
@@ -55,22 +114,36 @@ const PlaceholderText = styled.Text`
 	color: ${theme.colors.gray500};
 `;
 
-const ProductTitle = styled.Text`
-	font-size: 20px;
+const InfoTable = styled.View`
+	background-color: ${theme.colors.white};
+	border-radius: 12px;
+	overflow: hidden;
+`;
+
+const Row = styled.View`
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 4px;
+`;
+
+const Divider = styled.View`
+	height: 1px;
+	background-color: ${theme.colors.gray200};
+`;
+
+const Label = styled.Text`
+	font-family: ${theme.fonts.Medium};
+	color: ${theme.colors.gray600};
+`;
+
+const Value = styled.Text`
 	font-family: ${theme.fonts.SemiBold};
 	color: ${theme.colors.gray900};
-	margin-bottom: 6px;
+	max-width: 70%;
 `;
 
-const BrandText = styled.Text`
-	font-size: 14px;
-	font-family: ${theme.fonts.Regular};
-	color: ${theme.colors.gray500};
-	margin-bottom: 20px;
-`;
-
-const PriceText = styled.Text`
-	font-size: 22px;
-	font-family: ${theme.fonts.Bold};
-	color: ${theme.colors.primary};
+const Footer = styled.View`
+	padding: 16px 24px 24px 24px;
+	background-color: ${theme.colors.white};
 `;

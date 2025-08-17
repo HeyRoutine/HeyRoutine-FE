@@ -7,6 +7,7 @@ interface UserInfo {
   email: string;
   profileImage?: string;
   phoneNumber?: string;
+  points?: number; // 보유 포인트
 }
 
 // 스토어 상태 타입 정의
