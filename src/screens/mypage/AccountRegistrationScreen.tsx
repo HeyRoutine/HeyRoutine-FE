@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -16,6 +17,21 @@ const AccountRegistrationScreen = ({
 }: IAccountRegistrationScreenProps) => {
   const [accountNumber, setAccountNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 탭바 숨기기
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: { display: 'flex' },
+        });
+      };
+    }, [navigation]),
+  );
 
   // 계좌번호 유효성 검사 (임시)
   const isAccountValid = accountNumber.length >= 10;
@@ -40,7 +56,7 @@ const AccountRegistrationScreen = ({
       <Header title="계좌 등록" onBackPress={() => navigation.goBack()} />
 
       <Content>
-        <Title>계좌번호를 입력해주세요</Title>
+        <Title>계좌번호를{'\n'}입력해주세요.</Title>
       </Content>
 
       {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
@@ -97,9 +113,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 0 24px;
+  padding: 100px 24px 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

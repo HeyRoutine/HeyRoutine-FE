@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -16,6 +17,21 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [isValidNickname, setIsValidNickname] = useState(false);
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
+
+  // 탭바 숨기기
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: { display: 'flex' },
+        });
+      };
+    }, [navigation]),
+  );
 
   // 현재 사용자 닉네임 가져오기 (실제로는 API나 스토어에서 가져와야 함)
   useEffect(() => {
@@ -105,15 +121,15 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
           </InputContainer>
           {getInstructionText()}
         </NicknameSection>
-
-        <ButtonContainer>
-          <CustomButton
-            text="완료"
-            onPress={handleComplete}
-            disabled={!isValidNickname || nickname.length === 0}
-          />
-        </ButtonContainer>
       </Content>
+
+      <ButtonContainer>
+        <CustomButton
+          text="완료"
+          onPress={handleComplete}
+          disabled={!isValidNickname || nickname.length === 0}
+        />
+      </ButtonContainer>
     </Container>
   );
 };
@@ -170,6 +186,5 @@ const ErrorText = styled.Text`
 `;
 
 const ButtonContainer = styled.View`
-  margin-top: auto;
-  padding-bottom: 24px;
+  padding: 24px;
 `;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -14,6 +15,21 @@ interface IEmailSettingScreenProps {
 const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
   const [email, setEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(false);
+
+  // 탭바 숨기기
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: { display: 'flex' },
+        });
+      };
+    }, [navigation]),
+  );
 
   const handleEmailChange = (text: string) => {
     setEmail(text);
@@ -47,18 +63,21 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
           <InstructionText>
             <InstructionTextPart>* </InstructionTextPart>
             <HighlightedText>사용가능한</HighlightedText>
-            <InstructionTextPart> 이메일을 입력해주셔야합니다.</InstructionTextPart>
+            <InstructionTextPart>
+              {' '}
+              이메일을 입력해주셔야합니다.
+            </InstructionTextPart>
           </InstructionText>
         </EmailSection>
-
-        <ButtonContainer>
-          <CustomButton
-            text="인증 하기"
-            onPress={handleVerification}
-            disabled={!isValidEmail || email.length === 0}
-          />
-        </ButtonContainer>
       </Content>
+
+      <ButtonWrapper>
+        <CustomButton
+          text="인증 하기"
+          onPress={handleVerification}
+          disabled={!isValidEmail || email.length === 0}
+        />
+      </ButtonWrapper>
     </Container>
   );
 };
@@ -108,7 +127,6 @@ const HighlightedText = styled.Text`
   color: ${theme.colors.primary};
 `;
 
-const ButtonContainer = styled.View`
-  margin-top: auto;
-  padding-bottom: 24px;
+const ButtonWrapper = styled.View`
+  padding: 24px;
 `;
