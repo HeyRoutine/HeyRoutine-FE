@@ -47,9 +47,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       return;
     }
 
-    // 길이 체크 (1글자 이상, 10글자 이하)
-    if (text.length < 1 || text.length > 10) {
-      setValidationMessage('닉네임은 1글자 이상 10글자 이하여야 합니다.');
+    // 길이 체크 (2글자 이상, 10글자 이하)
+    if (text.length < 2 || text.length > 10) {
+      setValidationMessage('닉네임은 2글자 이상 10글자 이하여야 합니다.');
       setIsValidNickname(false);
       return;
     }
@@ -81,21 +81,20 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
 
   const handleComplete = () => {
     if (isValidNickname) {
-      // 닉네임 설정 완료 로직 구현
-      console.log('닉네임 설정 완료:', nickname);
+      // 닉네임 변경 완료 화면으로 이동
+      navigation.navigate('Complete', {
+        title: '변경 완료',
+        description: '닉네임을 성공적으로 변경했어요',
+        onComplete: () => {
+          // TODO: 실제 닉네임 변경 API 호출
+          console.log('닉네임 변경 완료:', nickname);
+          navigation.navigate('ProfileEdit');
+        },
+      });
     }
   };
 
   const getInstructionText = () => {
-    if (validationMessage) {
-      return (
-        <InstructionText>
-          <InstructionTextPart>* </InstructionTextPart>
-          <ErrorText>{validationMessage}</ErrorText>
-        </InstructionText>
-      );
-    }
-
     return (
       <InstructionText>
         <InstructionTextPart>* 닉네임을 재설정하면 </InstructionTextPart>
@@ -120,6 +119,11 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
             />
           </InputContainer>
           {getInstructionText()}
+          <ErrorContainer>
+            {validationMessage ? (
+              <ErrorText>{validationMessage}</ErrorText>
+            ) : null}
+          </ErrorContainer>
         </NicknameSection>
       </Content>
 
@@ -177,6 +181,11 @@ const HighlightedText = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.primary};
+`;
+
+const ErrorContainer = styled.View`
+  height: 20px;
+  justify-content: center;
 `;
 
 const ErrorText = styled.Text`

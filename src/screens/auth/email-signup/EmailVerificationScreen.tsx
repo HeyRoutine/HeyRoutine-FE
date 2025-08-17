@@ -9,9 +9,11 @@ import Header from '../../../components/common/Header';
 import OtpInput from '../../../components/common/OtpInput';
 import Timer from '../../../components/common/Timer';
 
-const EmailVerificationScreen = ({ navigation }: any) => {
+const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
+
+  const { email, isEmailChange, onSuccess } = route.params || {};
 
   const isButtonEnabled = code.length === 4;
 
@@ -27,8 +29,21 @@ const EmailVerificationScreen = ({ navigation }: any) => {
 
   const handleVerify = () => {
     // TODO: 인증하기 로직 구현
-    if (!isButtonEnabled) return;
-    navigation.navigate('Password');
+
+    if (isEmailChange) {
+      // 이메일 변경 모드일 때
+      navigation.navigate('Complete', {
+        title: '변경 완료',
+        description: '이메일을 성공적으로 변경했어요',
+        onComplete: () => {
+          onSuccess?.();
+          navigation.navigate('ProfileEdit');
+        },
+      });
+    } else {
+      // 회원가입 모드일 때
+      navigation.navigate('Password');
+    }
   };
 
   const handleCodeChange = (text: string) => {
@@ -39,7 +54,9 @@ const EmailVerificationScreen = ({ navigation }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>2/5</ProgressText>}
+        rightComponent={
+          !isEmailChange ? <ProgressText>2/5</ProgressText> : null
+        }
       />
 
       <Content>
@@ -72,7 +89,8 @@ const EmailVerificationScreen = ({ navigation }: any) => {
         <CustomButton
           text="인증하기"
           onPress={handleVerify}
-          disabled={!isButtonEnabled}
+          // TODO: 4자리 숫자 입력 후 인증하기 버튼 활성화 + 타이머 종료 후 인증하기 버튼 비활성화
+          // disabled={!isButtonEnabled}
         />
       </ButtonWrapper>
     </Container>

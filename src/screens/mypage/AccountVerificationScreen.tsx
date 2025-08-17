@@ -31,7 +31,13 @@ const AccountVerificationScreen = ({ navigation }: any) => {
     // TODO: 계좌 인증 로직 구현
 
     // 임시로 성공 처리 (실제로는 API 응답에 따라 처리)
-    navigation.navigate('AccountRegistrationComplete');
+    navigation.navigate('Complete', {
+      title: '등록 성공',
+      description: '계좌 등록을 성공적으로 완료했어요',
+      onComplete: () => {
+        navigation.navigate('ProfileEdit');
+      },
+    });
   };
 
   const handleCodeChange = (text: string) => {
