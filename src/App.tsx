@@ -9,12 +9,14 @@ import { theme } from './styles/theme';
 import SplashScreen from './screens/auth/SplashScreen';
 import MainNavigator from './navigation/MainNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
+import { useAuthStore } from './store';
 
 export default function App() {
   // 1. 앱 로딩 상태 (폰트 등 비동기 작업 처리)
   const [isLoading, setIsLoading] = useState(true);
-  // 2. 로그인 상태 (true로 초기화하여 MainNavigator 렌더링)
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  // 2. Zustand 스토어에서 로그인 상태 가져오기
+  const { isLoggedIn } = useAuthStore();
 
   const [fontsLoaded] = useFonts({
     'Pretendard-Light': require('./assets/fonts/Pretendard-Light.otf'),
