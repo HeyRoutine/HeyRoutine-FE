@@ -109,7 +109,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
         />
         <MyPageListItem
           title="전환될 금액"
-          rightText={`${(parseInt(pointAmount) * 0.7).toLocaleString()}원`}
+          rightText={`${Math.floor((parseInt(pointAmount) || 0) * 0.7).toLocaleString()}원`}
           rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
