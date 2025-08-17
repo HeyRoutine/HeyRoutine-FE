@@ -6,10 +6,15 @@ import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import SuccessIcon from '../../components/common/SuccessIcon';
 
-const AccountRegistrationCompleteScreen = ({ navigation }: any) => {
+const CompleteScreen = ({ navigation, route }: any) => {
+  const { title, description, onComplete } = route.params || {
+    title: '등록 성공',
+    description: '계좌 등록을 성공적으로 완료했어요',
+    onComplete: () => navigation.navigate('MyPage'),
+  };
+
   const handleComplete = () => {
-    // TODO: 메인 화면 또는 마이페이지로 이동
-    navigation.navigate('MyPage');
+    onComplete();
   };
 
   return (
@@ -17,9 +22,9 @@ const AccountRegistrationCompleteScreen = ({ navigation }: any) => {
       <Content>
         <SuccessIcon size={80} />
 
-        <Title>등록 성공</Title>
+        <Title>{title}</Title>
 
-        <Description>계좌 등록을 성공적으로 완료했어요</Description>
+        <Description>{description}</Description>
       </Content>
 
       <ButtonWrapper>
@@ -29,7 +34,7 @@ const AccountRegistrationCompleteScreen = ({ navigation }: any) => {
   );
 };
 
-export default AccountRegistrationCompleteScreen;
+export default CompleteScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;

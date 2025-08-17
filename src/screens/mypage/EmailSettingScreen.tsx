@@ -15,6 +15,7 @@ interface IEmailSettingScreenProps {
 const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
   const [email, setEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('');
 
   // 탭바 숨기기
   useFocusEffect(
@@ -31,17 +32,44 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
     }, [navigation]),
   );
 
+  const validateEmail = (text: string) => {
+    // 빈 문자열 체크
+    if (text.length === 0) {
+      setValidationMessage('');
+      setIsValidEmail(false);
+      return;
+    }
+
+    // 이메일 형식 검사
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(text)) {
+      setValidationMessage('올바른 이메일 형식을 입력해주세요.');
+      setIsValidEmail(false);
+      return;
+    }
+
+    // 모든 검증 통과
+    setValidationMessage('');
+    setIsValidEmail(true);
+  };
+
   const handleEmailChange = (text: string) => {
     setEmail(text);
-    // 간단한 이메일 유효성 검사
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setIsValidEmail(emailRegex.test(text));
+    validateEmail(text);
   };
 
   const handleVerification = () => {
     if (isValidEmail) {
-      // 이메일 인증 로직 구현
-      console.log('이메일 인증 요청:', email);
+      // 이메일 인증 화면으로 이동
+      navigation.navigate('EmailVerification', {
+        email: email,
+        isEmailChange: true,
+        onSuccess: () => {
+          // 인증 성공 후 콜백
+          console.log('이메일 변경 완료:', email);
+          navigation.goBack();
+        },
+      });
     }
   };
 
@@ -68,6 +96,11 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
               이메일을 입력해주셔야합니다.
             </InstructionTextPart>
           </InstructionText>
+          <ErrorContainer>
+            {validationMessage ? (
+              <ErrorText>{validationMessage}</ErrorText>
+            ) : null}
+          </ErrorContainer>
         </EmailSection>
       </Content>
 
@@ -125,6 +158,17 @@ const HighlightedText = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.primary};
+`;
+
+const ErrorContainer = styled.View`
+  height: 20px;
+  justify-content: center;
+`;
+
+const ErrorText = styled.Text`
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.error};
 `;
 
 const ButtonWrapper = styled.View`
