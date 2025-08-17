@@ -47,7 +47,7 @@ const AccountRegistrationScreen = ({
   const handleRequestAuth = () => {
     if (isAccountValid) {
       // 1원 인증 요청 로직
-      console.log('1원 인증 요청');
+      navigation.navigate('AccountVerification');
     }
   };
 
