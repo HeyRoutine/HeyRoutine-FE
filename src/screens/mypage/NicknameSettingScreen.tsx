@@ -41,6 +41,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   useEffect(() => {
     if (userInfo?.nickname) {
       setCurrentNickname(userInfo.nickname);
+      setNickname(userInfo.nickname); // 입력창에도 현재 닉네임 표시
     }
   }, [userInfo?.nickname]);
 
