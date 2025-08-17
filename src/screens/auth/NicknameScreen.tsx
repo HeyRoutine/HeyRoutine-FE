@@ -7,11 +7,15 @@ import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
+import { useSignupStore } from '../../store';
 
 const NicknameScreen = ({ navigation }: any) => {
   const [nickname, setNickname] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Zustand 회원가입 스토어에서 닉네임 설정 함수 가져오기
+  const { setNickname: setSignupNickname } = useSignupStore();
 
   // 닉네임 유효성 검사 (한글, 영어, 숫자만 허용, 2~10자)
   useEffect(() => {
@@ -36,7 +40,9 @@ const NicknameScreen = ({ navigation }: any) => {
   }, [nickname]);
 
   const handleNext = () => {
-    navigation.navigate('ProfileImage', { nickname });
+    // Zustand 스토어에 닉네임 저장
+    setSignupNickname(nickname);
+    navigation.navigate('ProfileImage');
   };
 
   const clearNickname = () => {

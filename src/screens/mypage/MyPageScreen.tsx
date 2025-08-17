@@ -9,6 +9,7 @@ import { FlatList } from 'react-native';
 import { theme } from '../../styles/theme';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
+import { useUserStore } from '../../store';
 
 /**
  * MyPageScreen의 props 인터페이스
@@ -26,7 +27,9 @@ interface IMyPageScreenProps {
  */
 const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
+
+  // Zustand 스토어에서 사용자 정보 가져오기
+  const { userInfo } = useUserStore();
 
   // 리스트 데이터
   const listData = [
@@ -68,10 +71,6 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
     },
   ];
 
-  const handleProfileEdit = () => {
-    navigation.navigate('ProfileEdit');
-  };
-
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
       <>
@@ -90,12 +89,15 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       <Content>
         <ProfileSection insets={insets}>
           <ProfileImage
-            imageUri={profileImageUri}
-            onEditPress={handleProfileEdit}
+            imageUri={userInfo?.profileImage}
+            onEditPress={() => {}}
             size={64}
+            showEditButton={false}
           />
           <ProfileInfo>
-            <UserName>SSAFY 14기 부울경 화이팅</UserName>
+            <UserName>
+              {userInfo?.nickname || 'SSAFY 14기 부울경 화이팅'}
+            </UserName>
           </ProfileInfo>
         </ProfileSection>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
+import { useUserStore } from '../../store';
 
 interface IEmailSettingScreenProps {
   navigation: any;
@@ -16,6 +17,16 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
   const [email, setEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
+
+  // Zustand 스토어에서 사용자 정보 가져오기
+  const { userInfo, updateUserInfo } = useUserStore();
+
+  // 현재 사용자 이메일을 스토어에서 가져와서 초기값 설정
+  useEffect(() => {
+    if (userInfo?.email) {
+      setEmail(userInfo.email);
+    }
+  }, [userInfo?.email]);
 
   // 탭바 숨기기
   useFocusEffect(
@@ -65,7 +76,8 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
         email: email,
         isEmailChange: true,
         onSuccess: () => {
-          // 인증 성공 후 콜백
+          // Zustand 스토어에 이메일 업데이트
+          updateUserInfo({ email: email });
           console.log('이메일 변경 완료:', email);
           navigation.goBack();
         },
