@@ -43,7 +43,7 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       id: 'points',
       type: 'item',
       title: '포인트 상점',
-      onPress: () => navigation.navigate('PointShop'),
+      onPress: () => navigation.navigate('PointGifticon'),
     },
     {
       id: 'suggestion',

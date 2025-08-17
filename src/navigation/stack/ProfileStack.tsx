@@ -8,6 +8,7 @@ import AccountVerificationScreen from '../../screens/mypage/AccountVerificationS
 import CompleteScreen from '../../screens/common/CompleteScreen';
 import EmailVerificationScreen from '../../screens/auth/email-signup/EmailVerificationScreen';
 import PointGifticonScreen from '../../screens/mypage/PointGifticonScreen';
+import GifticonProductScreen from '../../screens/mypage/GifticonProductScreen';
 import PointCashoutScreen from '../../screens/mypage/PointCashoutScreen';
 import NicknameSettingScreen from '../../screens/mypage/NicknameSettingScreen';
 import EmailSettingScreen from '../../screens/mypage/EmailSettingScreen';
@@ -34,6 +35,7 @@ const ProfileStack = () => {
         component={EmailVerificationScreen}
       />
       <Stack.Screen name="PointGifticon" component={PointGifticonScreen} />
+      <Stack.Screen name="GifticonProduct" component={GifticonProductScreen} />
       <Stack.Screen name="PointCashout" component={PointCashoutScreen} />
       <Stack.Screen name="NicknameSetting" component={NicknameSettingScreen} />
       <Stack.Screen name="EmailSetting" component={EmailSettingScreen} />
