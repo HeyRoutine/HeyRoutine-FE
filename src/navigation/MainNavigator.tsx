@@ -9,6 +9,8 @@ import AnalysisScreen from '../screens/analysis/AnalysisScreen';
 import MyPageScreen from '../screens/mypage/MyPageScreen';
 import ProfileEditScreen from '../screens/mypage/ProfileEditScreen';
 import AccountRegistrationScreen from '../screens/mypage/AccountRegistrationScreen';
+import AccountVerificationScreen from '../screens/mypage/AccountVerificationScreen';
+import AccountRegistrationCompleteScreen from '../screens/mypage/AccountRegistrationCompleteScreen';
 import PointGifticonScreen from '../screens/mypage/PointGifticonScreen';
 import PointCashoutScreen from '../screens/mypage/PointCashoutScreen';
 import NicknameSettingScreen from '../screens/mypage/NicknameSettingScreen';
@@ -27,6 +29,14 @@ const ProfileStack = () => {
       <Stack.Screen
         name="AccountRegistration"
         component={AccountRegistrationScreen}
+      />
+      <Stack.Screen
+        name="AccountVerification"
+        component={AccountVerificationScreen}
+      />
+      <Stack.Screen
+        name="AccountRegistrationComplete"
+        component={AccountRegistrationCompleteScreen}
       />
       <Stack.Screen name="PointGifticon" component={PointGifticonScreen} />
       <Stack.Screen name="PointCashout" component={PointCashoutScreen} />
