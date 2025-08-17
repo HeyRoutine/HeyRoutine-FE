@@ -6,14 +6,24 @@ import { Image } from 'react-native';
 import Header from '../../components/common/Header';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import { theme } from '../../styles/theme';
+import { useUserStore } from '../../store';
 
 interface IPointCashoutCompleteScreenProps {
   navigation: any;
+  route: any;
 }
 
 const PointCashoutCompleteScreen = ({
   navigation,
+  route,
 }: IPointCashoutCompleteScreenProps) => {
+  const { userInfo } = useUserStore();
+  const currentPoints = userInfo?.points ?? 0;
+
+  // route.params에서 전환된 포인트 받아오기
+  const { transferredPoints = 2000 } = route.params || {};
+  const transferredCash = Math.floor(transferredPoints * 0.7);
+
   return (
     <Container>
       <Header title="포인트 현금화" onBackPress={() => navigation.goBack()} />
@@ -41,27 +51,28 @@ const PointCashoutCompleteScreen = ({
         />
         <MyPageListItem
           title=""
-          subtitle="123-12-123456-1"
+          rightText="123-12-123456-1"
+          rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
-          title="입금포인트"
-          rightText="2,000P"
+          title="사용포인트"
+          rightText={`${transferredPoints.toLocaleString()}P`}
           rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
           title="현금"
-          rightText="1,400원"
+          rightText={`${transferredCash.toLocaleString()}원`}
           rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
           title="포인트 잔액"
-          rightText="0P"
+          rightText={`${currentPoints.toLocaleString()}P`}
           rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}

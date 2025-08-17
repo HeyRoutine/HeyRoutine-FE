@@ -25,14 +25,19 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
   secondaryText,
   onSecondary,
   onRequestClose,
-  heightRatio = 0.40, // 기본값: 화면의 40%
+  heightRatio = 0.4, // 기본값: 화면의 40%
 }) => {
   const hasSecondary = Boolean(secondaryText && onSecondary);
   const screenHeight = Dimensions.get('window').height;
   const minHeight = Math.max(240, Math.round(screenHeight * heightRatio));
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onRequestClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onRequestClose}
+    >
       <ModalBackdrop>
         <BottomSheet minHeight={minHeight}>
           <SheetHandle />
@@ -47,16 +52,22 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
           {hasSecondary ? (
             <ButtonsRow>
               <SheetButton variant="ghost" onPress={onSecondary!}>
-                <SheetButtonText variant="ghost">{secondaryText}</SheetButtonText>
+                <SheetButtonText variant="ghost">
+                  {secondaryText}
+                </SheetButtonText>
               </SheetButton>
               <SheetButton variant="primary" onPress={onPrimary}>
-                <SheetButtonText variant="primary">{primaryText}</SheetButtonText>
+                <SheetButtonText variant="primary">
+                  {primaryText}
+                </SheetButtonText>
               </SheetButton>
             </ButtonsRow>
           ) : (
             <ButtonsRow>
               <SheetButton variant="primary" onPress={onPrimary}>
-                <SheetButtonText variant="primary">{primaryText}</SheetButtonText>
+                <SheetButtonText variant="primary">
+                  {primaryText}
+                </SheetButtonText>
               </SheetButton>
             </ButtonsRow>
           )}
@@ -134,5 +145,6 @@ const SheetButton = styled.TouchableOpacity<{ variant: ButtonVariant }>`
 const SheetButtonText = styled.Text<{ variant: ButtonVariant }>`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${(p) => (p.variant === 'primary' ? theme.colors.white : theme.colors.gray600)};
+  color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
 `;

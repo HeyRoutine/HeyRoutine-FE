@@ -6,7 +6,9 @@ import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import PointButton from '../../components/domain/mypage/PointButton';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
+import { useUserStore } from '../../store';
 
 interface IPointCashoutScreenProps {
   navigation: any;
@@ -14,7 +16,9 @@ interface IPointCashoutScreenProps {
 
 const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   const [pointAmount, setPointAmount] = useState('0');
-  const maxPoints = 2000; // 최대 포인트 (나중에 Zustand에서 가져올 예정)
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const { userInfo, deductPoints } = useUserStore();
+  const maxPoints = userInfo?.points ?? 0; // Zustand에서 가져온 포인트
 
   const handleInputChange = (text: string) => {
     // 숫자만 입력 가능
@@ -32,6 +36,20 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
     // 최대 포인트를 넘으면 강제로 최대값으로 설정
     const finalValue = points > maxPoints ? maxPoints : points;
     setPointAmount(finalValue.toString());
+  };
+
+  const handleTransfer = () => {
+    const amount = parseInt(pointAmount) || 0;
+    if (amount > 0) {
+      setIsTransferModalOpen(true);
+    }
+  };
+
+  const handleConfirmTransfer = () => {
+    const amount = parseInt(pointAmount) || 0;
+    deductPoints(amount);
+    setIsTransferModalOpen(false);
+    navigation.navigate('PointCashoutComplete', { transferredPoints: amount });
   };
 
   return (
@@ -96,7 +114,8 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
         />
         <MyPageListItem
           title=""
-          subtitle="123-12-123456-1"
+          rightText="123-12-123456-1"
+          rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
         />
@@ -117,12 +136,21 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
       </InfoSection>
 
       <ButtonWrapper>
-        <TransferButton
-          onPress={() => navigation.navigate('PointCashoutComplete')}
-        >
+        <TransferButton onPress={handleTransfer}>
           <TransferButtonText>전환하기</TransferButtonText>
         </TransferButton>
       </ButtonWrapper>
+
+      <BottomSheetDialog
+        visible={isTransferModalOpen}
+        title="포인트 전환"
+        message={`${pointAmount}P를 현금으로 전환하시겠습니까?`}
+        primaryText="확인"
+        onPrimary={handleConfirmTransfer}
+        secondaryText="취소"
+        onSecondary={() => setIsTransferModalOpen(false)}
+        onRequestClose={() => setIsTransferModalOpen(false)}
+      />
     </Container>
   );
 };

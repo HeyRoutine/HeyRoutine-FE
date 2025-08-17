@@ -1,7 +1,12 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
+import {
+  FlatList,
+  TouchableOpacity,
+  Image,
+  ImageSourcePropType,
+} from 'react-native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -11,17 +16,63 @@ interface IPointGifticonScreenProps {
   navigation: any;
 }
 
-type CategoryKey = 'all' | 'cafe' | 'convenience' | 'fastfood' | 'dining' | 'bakery';
+type CategoryKey =
+  | 'all'
+  | 'cafe'
+  | 'convenience'
+  | 'fastfood'
+  | 'dining'
+  | 'bakery';
 
-type CategoryMeta = { key: CategoryKey; label: string; icon: ImageSourcePropType };
+type CategoryMeta = {
+  key: CategoryKey;
+  label: string;
+  icon: ImageSourcePropType;
+};
 
 const MOCK_PRODUCTS = [
-  { id: '1', title: '아이스 카페 아메리카노 Tall', brand: '스타벅스', price: 6100, category: 'cafe' as CategoryKey },
-  { id: '2', title: '아이스 카페 라떼 Tall', brand: '스타벅스', price: 6600, category: 'cafe' as CategoryKey },
-  { id: '3', title: '불고기버거 세트', brand: '맥도날드', price: 7900, category: 'fastfood' as CategoryKey },
-  { id: '4', title: '교촌콤보', brand: '교촌치킨', price: 19000, category: 'dining' as CategoryKey },
-  { id: '5', title: '소금빵', brand: '파리바게뜨', price: 3500, category: 'bakery' as CategoryKey },
-  { id: '6', title: '삼각김밥', brand: 'GS25', price: 1200, category: 'convenience' as CategoryKey },
+  {
+    id: '1',
+    title: '아이스 카페 아메리카노 Tall',
+    brand: '스타벅스',
+    price: 6100,
+    category: 'cafe' as CategoryKey,
+  },
+  {
+    id: '2',
+    title: '아이스 카페 라떼 Tall',
+    brand: '스타벅스',
+    price: 6600,
+    category: 'cafe' as CategoryKey,
+  },
+  {
+    id: '3',
+    title: '불고기버거 세트',
+    brand: '맥도날드',
+    price: 7900,
+    category: 'fastfood' as CategoryKey,
+  },
+  {
+    id: '4',
+    title: '교촌콤보',
+    brand: '교촌치킨',
+    price: 19000,
+    category: 'dining' as CategoryKey,
+  },
+  {
+    id: '5',
+    title: '소금빵',
+    brand: '파리바게뜨',
+    price: 3500,
+    category: 'bakery' as CategoryKey,
+  },
+  {
+    id: '6',
+    title: '삼각김밥',
+    brand: 'GS25',
+    price: 1200,
+    category: 'convenience' as CategoryKey,
+  },
 ];
 
 // 현재는 예시 이미지로 party_popper.png를 넣어두었습니다. 실제 아이콘 이미지를 교체하여 사용하세요.
@@ -42,9 +93,10 @@ const CATEGORIES: CategoryMeta[] = [
 ];
 
 const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
-  const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>('all');
-  // const points = useUserStore((s) => s.userInfo?.points ?? 0);
-  const points = 2000;
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<CategoryKey>('all');
+
+  const points = useUserStore((s) => s.userInfo?.points ?? 0);
 
   const filteredProducts = React.useMemo(() => {
     if (selectedCategory === 'all') return MOCK_PRODUCTS;
@@ -173,7 +225,8 @@ const CategoryChip = styled.TouchableOpacity<{ active: boolean }>`
   padding: 10px 12px;
   border-radius: 16px;
   margin-right: 8px;
-  background-color: ${(p) => (p.active ? theme.colors.primary : theme.colors.gray100)};
+  background-color: ${(p) =>
+    p.active ? theme.colors.primary : theme.colors.gray100};
 `;
 
 const CategoryImg = styled(Image)`
