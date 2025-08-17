@@ -118,21 +118,34 @@ src/
 - `feature/기능명`: 기능 개발 (예: `feature/login-screen`)
 - `fix/수정내용`: 버그 수정 (예: `fix/header-style-bug`)
 
-1.  **브랜치 생성:** `develop` 브랜치에서 시작하여, 자신의 작업에 맞는 이름으로 새 브랜치를 만듭니다.
+1. **브랜치 생성:** `develop` 브랜치에서 시작하여, 자신의 작업에 맞는 이름으로 새 브랜치를 만듭니다.
     ```bash
     # develop 브랜치에서 최신 코드를 받아온 후, 새 브랜치를 생성합니다.
     git checkout develop
     git pull --rebase origin develop
     git checkout -b feature/my-new-feature
     ```
-2.  **개발:** 새로 만든 브랜치 안에서 자유롭게 코드를 작성하고 커밋합니다.
-3.  **Push:** 작업이 끝나면 자신의 브랜치를 원격 저장소(GitHub)에 올립니다.
+
+2. **개발:** 새로 만든 브랜치 안에서 자유롭게 코드를 작성하고 커밋합니다.
+
+3. **develop 업데이트 반영:** 작업 중 develop에 새로운 변경사항이 있을 때
+    ```bash
+    # develop의 최신 변경사항을 작업 브랜치에 반영
+    git checkout develop
+    git pull --rebase origin develop
+    git checkout feature/my-new-feature
+    git rebase develop
+    ```
+
+4. **Push:** 작업이 끝나면 자신의 브랜치를 원격 저장소(GitHub)에 올립니다.
     ```bash
     git push origin feature/my-new-feature
     git push origin fix/my-new-feature
     ```
-4.  **Pull Request (PR):** GitHub에서 `develop` 브랜치로 합쳐달라는 Pull Request를 생성합니다.
-5.  **코드 리뷰 및 Merge:** 다른 팀원이 코드를 검토하고, 이상이 없으면 `develop` 브랜치에 최종적으로 병합(Merge)합니다.
+
+5. **Pull Request (PR):** GitHub에서 `develop` 브랜치로 합쳐달라는 Pull Request를 생성합니다.
+
+6. **코드 리뷰 및 Merge:** 다른 팀원이 코드를 검토하고, 이상이 없으면 `develop` 브랜치에 최종적으로 병합(Merge)합니다.
 
 ### 커밋 메시지 규칙
 
