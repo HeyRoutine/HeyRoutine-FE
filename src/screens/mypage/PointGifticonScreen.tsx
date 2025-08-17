@@ -5,6 +5,7 @@ import { FlatList, TouchableOpacity, Image, ImageSourcePropType } from 'react-na
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
+import { useUserStore } from '../../store';
 
 interface IPointGifticonScreenProps {
   navigation: any;
@@ -42,6 +43,8 @@ const CATEGORIES: CategoryMeta[] = [
 
 const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>('all');
+  // const points = useUserStore((s) => s.userInfo?.points ?? 0);
+  const points = 2000;
 
   const filteredProducts = React.useMemo(() => {
     if (selectedCategory === 'all') return MOCK_PRODUCTS;
@@ -49,7 +52,7 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   }, [selectedCategory]);
 
   const handlePressProduct = (product: any) => {
-    navigation.navigate('GifticonProduct', { product });
+    navigation.navigate('GifticonProduct', { product, userPoints: points });
   };
 
   const handleGoCashout = () => {
@@ -75,7 +78,7 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
         <PointCard>
           <PointHeaderRow>
             <PointHeaderText>포인트</PointHeaderText>
-            <PointValue>2,000P</PointValue>
+            <PointValue>{points.toLocaleString()}P</PointValue>
           </PointHeaderRow>
           <CashoutTouchable onPress={handleGoCashout}>
             <CashoutText>현금으로 전환하기</CashoutText>
@@ -98,19 +101,17 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
         </CategoryScroll>
 
         <Divider />
-
+      </Content>
+      {/* 리스트 스크롤 하면서 탭 세로길이는 동일하게 유지하기 위해 ListContainer 따로 생성 */}
+      <ListContainer>
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={renderProduct}
-          contentContainerStyle={{ 
-            flexShrink : 1,
-            flexGrow: 0,
-            paddingBottom: 16 }}
+          contentContainerStyle={{ paddingBottom: 16 }}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={filteredProducts.length > 4}
         />
-      </Content>
+      </ListContainer>
     </Container>
   );
 };
@@ -123,8 +124,7 @@ const Container = styled(SafeAreaView)`
 `;
 
 const Content = styled.View`
-  /* flex: 1; */
-  padding: 0 16px 16px 16px;
+  padding: 0 16px 8px 16px;
 `;
 
 const PointCard = styled.View`
@@ -143,6 +143,7 @@ const PointHeaderRow = styled.View`
 const PointHeaderText = styled.Text`
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray700};
+  font-size: ${theme.fonts.subtitle}px;
 `;
 
 const PointValue = styled.Text`
@@ -227,4 +228,9 @@ const BrandText = styled.Text`
 const PriceText = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
+`;
+
+const ListContainer = styled.View`
+  flex: 1;
+  padding: 0 16px 16px 16px;
 `;
