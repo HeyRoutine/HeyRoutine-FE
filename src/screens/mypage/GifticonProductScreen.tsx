@@ -5,6 +5,7 @@ import { Image } from 'react-native';
 
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
 
 interface IGifticonProductScreenProps {
@@ -24,10 +25,22 @@ const GifticonProductScreen = ({ navigation, route }: IGifticonProductScreenProp
 	const myPoints: number = typeof userPoints === 'number' ? userPoints : 0;
 	const hasEnoughPoints = myPoints >= price;
 
+	const [isConfirmOpen, setIsConfirmOpen] = React.useState(false);
+	const [isDoneOpen, setIsDoneOpen] = React.useState(false);
+
 	const handlePurchase = () => {
 		if (!hasEnoughPoints) return;
-		// TODO: 구매 로직 연동
-		console.log('구매하기:', product);
+		setIsConfirmOpen(true);
+	};
+
+	const handleConfirmPurchase = () => {
+		setIsConfirmOpen(false);
+		// TODO: 실제 구매 로직 (포인트 차감/영수증 생성 등)
+		setTimeout(() => setIsDoneOpen(true), 150);
+	};
+
+	const handleCloseDone = () => {
+		setIsDoneOpen(false);
 	};
 
 	return (
@@ -73,6 +86,26 @@ const GifticonProductScreen = ({ navigation, route }: IGifticonProductScreenProp
 					disabled={!hasEnoughPoints}
 				/>
 			</Footer>
+
+			<BottomSheetDialog
+				visible={isConfirmOpen}
+				title="구매 확인"
+				message="정말로 구매하시겠습니까?"
+				primaryText="확인"
+				onPrimary={handleConfirmPurchase}
+				secondaryText="취소"
+				onSecondary={() => setIsConfirmOpen(false)}
+				onRequestClose={() => setIsConfirmOpen(false)}
+			/>
+
+			<BottomSheetDialog
+				visible={isDoneOpen}
+				title="구매 완료"
+				message="구매가 완료되었습니다."
+				primaryText="확인"
+				onPrimary={handleCloseDone}
+				onRequestClose={handleCloseDone}
+			/>
 		</Container>
 	);
 };
