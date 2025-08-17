@@ -20,6 +20,10 @@ interface ICustomInputProps {
   onChangeText: (text: string) => void;
   /** 텍스트 클리어 핸들러 */
   onClear?: () => void;
+  /** 우측 접미사 (예: P) */
+  suffix?: string;
+  /** 문자 카운터 표시 여부 */
+  showCharCounter?: boolean;
 }
 
 /**
@@ -34,6 +38,8 @@ const CustomInput = ({
   onChangeText,
   isPassword = false,
   onClear,
+  suffix,
+  showCharCounter = true,
 }: ICustomInputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -58,7 +64,8 @@ const CustomInput = ({
           </IconWrapper>
         ) : (
           <>
-            {maxLength && (
+            {suffix && <SuffixText>{suffix}</SuffixText>}
+            {maxLength && showCharCounter && (
               <CharCounter>
                 {value.length} / {maxLength}
               </CharCounter>
@@ -104,6 +111,13 @@ const RightView = styled.View`
 `;
 
 const IconWrapper = styled.TouchableOpacity``;
+
+const SuffixText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: ${theme.fonts.body}px;
+  color: ${theme.colors.gray900};
+  margin-right: 8px;
+`;
 
 const CharCounter = styled.Text`
   font-family: ${theme.fonts.Regular};
