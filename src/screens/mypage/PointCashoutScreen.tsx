@@ -16,7 +16,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   const [pointAmount, setPointAmount] = useState('0');
   const maxPoints = 2000; // 최대 포인트 (나중에 Zustand에서 가져올 예정)
 
-  const handlePointChange = (text: string) => {
+  const handleInputChange = (text: string) => {
     // 숫자만 입력 가능
     const numericValue = text.replace(/[^0-9]/g, '');
 
@@ -28,7 +28,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
     setPointAmount(finalValue);
   };
 
-  const handleQuickPointChange = (points: number) => {
+  const handlePointChange = (points: number) => {
     // 최대 포인트를 넘으면 강제로 최대값으로 설정
     const finalValue = points > maxPoints ? maxPoints : points;
     setPointAmount(finalValue.toString());
@@ -51,7 +51,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
 
         <CustomInput
           value={pointAmount}
-          onChangeText={handlePointChange}
+          onChangeText={handleInputChange}
           placeholder="포인트를 입력해주세요"
           maxLength={10}
           suffix="P"
@@ -61,24 +61,24 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
           <PointButton
             text="+1백P"
             onPress={() =>
-              handleQuickPointChange((parseInt(pointAmount) || 0) + 100)
+              handlePointChange((parseInt(pointAmount) || 0) + 100)
             }
           />
           <PointButton
             text="+1천P"
             onPress={() =>
-              handleQuickPointChange((parseInt(pointAmount) || 0) + 1000)
+              handlePointChange((parseInt(pointAmount) || 0) + 1000)
             }
           />
           <PointButton
             text="+1만P"
             onPress={() =>
-              handleQuickPointChange((parseInt(pointAmount) || 0) + 10000)
+              handlePointChange((parseInt(pointAmount) || 0) + 10000)
             }
           />
           <PointButton
             text="전체사용"
-            onPress={() => handleQuickPointChange(2000)}
+            onPress={() => handlePointChange(2000)}
             flex={1.5}
           />
         </ButtonRow>
@@ -117,7 +117,9 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
       </InfoSection>
 
       <ButtonWrapper>
-        <TransferButton onPress={() => console.log('전환하기')}>
+        <TransferButton
+          onPress={() => navigation.navigate('PointCashoutComplete')}
+        >
           <TransferButtonText>전환하기</TransferButtonText>
         </TransferButton>
       </ButtonWrapper>

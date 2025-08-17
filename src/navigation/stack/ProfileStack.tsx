@@ -10,6 +10,7 @@ import EmailVerificationScreen from '../../screens/auth/email-signup/EmailVerifi
 import PointGifticonScreen from '../../screens/mypage/PointGifticonScreen';
 import GifticonProductScreen from '../../screens/mypage/GifticonProductScreen';
 import PointCashoutScreen from '../../screens/mypage/PointCashoutScreen';
+import PointCashoutCompleteScreen from '../../screens/mypage/PointCashoutCompleteScreen';
 import NicknameSettingScreen from '../../screens/mypage/NicknameSettingScreen';
 import EmailSettingScreen from '../../screens/mypage/EmailSettingScreen';
 import PhoneNumberSettingScreen from '../../screens/mypage/PhoneNumberSettingScreen';
@@ -37,6 +38,10 @@ const ProfileStack = () => {
       <Stack.Screen name="PointGifticon" component={PointGifticonScreen} />
       <Stack.Screen name="GifticonProduct" component={GifticonProductScreen} />
       <Stack.Screen name="PointCashout" component={PointCashoutScreen} />
+      <Stack.Screen
+        name="PointCashoutComplete"
+        component={PointCashoutCompleteScreen}
+      />
       <Stack.Screen name="NicknameSetting" component={NicknameSettingScreen} />
       <Stack.Screen name="EmailSetting" component={EmailSettingScreen} />
       <Stack.Screen
