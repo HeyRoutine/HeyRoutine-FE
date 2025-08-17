@@ -67,16 +67,8 @@ const NicknameScreen = ({ navigation }: any) => {
             onChangeText={setNickname}
             placeholder="닉네임을 입력해주세요."
             maxLength={10}
+            onClear={clearNickname}
           />
-          {nickname.length > 0 && (
-            <ClearButton onPress={clearNickname}>
-              <Ionicons
-                name="close-circle"
-                size={20}
-                color={theme.colors.gray300}
-              />
-            </ClearButton>
-          )}
         </InputContainer>
       </CenterContent>
 
@@ -130,9 +122,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 0 24px;
+  padding: 100px 24px 0 24px;
 `;
 
 const InputContainer = styled.View`

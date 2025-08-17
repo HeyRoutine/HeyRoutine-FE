@@ -30,7 +30,7 @@ const TermItem = ({
         <TermText>
           <TermHighlightText>
             ({isOptional ? '선택' : '필수'})
-            </TermHighlightText>{' '}
+          </TermHighlightText>{' '}
           {text}
           {!isOptional && <RequiredStar>*</RequiredStar>}
         </TermText>
@@ -73,13 +73,12 @@ const ViewDetailsText = styled.Text`
   text-decoration-line: underline;
 `;
 
-
 const TermTextContainer = styled.View`
   flex: 1;
   flex-direction: row;
-`
+`;
 
-const RequiredStar = styled.View`
+const RequiredStar = styled.Text`
   color: red;
   margin-left: 4px;
-`
+`;

@@ -3,9 +3,9 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
-import { theme } from '../../styles/theme';
 import TermItem from '../../components/domain/auth/TermItem';
 
 const TermsAgreementScreen = ({ navigation, route }: any) => {
@@ -106,7 +106,7 @@ const Container = styled(SafeAreaView)`
 `;
 
 const ProgressText = styled.Text`
-  font-size: 14px;
+  font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -116,18 +116,18 @@ const Content = styled.View`
   padding: 24px;
 `;
 
-const TopWrapper = styled.View`
-  flex: 1;
-  justify-content: center;
+const TopWrapper = styled.View``;
+
+const BottomWrapper = styled.View`
+  margin-top: auto;
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 24px;
+  font-size: ${theme.fonts.title}px;
+  font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
-  text-align: center;
   line-height: 34px;
-  margin-bottom: 16px;
+  margin-top: 16px;
 `;
 
 const HighlightText = styled.Text`
@@ -135,55 +135,47 @@ const HighlightText = styled.Text`
 `;
 
 const SubTitle = styled.Text`
+  font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
-  font-size: 16px;
   color: ${theme.colors.gray600};
-  text-align: center;
   line-height: 24px;
+  margin-top: 8px;
+  margin-bottom: 48px;
 `;
 
-const BottomWrapper = styled.View`
-  flex: 1;
-  justify-content: flex-end;
-`;
-
-const TermsContainer = styled.View`
-  margin-bottom: 24px;
-`;
+const TermsContainer = styled.View``;
 
 const Divider = styled.View`
   height: 1px;
-  background-color: ${theme.colors.gray200};
-  margin: 24px 0;
+  background-color: ${theme.colors.gray100};
+  margin: 16px 0;
 `;
 
 const AllTermsRow = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
-  padding: 16px 0;
 `;
 
 const CheckButton = styled.View`
   margin-right: 12px;
 `;
 
-const AllTermTextContainer = styled.View`
-  flex: 1;
-`;
+const AllTermTextContainer = styled.View``;
 
 const AllTermTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 16px;
+  font-size: ${theme.fonts.body}px;
+  font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray900};
-  margin-bottom: 4px;
 `;
 
 const AllTermSubText = styled.Text`
+  font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
   color: ${theme.colors.gray600};
+  margin-top: 4px;
 `;
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+  margin-top: auto;
 `;

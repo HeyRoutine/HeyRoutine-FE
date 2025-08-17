@@ -137,7 +137,12 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
             onEditPress={handleProfileEdit}
             size={100}
           />
+          <ProfileInfo>
+            <UserName>사용자</UserName>
+            <UserEmail>user@example.com</UserEmail>
+          </ProfileInfo>
         </ProfileSection>
+        <Separator />
 
         <ListContainer>
           <FlatList
@@ -177,8 +182,9 @@ const Content = styled.View`
 `;
 
 const ProfileSection = styled.View`
+  flex-direction: row;
   align-items: center;
-  padding: 48px 0;
+  padding: 24px;
 `;
 
 const ProfileInfo = styled.View`
@@ -201,6 +207,7 @@ const UserEmail = styled.Text`
 
 const ListContainer = styled.View`
   flex: 1;
+  padding-bottom: 120px;
 `;
 
 const Separator = styled.View`
@@ -211,7 +218,7 @@ const Separator = styled.View`
 
 const FooterSection = styled.View`
   position: absolute;
-  bottom: -80px;
+  bottom: 0;
   left: 0;
   right: 0;
   flex-direction: row;

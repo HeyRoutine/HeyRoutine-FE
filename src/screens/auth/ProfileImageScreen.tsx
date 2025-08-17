@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
-import { theme } from '../../styles/theme';
 
 const ProfileImageScreen = ({ navigation, route }: any) => {
   const { nickname } = route.params;
@@ -89,7 +89,7 @@ const Container = styled(SafeAreaView)`
 `;
 
 const ProgressText = styled.Text`
-  font-size: 14px;
+  font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
@@ -97,17 +97,14 @@ const ProgressText = styled.Text`
 const Content = styled.View`
   flex: 1;
   padding: 24px;
-  justify-content: center;
-  align-items: center;
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 24px;
+  font-size: ${theme.fonts.title}px;
+  font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
-  text-align: center;
   line-height: 34px;
-  margin-bottom: 16px;
+  margin-top: 16px;
 `;
 
 const HighlightText = styled.Text`
@@ -115,37 +112,40 @@ const HighlightText = styled.Text`
 `;
 
 const SubTitle = styled.Text`
+  font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
-  font-size: 16px;
   color: ${theme.colors.gray600};
-  text-align: center;
-  line-height: 24px;
-  margin-bottom: 48px;
+  margin-top: 8px;
+  margin-bottom: 60px;
 `;
 
 const ProfileImageContainer = styled.TouchableOpacity`
+  align-self: center;
   position: relative;
-  margin-bottom: 48px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 120px;
-  height: 120px;
-  border-radius: 60px;
+  width: 150px;
+  height: 150px;
+  border-radius: 75px;
+  background-color: ${theme.colors.gray100};
 `;
 
 const EditIconWrapper = styled.View`
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 5px;
+  right: 5px;
+  background-color: ${theme.colors.primary};
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background-color: ${theme.colors.primary};
   justify-content: center;
   align-items: center;
+  border-width: 2px;
+  border-color: ${theme.colors.white};
 `;
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+  margin-top: auto;
 `;

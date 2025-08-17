@@ -18,6 +18,8 @@ interface ICustomInputProps {
   isPassword?: boolean;
   /** 텍스트 변경 핸들러 */
   onChangeText: (text: string) => void;
+  /** 텍스트 클리어 핸들러 */
+  onClear?: () => void;
 }
 
 /**
@@ -31,6 +33,7 @@ const CustomInput = ({
   maxLength,
   onChangeText,
   isPassword = false,
+  onClear,
 }: ICustomInputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -53,11 +56,24 @@ const CustomInput = ({
               color={theme.colors.gray400}
             />
           </IconWrapper>
-        ) : maxLength ? (
-          <CharCounter>
-            {value.length} / {maxLength}
-          </CharCounter>
-        ) : null}
+        ) : (
+          <>
+            {maxLength && (
+              <CharCounter>
+                {value.length} / {maxLength}
+              </CharCounter>
+            )}
+            {onClear && value.length > 0 && (
+              <ClearButton onPress={onClear}>
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color={theme.colors.gray300}
+                />
+              </ClearButton>
+            )}
+          </>
+        )}
       </RightView>
     </Container>
   );
@@ -93,5 +109,7 @@ const CharCounter = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: ${theme.fonts.caption}px;
   color: ${theme.colors.gray500};
-  margin-left: 8px;
+  margin-right: 8px;
 `;
+
+const ClearButton = styled.TouchableOpacity``;

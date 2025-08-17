@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, Alert, TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import { theme } from '../../styles/theme';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
-import { theme } from '../../styles/theme';
 import { FormGroup, Label } from '../../components/domain/auth/authFormStyles';
 
 const EmailLoginScreen = ({ navigation }: any) => {
@@ -86,26 +87,29 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const ContentWrapper = styled.View`
-  flex: 1;
-  padding: 24px;
-`;
+const ContentWrapper = styled.ScrollView.attrs({
+  contentContainerStyle: {
+    padding: 24,
+    flexGrow: 1,
+  },
+  keyboardShouldPersistTaps: 'handled',
+})``;
 
 const TitleWrapper = styled.View`
-  align-items: center;
-  margin-bottom: 48px;
+  align-items: flex-start;
+  margin-top: 40px;
+  margin-bottom: 60px;
 `;
 
 const SubTitle = styled.Text`
-  font-size: 16px;
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray600};
-  margin-bottom: 8px;
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 32px;
+  color: ${theme.colors.gray900};
 `;
 
 const MainTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
   font-size: 32px;
-  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
 `;
 
@@ -114,25 +118,22 @@ const HighlightText = styled.Text`
 `;
 
 const FormContainer = styled.View`
-  flex: 1;
+  width: 100%;
 `;
 
 const Footer = styled.View`
   flex-direction: row;
   justify-content: center;
-  align-items: center;
   margin-top: 24px;
 `;
 
 const FooterLink = styled.Text`
-  font-size: 14px;
   font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.primary};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
 `;
 
 const Separator = styled.Text`
-  font-size: 14px;
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray400};
-  margin: 0 8px;
+  margin: 0 12px;
+  color: ${theme.colors.gray300};
 `;

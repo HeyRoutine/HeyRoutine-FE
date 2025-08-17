@@ -108,9 +108,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 0 24px;
+  padding: 100px 24px 0 24px;
 `;
 
 const ButtonWrapper = styled.View`
