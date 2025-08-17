@@ -27,7 +27,6 @@ interface IMyPageScreenProps {
  */
 const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo } = useUserStore();
@@ -72,10 +71,6 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
     },
   ];
 
-  const handleProfileEdit = () => {
-    navigation.navigate('ProfileEdit');
-  };
-
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
       <>
@@ -94,9 +89,10 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       <Content>
         <ProfileSection insets={insets}>
           <ProfileImage
-            imageUri={profileImageUri}
-            onEditPress={handleProfileEdit}
+            imageUri={userInfo?.profileImage}
+            onEditPress={() => {}}
             size={64}
+            showEditButton={false}
           />
           <ProfileInfo>
             <UserName>

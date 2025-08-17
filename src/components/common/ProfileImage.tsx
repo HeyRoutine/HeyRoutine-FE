@@ -14,6 +14,8 @@ interface IProfileImageProps {
   onEditPress: () => void;
   /** 이미지 크기 (기본값: 80) */
   size?: number;
+  /** 편집 버튼 표시 여부 (기본값: true) */
+  showEditButton?: boolean;
 }
 
 /**
@@ -25,6 +27,7 @@ const ProfileImage = ({
   imageUri,
   onEditPress,
   size = 80,
+  showEditButton = true,
 }: IProfileImageProps) => {
   return (
     <Container>
@@ -41,9 +44,11 @@ const ProfileImage = ({
           </DefaultImage>
         )}
       </ProfileImageContainer>
-      <EditButton onPress={onEditPress} size={size}>
-        <Ionicons name="pencil" size={16} color={theme.colors.white} />
-      </EditButton>
+      {showEditButton && (
+        <EditButton onPress={onEditPress} size={size}>
+          <Ionicons name="pencil" size={16} color={theme.colors.white} />
+        </EditButton>
+      )}
     </Container>
   );
 };
