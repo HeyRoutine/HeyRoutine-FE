@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import { HomeStack, ProfileStack, AnalysisStack } from './stack';
 import { theme } from '../styles/theme';
@@ -57,7 +58,31 @@ const MainNavigator = () => {
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
-        options={{ tabBarLabel: '내 정보' }}
+        options={({ route }) => {
+          // ProfileStack 안의 현재 화면 이름을 가져옵니다.
+          // 초기 화면일 경우를 대비해 기본값으로 'MyPage'를 설정합니다.
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'MyPage';
+
+          // 탭 바를 숨길 화면 이름 목록
+          const hideOnScreens = [
+            'AccountRegistration',
+            'AccountVerification',
+            'Result',
+            'EmailVerification',
+            'PointCashoutComplete',
+            'NicknameSetting',
+            'EmailSetting',
+            'PhoneNumberSetting',
+          ];
+
+          return {
+            // hideOnScreens 목록에 현재 화면 이름이 포함되어 있으면 탭 바를 숨깁니다.
+            tabBarStyle: {
+              display: hideOnScreens.includes(routeName) ? 'none' : 'flex',
+            },
+            tabBarLabel: '내 정보',
+          };
+        }}
       />
     </Tab.Navigator>
   );

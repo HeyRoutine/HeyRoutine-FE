@@ -5,7 +5,7 @@ import MyPageScreen from '../../screens/mypage/MyPageScreen';
 import ProfileEditScreen from '../../screens/mypage/ProfileEditScreen';
 import AccountRegistrationScreen from '../../screens/mypage/AccountRegistrationScreen';
 import AccountVerificationScreen from '../../screens/mypage/AccountVerificationScreen';
-import CompleteScreen from '../../screens/common/CompleteScreen';
+import ResultScreen from '../../screens/common/ResultScreen';
 import EmailVerificationScreen from '../../screens/auth/email-signup/EmailVerificationScreen';
 import PointGifticonScreen from '../../screens/mypage/PointGifticonScreen';
 import GifticonProductScreen from '../../screens/mypage/GifticonProductScreen';
@@ -30,7 +30,7 @@ const ProfileStack = () => {
         name="AccountVerification"
         component={AccountVerificationScreen}
       />
-      <Stack.Screen name="Complete" component={CompleteScreen} />
+      <Stack.Screen name="Result" component={ResultScreen} />
       <Stack.Screen
         name="EmailVerification"
         component={EmailVerificationScreen}

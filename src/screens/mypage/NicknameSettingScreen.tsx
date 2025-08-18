@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -21,21 +20,6 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
-
-  // 탭바 숨기기
-  useFocusEffect(
-    React.useCallback(() => {
-      navigation.getParent()?.setOptions({
-        tabBarStyle: { display: 'none' },
-      });
-
-      return () => {
-        navigation.getParent()?.setOptions({
-          tabBarStyle: { display: 'flex' },
-        });
-      };
-    }, [navigation]),
-  );
 
   // 현재 사용자 닉네임 가져오기 (Zustand 스토어에서 가져오기)
   useEffect(() => {

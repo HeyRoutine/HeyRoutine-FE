@@ -91,13 +91,13 @@ const SpeechBubble = styled.View`
 const BubbleTitle = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray900};
+  color: ${theme.colors.gray500};
   margin-bottom: 8px;
 `;
 
 const BubbleContent = styled.Text`
   font-size: 14px;
-  font-family: ${theme.fonts.Regular};
+  font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray700};
   line-height: 20px;
 `;

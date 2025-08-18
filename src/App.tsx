@@ -10,6 +10,7 @@ import SplashScreen from './screens/auth/SplashScreen';
 import MainNavigator from './navigation/MainNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
 import { useAuthStore } from './store';
+import ResultScreen from './screens/common/ResultScreen';
 
 export default function App() {
   // 1. 앱 로딩 상태 (폰트 등 비동기 작업 처리)
@@ -17,6 +18,7 @@ export default function App() {
 
   // 2. Zustand 스토어에서 로그인 상태 가져오기
   const { isLoggedIn } = useAuthStore();
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const [fontsLoaded] = useFonts({
     'Pretendard-Light': require('./assets/fonts/Pretendard-Light.otf'),
@@ -35,9 +37,13 @@ export default function App() {
     if (fontsLoaded) {
       setTimeout(() => {
         setIsLoading(false);
+        // 로그인 상태이고 축하 화면을 보여줘야 하는 경우
+        if (isLoggedIn) {
+          setShowCelebration(true);
+        }
       }, 2000);
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, isLoggedIn]);
 
   // 4. 로그인 상태에 따라 다른 화면 렌더링
   return (
@@ -45,6 +51,23 @@ export default function App() {
       <ThemeProvider theme={theme}>
         {isLoading ? (
           <SplashScreen />
+        ) : showCelebration ? (
+          <ResultScreen
+            navigation={{
+              navigate: () => setShowCelebration(false),
+            }}
+            route={{
+              params: {
+                type: 'celebration',
+                title: '냥멍이님',
+                description:
+                  '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
+                points: 100,
+                lottieSource: require('./assets/images/animation/confetti.json'),
+                onComplete: () => setShowCelebration(false),
+              },
+            }}
+          />
         ) : (
           <NavigationContainer>
             {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
