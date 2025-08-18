@@ -2,7 +2,6 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import LottieView from 'lottie-react-native';
-import { Image } from 'react-native';
 
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
@@ -12,8 +11,8 @@ interface IResultScreenProps {
   type: 'success' | 'failure' | 'celebration';
   title: string;
   description: string;
+  points?: number;
   lottieSource?: any;
-  imageSource?: any;
   onComplete: () => void;
 }
 
@@ -22,8 +21,8 @@ const ResultScreen = ({ navigation, route }: any) => {
     type = 'celebration',
     title = '등록 성공',
     description = '계좌 등록을 성공적으로 완료했어요',
+    points,
     lottieSource,
-    imageSource,
     onComplete = () => navigation.navigate('MyPage'),
   } = route.params || {};
 
@@ -59,11 +58,12 @@ const ResultScreen = ({ navigation, route }: any) => {
         );
       case 'celebration':
       default:
-        return imageSource ? (
-          <Image
-            source={imageSource}
+        return lottieSource ? (
+          <LottieView
+            source={lottieSource}
+            autoPlay
+            loop={true}
             style={{ width: 60, height: 60 }}
-            resizeMode="contain"
           />
         ) : (
           <SuccessIcon size={60} />
@@ -73,12 +73,14 @@ const ResultScreen = ({ navigation, route }: any) => {
 
   return (
     <Container>
-      <Content>
-        {renderIcon()}
+      <IconContainer>{renderIcon()}</IconContainer>
 
+      <Content>
         <Title>{title}</Title>
 
         <Description>{description}</Description>
+
+        {points && <PointsText>+{points}p</PointsText>}
       </Content>
 
       <ButtonWrapper>
@@ -95,9 +97,16 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Content = styled.View`
+const IconContainer = styled.View`
   flex: 1;
   justify-content: center;
+  align-items: center;
+  padding-top: 60px;
+`;
+
+const Content = styled.View`
+  flex: 1;
+  justify-content: flex-start;
   align-items: center;
   padding: 24px;
 `;
@@ -121,4 +130,11 @@ const Description = styled.Text`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+`;
+
+const PointsText = styled.Text`
+  font-size: 24px;
+  font-family: ${theme.fonts.Bold};
+  color: ${theme.colors.primary};
+  margin-top: 8px;
 `;
