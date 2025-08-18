@@ -76,12 +76,12 @@ const MOCK_PRODUCTS = [
 ];
 
 // 현재는 예시 이미지로 party_popper.png를 넣어두었습니다. 실제 아이콘 이미지를 교체하여 사용하세요.
-const iconAll = require('../../assets/images/party_popper.png');
-const iconCafe = require('../../assets/images/party_popper.png');
-const iconConvenience = require('../../assets/images/party_popper.png');
-const iconFastfood = require('../../assets/images/party_popper.png');
-const iconDining = require('../../assets/images/party_popper.png');
-const iconBakery = require('../../assets/images/party_popper.png');
+const iconAll = require('../../assets/images/total_food.png');
+const iconCafe = require('../../assets/images/cafe.png');
+const iconConvenience = require('../../assets/images/convenience_store.png');
+const iconFastfood = require('../../assets/images/fast_food.png');
+const iconDining = require('../../assets/images/restaurant.png');
+const iconBakery = require('../../assets/images/bakery.png');
 
 const CATEGORIES: CategoryMeta[] = [
   { key: 'all', label: '전체', icon: iconAll },
@@ -137,7 +137,7 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
           </CashoutTouchable>
         </PointCard>
 
-        <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
+        <CategoryScroll horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
           {CATEGORIES.map((cat) => (
             <CategoryChip
               key={cat.key}
@@ -223,22 +223,22 @@ const CategoryChip = styled.TouchableOpacity<{ active: boolean }>`
   align-items: center;
   justify-content: center;
   padding: 10px 12px;
-  border-radius: 16px;
-  margin-right: 8px;
-  background-color: ${(p) =>
-    p.active ? theme.colors.primary : theme.colors.gray100};
+  border-radius: 18px;
+  margin-right: 12px;
+  background-color: transparent;
 `;
 
 const CategoryImg = styled(Image)`
-  width: 22px;
-  height: 22px;
-  margin-bottom: 6px;
-  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 8px;
+  border-radius: 8px;
 `;
 
 const CategoryLabel = styled.Text<{ active: boolean }>`
   font-family: ${theme.fonts.Medium};
-  color: ${(p) => (p.active ? theme.colors.white : theme.colors.gray700)};
+  font-size: ${theme.fonts.caption}px;
+  color: ${(p) => (p.active ? theme.colors.primary : theme.colors.gray700)};
 `;
 
 const Divider = styled.View`
