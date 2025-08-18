@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native';
 import React from 'react';
 
-const RecommendationScreen = () => {
+const StreakSuccessScreen = () => {
   return (
     <View>
-      <Text>RecommendationScreen</Text>
+      <Text>StreakSuccessScreen</Text>
     </View>
   );
 };
 
-export default RecommendationScreen;
+export default StreakSuccessScreen;
