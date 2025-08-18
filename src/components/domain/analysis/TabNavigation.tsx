@@ -68,10 +68,10 @@ const Container = styled.View`
   margin-bottom: 24px;
   margin-top: 60px;
   width: 30%;
+  justify-content: space-between;
 `;
 
 const TabButton = styled(TouchableOpacity)<{ isSelected: boolean }>`
-  flex: 1;
   align-items: flex-start;
   padding: 16px 0;
 `;
