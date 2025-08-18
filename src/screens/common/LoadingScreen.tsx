@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import StatusCard from '../../components/common/StatusCard';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
 interface LoadingScreenProps {
   navigation: any;
@@ -15,11 +18,12 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
     title = '로딩 중...',
     description = '잠시만 기다려주세요',
     statusItems = [],
-    onComplete,
+    nextScreen,
     duration = 5000,
   } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
     // 실시간 프로그레스 업데이트 (100ms마다)
@@ -50,7 +54,9 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       setCurrentStep(statusItems.length - 1);
       // 100% 완료 후 1초 더 기다린 후 완료
       setTimeout(() => {
-        onComplete?.();
+        if (nextScreen) {
+          navigation.navigate(nextScreen);
+        }
       }, 1000);
     }, 5000);
 
@@ -59,11 +65,48 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       clearInterval(stepInterval);
       clearTimeout(completionTimer);
     };
-  }, [statusItems.length, onComplete]);
+  }, [statusItems.length, nextScreen, navigation]);
+
+  // 하드웨어 뒤로가기 버튼 처리 및 탭 바 숨기기
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        setShowExitModal(true);
+        return true; // 기본 뒤로가기 동작 방지
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      // 탭 바 숨기기
+      navigation.getParent()?.setOptions({
+        tabBarStyle: { display: 'none' },
+      });
+
+      return () => {
+        subscription.remove();
+        // 탭 바 다시 보이기
+        navigation.getParent()?.setOptions({
+          tabBarStyle: { display: 'flex' },
+        });
+      };
+    }, [navigation]),
+  );
 
   const getStatusForItem = (index: number) => {
     if (index <= currentStep) return 'completed';
     return 'pending';
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
+    navigation.goBack();
+  };
+
+  const handleCancelExit = () => {
+    setShowExitModal(false);
   };
 
   return (
@@ -92,6 +135,18 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       <CharacterImage
         source={require('../../assets/images/character_sol.png')}
         resizeMode="contain"
+      />
+
+      {/* 뒤로가기 확인 모달 */}
+      <BottomSheetDialog
+        visible={showExitModal}
+        title="정말로 나가시겠습니까?"
+        message="로딩이 완료되기 전에 나가면 추천 결과를 받을 수 없습니다."
+        primaryText="나가기"
+        onPrimary={handleConfirmExit}
+        secondaryText="취소"
+        onSecondary={handleCancelExit}
+        onRequestClose={handleCancelExit}
       />
     </Container>
   );

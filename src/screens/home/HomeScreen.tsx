@@ -3,7 +3,6 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '../../styles/theme';
-import CustomButton from '../../components/common/CustomButton';
 
 /**
  * HomeScreen의 props 인터페이스
@@ -20,50 +19,11 @@ interface IHomeScreenProps {
  * @returns 홈 화면 컴포넌트
  */
 const HomeScreen = ({ navigation }: IHomeScreenProps) => {
-  const handleFinancialProductLoading = () => {
-    navigation.navigate('Loading', {
-      title: '맞춤 금융 상품 찾는중...',
-      description: 'AI가 내게 잘 맞는 상품을 찾고 있어요',
-      statusItems: [
-        { text: '소비 내역 확인..', status: 'pending' },
-        { text: '소비 패턴 분석...', status: 'pending' },
-        { text: '금융 상품 매칭...', status: 'pending' },
-        { text: '추천 결과 생성...', status: 'pending' },
-      ],
-      onComplete: () => navigation.navigate('FinancialProduct'),
-    });
-  };
-
-  const handleRoutineRecommendationLoading = () => {
-    navigation.navigate('Loading', {
-      title: 'AI 루틴 추천 중...',
-      description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
-      statusItems: [
-        { text: '루틴 패턴 분석...', status: 'pending' },
-        { text: '개인 맞춤 추천...', status: 'pending' },
-        { text: '최적화된 루틴 생성...', status: 'pending' },
-      ],
-      onComplete: () => navigation.navigate('HomeMain'),
-    });
-  };
-
   return (
     <Container>
       <Content>
         <Title>홈</Title>
         <Subtitle>메인 홈 화면입니다.</Subtitle>
-
-        <ButtonContainer>
-          <CustomButton
-            text="금융 상품 추천"
-            onPress={handleFinancialProductLoading}
-          />
-
-          <CustomButton
-            text="AI 루틴 추천"
-            onPress={handleRoutineRecommendationLoading}
-          />
-        </ButtonContainer>
       </Content>
     </Container>
   );
@@ -96,9 +56,4 @@ const Subtitle = styled.Text`
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
   margin-bottom: 40px;
-`;
-
-const ButtonContainer = styled.View`
-  width: 100%;
-  gap: 16px;
 `;

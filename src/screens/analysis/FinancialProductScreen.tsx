@@ -14,15 +14,15 @@ const FinancialProductScreen = ({
   navigation,
 }: FinancialProductScreenProps) => {
   const handleBack = () => {
-    navigation.navigate('Home');
+    navigation.navigate('ConsumptionAnalysis');
   };
 
   return (
     <Container>
       <Header title="맞춤 금융 상품 추천" onBackPress={handleBack} />
 
+      {/* 👇 이제 이 Content 영역은 스크롤이 가능합니다. */}
       <Content>
-        {/* 봇 메시지 섹션 */}
         <BotMessageSection>
           <BubbleCard
             robotImageSource={require('../../assets/images/robot.png')}
@@ -37,8 +37,7 @@ const FinancialProductScreen = ({
           />
         </BotMessageSection>
 
-        {/* 금융 상품 카드들 */}
-        <ProductSection>
+        <ProductSection showsVerticalScrollIndicator={false}>
           <FinancialProductCard
             title="신한 땡겨요페이 통장"
             features={['하루만 맡겨도 이자제공', '12,000원 쿠폰 제공']}
@@ -57,6 +56,14 @@ const FinancialProductScreen = ({
             minInterestRate="최저 0.5 %"
             hashtags={['#해외송금환율50%', '#해외송금수수료50%']}
           />
+          {/* 카드를 더 추가해도 잘립니다. */}
+          <FinancialProductCard
+            title="추가 카드 예시"
+            features={['특징 1', '특징 2']}
+            maxInterestRate="최고 3.0 %"
+            minInterestRate="최저 1.0 %"
+            hashtags={['#예시태그1', '#예시태그2']}
+          />
         </ProductSection>
       </Content>
     </Container>
@@ -72,14 +79,13 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   flex: 1;
-  padding: 24px;
+  padding: 0 24px;
   flex-direction: column;
 `;
 
 const BotMessageSection = styled.View`
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 64px;
 `;
 
 const HighlightText = styled.Text`
@@ -87,8 +93,7 @@ const HighlightText = styled.Text`
   font-family: ${theme.fonts.Bold};
 `;
 
-const ProductSection = styled.View`
-  flex: 1;
+const ProductSection = styled.ScrollView`
   gap: 16px;
-  margin-top: 20px;
+  /* margin-top: 24px; */
 `;

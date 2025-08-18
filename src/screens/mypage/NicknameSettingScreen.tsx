@@ -72,14 +72,15 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const handleComplete = () => {
     if (isValidNickname) {
       // 닉네임 변경 완료 화면으로 이동
-      navigation.navigate('Complete', {
+      navigation.replace('Result', {
+        type: 'success',
         title: '변경 완료',
         description: '닉네임을 성공적으로 변경했어요',
-        onComplete: () => {
+        nextScreen: 'ProfileEdit',
+        onSuccess: () => {
           // Zustand 스토어에 닉네임 업데이트
           updateUserInfo({ nickname: nickname });
           console.log('닉네임 변경 완료:', nickname);
-          navigation.navigate('ProfileEdit');
         },
       });
     }

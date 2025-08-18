@@ -156,7 +156,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
           />
         </ListContainer>
 
-        <FooterSection insets={insets}>
+        <FooterSection>
           <FooterButton onPress={handleLogout}>
             <FooterText>로그아웃</FooterText>
           </FooterButton>
@@ -217,15 +217,15 @@ const Separator = styled.View`
 `;
 
 const FooterSection = styled.View`
-  position: absolute;
+  /* position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
+  right: 0; */
+  /* flex: 1; */
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 16px;
-  padding-bottom: ${(props) => props.insets?.bottom || 0}px;
+  padding: 0 16px;
   background-color: ${theme.colors.white};
 `;
 

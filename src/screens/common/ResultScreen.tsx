@@ -13,7 +13,8 @@ interface IResultScreenProps {
   description: string;
   points?: number;
   lottieSource?: any;
-  onComplete: () => void;
+  nextScreen?: string;
+  onSuccess?: () => void;
 }
 
 const ResultScreen = ({ navigation, route }: any) => {
@@ -23,11 +24,15 @@ const ResultScreen = ({ navigation, route }: any) => {
     description = '계좌 등록을 성공적으로 완료했어요',
     points,
     lottieSource,
-    onComplete = () => navigation.navigate('MyPage'),
+    nextScreen = 'MyPage',
+    onSuccess,
   } = route.params || {};
 
   const handleComplete = () => {
-    onComplete();
+    if (onSuccess) {
+      onSuccess();
+    }
+    navigation.navigate(nextScreen);
   };
 
   const renderIcon = () => {
@@ -41,7 +46,7 @@ const ResultScreen = ({ navigation, route }: any) => {
             }
             autoPlay
             loop={true}
-            style={{ width: 60, height: 60 }}
+            style={{ width: 120, height: 120 }}
           />
         );
       case 'failure':
@@ -53,12 +58,12 @@ const ResultScreen = ({ navigation, route }: any) => {
             }
             autoPlay
             loop={true}
-            style={{ width: 60, height: 60 }}
+            style={{ width: 120, height: 120 }}
           />
         );
       case 'celebration':
       default:
-        return <SuccessIcon size={60} />;
+        return <SuccessIcon size={120} />;
     }
   };
 

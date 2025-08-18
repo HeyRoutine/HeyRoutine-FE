@@ -37,14 +37,12 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 
     if (isEmailChange) {
       // 이메일 변경 모드일 때
-      navigation.navigate('Result', {
+      navigation.replace('Result', {
         type: 'success',
         title: '변경 완료',
         description: '이메일을 성공적으로 변경했어요',
-        onComplete: () => {
-          onSuccess?.();
-          navigation.navigate('ProfileEdit');
-        },
+        nextScreen: 'ProfileEdit',
+        onSuccess: onSuccess,
       });
     } else {
       // 회원가입 모드일 때
