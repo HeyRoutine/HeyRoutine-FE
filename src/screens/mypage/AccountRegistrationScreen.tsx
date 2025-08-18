@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -17,21 +16,6 @@ const AccountRegistrationScreen = ({
 }: IAccountRegistrationScreenProps) => {
   const [accountNumber, setAccountNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
-  // 탭바 숨기기
-  useFocusEffect(
-    React.useCallback(() => {
-      navigation.getParent()?.setOptions({
-        tabBarStyle: { display: 'none' },
-      });
-
-      return () => {
-        navigation.getParent()?.setOptions({
-          tabBarStyle: { display: 'flex' },
-        });
-      };
-    }, [navigation]),
-  );
 
   // 계좌번호 유효성 검사 (임시)
   const isAccountValid = accountNumber.length >= 10;

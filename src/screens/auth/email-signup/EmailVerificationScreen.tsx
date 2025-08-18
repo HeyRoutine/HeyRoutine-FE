@@ -37,7 +37,8 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 
     if (isEmailChange) {
       // 이메일 변경 모드일 때
-      navigation.navigate('Complete', {
+      navigation.navigate('Result', {
+        type: 'success',
         title: '변경 완료',
         description: '이메일을 성공적으로 변경했어요',
         onComplete: () => {

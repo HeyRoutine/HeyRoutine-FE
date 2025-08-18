@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -27,21 +26,6 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
       setEmail(userInfo.email);
     }
   }, [userInfo?.email]);
-
-  // 탭바 숨기기
-  useFocusEffect(
-    React.useCallback(() => {
-      navigation.getParent()?.setOptions({
-        tabBarStyle: { display: 'none' },
-      });
-
-      return () => {
-        navigation.getParent()?.setOptions({
-          tabBarStyle: { display: 'flex' },
-        });
-      };
-    }, [navigation]),
-  );
 
   const validateEmail = (text: string) => {
     // 빈 문자열 체크
