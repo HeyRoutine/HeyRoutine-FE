@@ -58,30 +58,23 @@ const ResultScreen = ({ navigation, route }: any) => {
         );
       case 'celebration':
       default:
-        return lottieSource ? (
-          <LottieView
-            source={lottieSource}
-            autoPlay
-            loop={true}
-            style={{ width: 60, height: 60 }}
-          />
-        ) : (
-          <SuccessIcon size={60} />
-        );
+        return <SuccessIcon size={60} />;
     }
   };
 
   return (
     <Container>
-      <IconContainer>{renderIcon()}</IconContainer>
+      <CenterContainer>
+        <IconContainer>{renderIcon()}</IconContainer>
 
-      <Content>
-        <Title>{title}</Title>
+        <Content>
+          <Title>{title}</Title>
 
-        <Description>{description}</Description>
+          <Description>{description}</Description>
 
-        {points && <PointsText>+{points}p</PointsText>}
-      </Content>
+          {points && <PointsText>+{points}p</PointsText>}
+        </Content>
+      </CenterContainer>
 
       <ButtonWrapper>
         <CustomButton text="완료" onPress={handleComplete} />
@@ -97,16 +90,19 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const IconContainer = styled.View`
+const CenterContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding-top: 60px;
+`;
+
+const IconContainer = styled.View`
+  justify-content: center;
+  align-items: center;
 `;
 
 const Content = styled.View`
-  flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   padding: 24px;
 `;
