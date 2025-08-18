@@ -41,23 +41,27 @@ const AchievementCard = ({
 }: IAchievementCardProps) => {
   return (
     <Container>
-      <LeftSection>
-        <TitleText>{title}</TitleText>
-        <AchievementText>{achievement}</AchievementText>
-        <RoutineName>{routineName}</RoutineName>
+      <TopSection>
+        <LeftSection>
+          <TitleText>{title}</TitleText>
+          <AchievementText>{achievement}</AchievementText>
+          <RoutineName>{routineName}</RoutineName>
+        </LeftSection>
+        <RightSection>
+          <PointIconContainer>
+            <PointImage source={require('../../../assets/images/point.png')} />
+          </PointIconContainer>
+          <PointText>+{points} p</PointText>
+        </RightSection>
+      </TopSection>
+      <BottomSection>
         <ProgressContainer>
           <ProgressBar>
             <ProgressFill progress={progress} />
             <ProgressText>{daysLeft}일 남음</ProgressText>
           </ProgressBar>
         </ProgressContainer>
-      </LeftSection>
-      <RightSection>
-        <PointIconContainer>
-          <PointImage source={require('../../../assets/images/point.png')} />
-        </PointIconContainer>
-        <PointText>+{points} p</PointText>
-      </RightSection>
+      </BottomSection>
     </Container>
   );
 };
@@ -65,23 +69,31 @@ const AchievementCard = ({
 export default AchievementCard;
 
 const Container = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
+  padding: 24px 24px 0 24px;
   background-color: ${theme.colors.white};
   border-radius: 12px;
   margin-bottom: 16px;
   border: 1px solid ${theme.colors.gray200};
 `;
 
+const TopSection = styled.View`
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+`;
+
 const LeftSection = styled.View`
   flex: 1;
 `;
 
+const BottomSection = styled.View`
+  width: 100%;
+`;
+
 const TitleText = styled.Text`
-  font-size: 14px;
-  font-family: ${theme.fonts.Regular};
+  font-size: 24px;
+  font-family: ${theme.fonts.Light};
   color: ${theme.colors.gray600};
   margin-bottom: 4px;
 `;
@@ -94,20 +106,21 @@ const AchievementText = styled.Text`
 `;
 
 const RoutineName = styled.Text`
-  font-size: 14px;
-  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  font-family: ${theme.fonts.Light};
   color: ${theme.colors.gray600};
   margin-bottom: 16px;
 `;
 
 const ProgressContainer = styled.View`
   width: 100%;
+  padding-bottom: 24px;
 `;
 
 const ProgressBar = styled.View`
-  height: 8px;
+  height: 16px;
   background-color: ${theme.colors.gray200};
-  border-radius: 4px;
+  border-radius: 8px;
   position: relative;
   overflow: hidden;
 `;
@@ -119,36 +132,38 @@ const ProgressFill = styled.View<{ progress: number }>`
   height: 100%;
   width: ${(props) => props.progress}%;
   background-color: ${theme.colors.primary};
-  border-radius: 4px;
+  border-radius: 8px;
 `;
 
 const ProgressText = styled.Text`
   position: absolute;
-  top: -20px;
-  right: 0;
+  top: 0;
+  right: 8px;
   font-size: 12px;
   font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray500};
+  color: ${theme.colors.white};
+  line-height: 16px;
 `;
 
 const RightSection = styled.View`
   align-items: center;
   margin-left: 16px;
+  background-color: ${theme.colors.white};
 `;
 
 const PointIconContainer = styled.View`
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 24px;
-  background-color: ${theme.colors.gray100};
+  background-color: ${theme.colors.white};
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
 `;
 
 const PointImage = styled(Image)`
-  width: 32px;
-  height: 32px;
+  width: 60px;
+  height: 60px;
 `;
 
 const PointText = styled.Text`
