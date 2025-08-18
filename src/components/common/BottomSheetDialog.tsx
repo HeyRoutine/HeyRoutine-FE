@@ -14,6 +14,10 @@ interface BottomSheetDialogProps {
   onRequestClose?: () => void;
   /** 화면 높이 대비 시트 최소 높이 비율 (예: 0.45 => 화면의 45%) */
   heightRatio?: number;
+  /** 메시지/컨텐츠 영역을 수직 중앙정렬할지 여부 (기본 true) */
+  contentCentered?: boolean;
+  /** 메시지 아래에 추가로 표시할 컨텐츠 */
+  children?: React.ReactNode;
 }
 
 const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
@@ -26,6 +30,8 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
   onSecondary,
   onRequestClose,
   heightRatio = 0.4, // 기본값: 화면의 40%
+  contentCentered = true,
+  children,
 }) => {
   const hasSecondary = Boolean(secondaryText && onSecondary);
   const screenHeight = Dimensions.get('window').height;
@@ -43,9 +49,10 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
           <SheetHandle />
 
           {/* 가운데 영역 (버튼 제외 공간의 중앙 정렬) */}
-          <ContentCenter>
+          <ContentCenter centered={contentCentered}>
             <SheetTitle>{title}</SheetTitle>
             {!!message && <SheetMessage>{message}</SheetMessage>}
+            {!!children && <ExtraContainer>{children}</ExtraContainer>}
           </ContentCenter>
 
           {/* 하단 버튼 영역 */}
@@ -103,11 +110,17 @@ const SheetHandle = styled.View`
   margin-bottom: 14px;
 `;
 
-const ContentCenter = styled.View`
+const ContentCenter = styled.View<{ centered: boolean }>`
   flex: 1;
   align-items: center;
-  justify-content: center;
+  justify-content: ${(p) => (p.centered ? 'center' : 'flex-start')};
   padding: 8px 4px 16px 4px;
+`;
+
+const ExtraContainer = styled.View`
+  margin-top: 12px;
+  width: 100%;
+  align-items: center;
 `;
 
 const SheetTitle = styled.Text`
