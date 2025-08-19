@@ -118,7 +118,7 @@ const BubbleTitle = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray500};
-  margin-bottom: 8px;
+  /* margin-bottom: 8px; */
 `;
 
 const BubbleContent = styled.Text`
@@ -149,7 +149,7 @@ const TopRobotSection = styled.View`
 `;
 
 const TopSpeechBubbleContainer = styled.View`
-  flex: 1;
+  /* flex: 1; */
   flex-direction: column;
   align-items: center;
   position: relative;

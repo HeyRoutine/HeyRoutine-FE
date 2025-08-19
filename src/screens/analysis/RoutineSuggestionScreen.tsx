@@ -1,45 +1,58 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollView, Image } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import { ScrollView, Image, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Header from '../../components/common/Header';
+import BubbleCard from '../../components/domain/analysis/BubbleCard';
 import { theme } from '../../styles/theme';
 
 const robotIcon = require('../../assets/images/robot.png');
-const characterImg = require('../../assets/images/cute_image.png');
+// const characterImg = require('../../assets/images/cute_image.png');
+const characterImg = require('../../assets/images/character_mori.png');
 // 추천 루틴 아이콘 (임시 이미지, 실제 아이콘으로 교체해서 사용하세요)
-const routineTumblerIcon = require('../../assets/images/tumblr.png');
-const routineNoSpendIcon = require('../../assets/images/zero_spend.png');
+// const routineTumblerIcon = require('../../assets/images/tumblr.png');
+const routineTumblerIcon = require('../../assets/images/robot.png');
+// const routineNoSpendIcon = require('../../assets/images/zero_spend.png');
+const routineNoSpendIcon = require('../../assets/images/robot.png');
 
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
   return (
     <Container edges={['top', 'bottom']}>
-      <Header title="✨ New 추천 루틴" onBackPress={() => navigation.goBack()} />
+      <Header
+        title="✨ New 추천 루틴"
+        onBackPress={() => navigation.navigate('ConsumptionAnalysis')}
+      />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* AI 안내 버블 */}
-        <RobotWrap>
-          <RobotIcon source={robotIcon} resizeMode="contain" />
-        </RobotWrap>
-        <InfoBubble>
-          <InfoText>
-            사용자 님은 <Highlight>충동형 소비자</Highlight>예요!
-          </InfoText>
-          <InfoText>
-            <Em>식비</Em> 카테고리의 변동이 작고,
-          </InfoText>
-          <InfoText>
-            <EmSecondary>쇼핑</EmSecondary> 카테고리 소비가 불규칙해요.
-          </InfoText>
-          <Spacer8 />
-          <InfoSub>
-            이러한 소비습관을 고치기 위해서는<br />아래와 같은 루틴이 도움이 될 수 있어요.
-          </InfoSub>
-        </InfoBubble>
+        <BotMessageSection>
+          <BubbleCard
+            title=""
+            content={
+              <>
+                사용자 님은 <Highlight>충동형 소비자</Highlight>예요!
+                {'\n'}
+                <Em>식비</Em> 카테고리의 변동이 잦고,{'\n'}
+                <EmSecondary>쇼핑</EmSecondary> 카테고리 소비가 불규칙해요.
+                {'\n\n'}
+                이러한 소비습관을 고치기 위해서는{'\n'}
+                아래와 같은 루틴이 도움이 될 수 있어요.
+              </>
+            }
+            direction="top"
+            robotImageSource={robotIcon}
+          />
+        </BotMessageSection>
 
         {/* 추천 루틴 섹션 */}
         <SectionCard>
@@ -96,52 +109,22 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const RobotWrap = styled.View`
-  align-items: center;
-  margin-top: 8px;
-`;
-
-const RobotIcon = styled(Image)`
-  width: 28px;
-  height: 28px;
-`;
-
-const InfoBubble = styled.View`
-  margin: 8px 16px 12px 16px;
-  background-color: #EAEAFF;
-  padding: 16px;
-  border-radius: 16px;
-  align-items: center;
-`;
-
-const InfoText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray900};
-  text-align: center;
-`;
-
 const Highlight = styled.Text`
   color: ${theme.colors.primary};
   font-family: ${theme.fonts.SemiBold};
 `;
 
 const Em = styled(Highlight)`
-  color: #F77F00;
+  color: #f77f00;
 `;
 
 const EmSecondary = styled(Highlight)`
-  color: #FF7A7A;
+  color: #ff7a7a;
 `;
 
-const InfoSub = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray700};
-  line-height: 20px;
-  text-align: center;
-`;
-
-const Spacer8 = styled.View`
-  height: 8px;
+const BotMessageSection = styled.View`
+  align-items: center;
+  justify-content: flex-start;
 `;
 
 const SectionCard = styled.View`
@@ -159,12 +142,12 @@ const SectionHeader = styled.View`
 
 const Sparkle = styled.Text`
   margin-right: 6px;
-  color: #FFC107;
+  color: #ffc107;
 `;
 
 const SectionTitle = styled.Text`
   font-family: ${theme.fonts.SemiBold};
-  color: #FFC107;
+  color: #ffc107;
 `;
 
 const RoutineItem = styled.View`
@@ -229,11 +212,11 @@ const CTAText = styled.Text`
 
 const CharacterDecoration = styled.View`
   position: absolute;
-  left: 0px;
+  left: -80px;
   bottom: 0px;
   width: 300px;
   height: 300px;
-  opacity: 0.9;
+  opacity: 0.3;
 `;
 
 const CharacterImage = styled(Image)`

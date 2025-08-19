@@ -226,6 +226,11 @@ const InfoSection = styled.View`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: ${theme.colors.white};
 `;
 
 const TransferButton = styled.TouchableOpacity`

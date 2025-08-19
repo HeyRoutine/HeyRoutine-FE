@@ -8,10 +8,14 @@ import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
 
 // 카테고리 아이콘 이미지 (임시로 동일 이미지 사용, 실제 아이콘으로 교체하세요)
-const iconShopping = require('../../assets/images/shopping.png');
-const iconFood = require('../../assets/images/food_cost.png');
-const iconTransport = require('../../assets/images/transportation.png');
-const iconOthers = require('../../assets/images/others.png');
+const iconShopping = require('../../assets/images/robot.png');
+// const iconShopping = require('../../assets/images/shopping.png');
+const iconFood = require('../../assets/images/robot.png');
+// const iconFood = require('../../assets/images/food_cost.png');
+const iconTransport = require('../../assets/images/robot.png');
+// const iconTransport = require('../../assets/images/transportation.png');
+const iconOthers = require('../../assets/images/robot.png');
+// const iconOthers = require('../../assets/images/others.png');
 const aiIcon = require('../../assets/images/robot.png');
 
 type CategoryItem = {
@@ -24,23 +28,81 @@ type CategoryItem = {
 };
 
 const categories: CategoryItem[] = [
-  { id: 'shopping', label: '쇼핑', ratio: 50.0, amount: 97000, color: '#F7D3D3', icon: iconShopping },
-  { id: 'food', label: '식비', ratio: 25.8, amount: 47472, color: '#FFE4B5', icon: iconFood },
-  { id: 'transport', label: '교통 및 자동차', ratio: 13.6, amount: 25024, color: '#D3D8FF', icon: iconTransport },
-  { id: 'others', label: '그 외 8개', ratio: 10.6, amount: 19504, color: '#E6E6E8', icon: iconOthers },
+  {
+    id: 'shopping',
+    label: '쇼핑',
+    ratio: 50.0,
+    amount: 97000,
+    color: '#F7D3D3',
+    icon: iconShopping,
+  },
+  {
+    id: 'food',
+    label: '식비',
+    ratio: 25.8,
+    amount: 47472,
+    color: '#FFE4B5',
+    icon: iconFood,
+  },
+  {
+    id: 'transport',
+    label: '교통 및 자동차',
+    ratio: 13.6,
+    amount: 25024,
+    color: '#D3D8FF',
+    icon: iconTransport,
+  },
+  {
+    id: 'others',
+    label: '그 외 8개',
+    ratio: 10.6,
+    amount: 19504,
+    color: '#E6E6E8',
+    icon: iconOthers,
+  },
 ];
 
 const formatWon = (n: number) => `${n.toLocaleString()}원`;
 
 const ConsumptionAnalysisScreen = ({ navigation }: any) => {
-  const goFinancial = () => navigation.navigate('FinancialProduct');
-  const goRoutine = () => navigation.navigate('RoutineSuggestion');
+  const goFinancial = () => {
+    navigation.navigate('Loading', {
+      title: '맞춤 금융 상품 찾는중...',
+      description: 'AI가 내게 잘 맞는 상품을 찾고 있어요',
+      statusItems: [
+        { text: '소비 내역 확인..', status: 'pending' },
+        { text: '소비 패턴 분석...', status: 'pending' },
+        { text: '금융 상품 매칭...', status: 'pending' },
+        { text: '추천 결과 생성...', status: 'pending' },
+      ],
+      nextScreen: 'FinancialProduct',
+    });
+  };
+
+  const goRoutine = () => {
+    navigation.navigate('Loading', {
+      title: 'AI 루틴 추천 중...',
+      description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
+      statusItems: [
+        { text: '루틴 패턴 분석...', status: 'pending' },
+        { text: '개인 맞춤 추천...', status: 'pending' },
+        { text: '최적화된 루틴 생성...', status: 'pending' },
+      ],
+      nextScreen: 'RoutineSuggestion',
+    });
+  };
 
   return (
     <Container>
-      <Header title="이번 주 소비패턴 분석" onBackPress={() => navigation.goBack()} />
+      <Header
+        title="이번 주 소비패턴 분석"
+        onBackPress={() => navigation.goBack()}
+      />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* 지표 카드 */}
         <Card>
           <Row>
@@ -87,7 +149,11 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
           <AIItem>
             <Check>
               <CheckSquare>
-                <Ionicons name="checkmark" size={12} color={theme.colors.white} />
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.white}
+                />
               </CheckSquare>
             </Check>
             <AIText>사용자께서는 저축을 전혀 하지 않아요..!</AIText>
@@ -95,18 +161,31 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
           <AIItem>
             <Check>
               <CheckSquare>
-                <Ionicons name="checkmark" size={12} color={theme.colors.white} />
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.white}
+                />
               </CheckSquare>
             </Check>
-            <AIText>지난 주에 비해 식비 카테고리의 소비가 20% 감소했어요.</AIText>
+            <AIText>
+              지난 주에 비해 식비 카테고리의 소비가 20% 감소했어요.
+            </AIText>
           </AIItem>
           <AIItem>
             <Check>
               <CheckSquare>
-                <Ionicons name="checkmark" size={12} color={theme.colors.white} />
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.white}
+                />
               </CheckSquare>
             </Check>
-            <AIText>이번 주 소비패턴에 기반한 다음 주 지출 예정 금액은 130,000원이에요.</AIText>
+            <AIText>
+              이번 주 소비패턴에 기반한 다음 주 지출 예정 금액은
+              130,000원이에요.
+            </AIText>
           </AIItem>
 
           <ButtonRow>
@@ -185,14 +264,19 @@ const ProgressWrap = styled.View`
 
 const ProgressBg = styled.View`
   position: absolute;
-  left: 0; right: 0; top: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   background-color: ${theme.colors.gray200};
   border-radius: 999px;
 `;
 
 const ProgressFill = styled.View`
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   background-color: ${theme.colors.primary};
   border-radius: 999px;
 `;

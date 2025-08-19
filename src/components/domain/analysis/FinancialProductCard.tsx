@@ -47,19 +47,20 @@ const Container = styled.View`
   border-radius: 16px;
   padding: 20px;
   border: 1px solid ${theme.colors.gray200};
+  margin-bottom: 16px;
 `;
 
 const ProductTitle = styled.Text`
   font-size: 18px;
   font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray800};
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 `;
 
 const ProductContent = styled.View`
   flex-direction: row;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 `;
 
 const FeaturesContainer = styled.View`

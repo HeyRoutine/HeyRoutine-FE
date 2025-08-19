@@ -13,7 +13,8 @@ interface IResultScreenProps {
   description: string;
   points?: number;
   lottieSource?: any;
-  onComplete: () => void;
+  nextScreen?: string;
+  onSuccess?: () => void;
 }
 
 const ResultScreen = ({ navigation, route }: any) => {
@@ -23,11 +24,15 @@ const ResultScreen = ({ navigation, route }: any) => {
     description = '계좌 등록을 성공적으로 완료했어요',
     points,
     lottieSource,
-    onComplete = () => navigation.navigate('MyPage'),
+    nextScreen = 'MyPage',
+    onSuccess,
   } = route.params || {};
 
   const handleComplete = () => {
-    onComplete();
+    if (onSuccess) {
+      onSuccess();
+    }
+    navigation.navigate(nextScreen);
   };
 
   const renderIcon = () => {
@@ -41,7 +46,7 @@ const ResultScreen = ({ navigation, route }: any) => {
             }
             autoPlay
             loop={true}
-            style={{ width: 60, height: 60 }}
+            style={{ width: 120, height: 120 }}
           />
         );
       case 'failure':
@@ -53,35 +58,28 @@ const ResultScreen = ({ navigation, route }: any) => {
             }
             autoPlay
             loop={true}
-            style={{ width: 60, height: 60 }}
+            style={{ width: 120, height: 120 }}
           />
         );
       case 'celebration':
       default:
-        return lottieSource ? (
-          <LottieView
-            source={lottieSource}
-            autoPlay
-            loop={true}
-            style={{ width: 60, height: 60 }}
-          />
-        ) : (
-          <SuccessIcon size={60} />
-        );
+        return <SuccessIcon size={120} />;
     }
   };
 
   return (
     <Container>
-      <IconContainer>{renderIcon()}</IconContainer>
+      <CenterContainer>
+        <IconContainer>{renderIcon()}</IconContainer>
 
-      <Content>
-        <Title>{title}</Title>
+        <Content>
+          <Title>{title}</Title>
 
-        <Description>{description}</Description>
+          <Description>{description}</Description>
 
-        {points && <PointsText>+{points}p</PointsText>}
-      </Content>
+          {points && <PointsText>+{points}p</PointsText>}
+        </Content>
+      </CenterContainer>
 
       <ButtonWrapper>
         <CustomButton text="완료" onPress={handleComplete} />
@@ -97,16 +95,19 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const IconContainer = styled.View`
+const CenterContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding-top: 60px;
+`;
+
+const IconContainer = styled.View`
+  justify-content: center;
+  align-items: center;
 `;
 
 const Content = styled.View`
-  flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   padding: 24px;
 `;

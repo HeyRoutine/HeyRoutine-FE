@@ -79,6 +79,12 @@ const MainNavigator = () => {
             // hideOnScreens 목록에 현재 화면 이름이 포함되어 있으면 탭 바를 숨깁니다.
             tabBarStyle: {
               display: hideOnScreens.includes(routeName) ? 'none' : 'flex',
+              height: 60 + insets.bottom,
+              paddingBottom: insets.bottom,
+              paddingTop: 8,
+              backgroundColor: theme.colors.white,
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.gray200,
             },
             tabBarLabel: '내 정보',
           };

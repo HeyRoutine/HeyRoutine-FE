@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AnalysisScreen from '../../screens/analysis/AnalysisScreen';
 import ConsumptionAnalysisScreen from '../../screens/analysis/ConsumptionAnalysisScreen';
 import FinancialProductScreen from '../../screens/analysis/FinancialProductScreen';
+import RoutineSuggestionScreen from '../../screens/analysis/RoutineSuggestionScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
 import RoutineSuggestionScreen from '../../screens/analysis/RoutineSuggestionScreen';
 
@@ -20,6 +21,10 @@ const AnalysisStack = () => {
       <Stack.Screen
         name="FinancialProduct"
         component={FinancialProductScreen}
+      />
+      <Stack.Screen
+        name="RoutineSuggestion"
+        component={RoutineSuggestionScreen}
       />
       <Stack.Screen name="Loading" component={LoadingScreen} />
       <Stack.Screen name="FinancialProduct" component={FinancialProductScreen} />

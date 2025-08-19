@@ -69,6 +69,7 @@ const Container = styled.View`
   margin-top: 60px;
   width: 30%;
   justify-content: space-between;
+  gap: 16px;
 `;
 
 const TabButton = styled(TouchableOpacity)<{ isSelected: boolean }>`

@@ -137,7 +137,11 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
           </CashoutTouchable>
         </PointCard>
 
-        <CategoryScroll horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
+        <CategoryScroll
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 12 }}
+        >
           {CATEGORIES.map((cat) => (
             <CategoryChip
               key={cat.key}
