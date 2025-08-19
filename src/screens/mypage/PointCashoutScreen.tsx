@@ -143,14 +143,19 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
 
       <BottomSheetDialog
         visible={isTransferModalOpen}
-        title="포인트 전환"
-        message={`${pointAmount}P를 현금으로 전환하시겠습니까?`}
-        primaryText="확인"
-        onPrimary={handleConfirmTransfer}
-        secondaryText="취소"
-        onSecondary={() => setIsTransferModalOpen(false)}
         onRequestClose={() => setIsTransferModalOpen(false)}
-      />
+      >
+        <ModalTitle>포인트 전환</ModalTitle>
+        <ModalMessage>{`${pointAmount}P를 현금으로 전환하시겠습니까?`}</ModalMessage>
+        <ModalButtonsContainer>
+          <ModalButton onPress={() => setIsTransferModalOpen(false)}>
+            <ModalButtonText>취소</ModalButtonText>
+          </ModalButton>
+          <ModalButton onPress={handleConfirmTransfer} variant="primary">
+            <ModalButtonText variant="primary">확인</ModalButtonText>
+          </ModalButton>
+        </ModalButtonsContainer>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -245,4 +250,43 @@ const TransferButtonText = styled.Text`
   font-size: 16px;
   font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.white};
+`;
+
+// 모달 관련 스타일
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalMessage = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ModalButton = styled.TouchableOpacity<{ variant?: 'primary' }>`
+  flex: 1;
+  padding: 16px 12px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.primary : theme.colors.gray200};
+`;
+
+const ModalButtonText = styled.Text<{ variant?: 'primary' }>`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
 `;

@@ -82,7 +82,12 @@ const ResultScreen = ({ navigation, route }: any) => {
       </CenterContainer>
 
       <ButtonWrapper>
-        <CustomButton text="완료" onPress={handleComplete} />
+        <CustomButton
+          text="완료"
+          onPress={handleComplete}
+          backgroundColor={theme.colors.primary}
+          textColor={theme.colors.white}
+        />
       </ButtonWrapper>
     </Container>
   );

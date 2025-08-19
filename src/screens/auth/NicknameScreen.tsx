@@ -83,6 +83,12 @@ const NicknameScreen = ({ navigation }: any) => {
           text="다음"
           onPress={handleNext}
           disabled={!isNicknameValid}
+          backgroundColor={
+            isNicknameValid ? theme.colors.primary : theme.colors.gray200
+          }
+          textColor={
+            isNicknameValid ? theme.colors.white : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>

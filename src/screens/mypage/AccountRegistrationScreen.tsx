@@ -59,6 +59,10 @@ const AccountRegistrationScreen = ({
           text="1원 인증 요청"
           onPress={handleRequestAuth}
           disabled={!isAccountValid}
+          backgroundColor={
+            isAccountValid ? theme.colors.primary : theme.colors.gray200
+          }
+          textColor={isAccountValid ? theme.colors.white : theme.colors.gray500}
         />
       </ButtonWrapper>
     </Container>

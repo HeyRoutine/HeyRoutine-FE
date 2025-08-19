@@ -105,6 +105,16 @@ const EmailSettingScreen = ({ navigation }: IEmailSettingScreenProps) => {
           text="인증 하기"
           onPress={handleVerification}
           disabled={!isValidEmail || email.length === 0}
+          backgroundColor={
+            isValidEmail && email.length > 0
+              ? theme.colors.primary
+              : theme.colors.gray200
+          }
+          textColor={
+            isValidEmail && email.length > 0
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>

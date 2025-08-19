@@ -99,6 +99,12 @@ const TermsAgreementScreen = ({ navigation }: any) => {
           text="완료"
           onPress={handleNext}
           disabled={!isButtonEnabled}
+          backgroundColor={
+            isButtonEnabled ? theme.colors.primary : theme.colors.gray200
+          }
+          textColor={
+            isButtonEnabled ? theme.colors.white : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>

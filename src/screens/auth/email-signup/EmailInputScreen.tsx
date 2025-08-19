@@ -64,6 +64,10 @@ const EmailInputScreen = ({ navigation }: any) => {
           text="다음"
           onPress={handleNext}
           disabled={!isEmailValid}
+          backgroundColor={
+            isEmailValid ? theme.colors.primary : theme.colors.gray200
+          }
+          textColor={isEmailValid ? theme.colors.white : theme.colors.gray500}
         />
       </ButtonWrapper>
     </Container>

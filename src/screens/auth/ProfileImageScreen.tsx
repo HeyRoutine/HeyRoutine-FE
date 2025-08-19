@@ -82,6 +82,8 @@ const ProfileImageScreen = ({ navigation }: any) => {
         <CustomButton
           text={imageUri ? '다음' : '건너뛰기'}
           onPress={handleNext}
+          backgroundColor={theme.colors.primary}
+          textColor={theme.colors.white}
         />
       </ButtonWrapper>
     </Container>

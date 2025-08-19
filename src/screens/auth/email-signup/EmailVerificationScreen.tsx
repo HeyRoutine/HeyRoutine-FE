@@ -95,6 +95,8 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
           onPress={handleVerify}
           // TODO: 4자리 숫자 입력 후 인증하기 버튼 활성화 + 타이머 종료 후 인증하기 버튼 비활성화
           // disabled={!isButtonEnabled}
+          backgroundColor={theme.colors.primary}
+          textColor={theme.colors.white}
         />
       </ButtonWrapper>
     </Container>

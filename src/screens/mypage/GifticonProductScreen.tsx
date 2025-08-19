@@ -96,31 +96,34 @@ const GifticonProductScreen = ({
           text={hasEnoughPoints ? '구매하기' : '잔액이 부족합니다'}
           onPress={handlePurchase}
           disabled={!hasEnoughPoints}
+          backgroundColor={
+            hasEnoughPoints ? theme.colors.primary : theme.colors.gray200
+          }
+          textColor={
+            hasEnoughPoints ? theme.colors.white : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
 
       <BottomSheetDialog
         visible={isConfirmOpen}
-        title="구매 확인"
-        message="정말로 구매하시겠습니까?"
-        primaryText="확인"
-        onPrimary={handleConfirmPurchase}
-        secondaryText="취소"
-        onSecondary={() => setIsConfirmOpen(false)}
         onRequestClose={() => setIsConfirmOpen(false)}
-        heightRatio={0.48}
-      />
-
-      <BottomSheetDialog
-        visible={isDoneOpen}
-        title="구매 완료"
-        message={showBarcode ? undefined : '구매가 완료되었습니다.'}
-        primaryText={showBarcode ? '확인' : '확인'}
-        onPrimary={showBarcode ? handleCloseDone : handleShowBarcode}
-        onRequestClose={handleCloseDone}
-        heightRatio={showBarcode ? 0.65 : 0.42}
-        contentCentered={!showBarcode}
       >
+        <ModalTitle>구매 확인</ModalTitle>
+        <ModalMessage>정말로 구매하시겠습니까?</ModalMessage>
+        <ModalButtonsContainer>
+          <ModalButton onPress={() => setIsConfirmOpen(false)}>
+            <ModalButtonText>취소</ModalButtonText>
+          </ModalButton>
+          <ModalButton onPress={handleConfirmPurchase} variant="primary">
+            <ModalButtonText variant="primary">확인</ModalButtonText>
+          </ModalButton>
+        </ModalButtonsContainer>
+      </BottomSheetDialog>
+
+      <BottomSheetDialog visible={isDoneOpen} onRequestClose={handleCloseDone}>
+        <ModalTitle>구매 완료</ModalTitle>
+        {!showBarcode && <ModalMessage>구매가 완료되었습니다.</ModalMessage>}
         {showBarcode && (
           <BarcodeBox>
             <BarcodeImage
@@ -130,6 +133,14 @@ const GifticonProductScreen = ({
             <BarcodeHint>매장 직원에게 바코드를 제시하세요.</BarcodeHint>
           </BarcodeBox>
         )}
+        <ModalButtonsContainer>
+          <ModalButton
+            onPress={showBarcode ? handleCloseDone : handleShowBarcode}
+            variant="primary"
+          >
+            <ModalButtonText variant="primary">확인</ModalButtonText>
+          </ModalButton>
+        </ModalButtonsContainer>
       </BottomSheetDialog>
     </Container>
   );
@@ -226,4 +237,43 @@ const BarcodeHint = styled.Text`
   margin-top: 8px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
+`;
+
+// 모달 관련 스타일
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalMessage = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ModalButton = styled.TouchableOpacity<{ variant?: 'primary' }>`
+  flex: 1;
+  padding: 16px 12px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.primary : theme.colors.gray200};
+`;
+
+const ModalButtonText = styled.Text<{ variant?: 'primary' }>`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
 `;

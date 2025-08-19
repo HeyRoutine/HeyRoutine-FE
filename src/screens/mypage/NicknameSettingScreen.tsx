@@ -124,6 +124,16 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
           text="완료"
           onPress={handleComplete}
           disabled={!isValidNickname || nickname.length === 0}
+          backgroundColor={
+            isValidNickname && nickname.length > 0
+              ? theme.colors.primary
+              : theme.colors.gray200
+          }
+          textColor={
+            isValidNickname && nickname.length > 0
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonContainer>
     </Container>

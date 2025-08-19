@@ -140,14 +140,21 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       {/* 뒤로가기 확인 모달 */}
       <BottomSheetDialog
         visible={showExitModal}
-        title="정말로 나가시겠습니까?"
-        message="로딩이 완료되기 전에 나가면 추천 결과를 받을 수 없습니다."
-        primaryText="나가기"
-        onPrimary={handleConfirmExit}
-        secondaryText="취소"
-        onSecondary={handleCancelExit}
         onRequestClose={handleCancelExit}
-      />
+      >
+        <ModalTitle>정말로 나가시겠습니까?</ModalTitle>
+        <ModalMessage>
+          로딩이 완료되기 전에 나가면 추천 결과를 받을 수 없습니다.
+        </ModalMessage>
+        <ModalButtonsContainer>
+          <ModalButton onPress={handleCancelExit}>
+            <ModalButtonText>취소</ModalButtonText>
+          </ModalButton>
+          <ModalButton onPress={handleConfirmExit} variant="primary">
+            <ModalButtonText variant="primary">나가기</ModalButtonText>
+          </ModalButton>
+        </ModalButtonsContainer>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -205,4 +212,43 @@ const CharacterImage = styled.Image`
   height: 336px;
   opacity: 0.2;
   z-index: 1;
+`;
+
+// 모달 관련 스타일
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalMessage = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ModalButton = styled.TouchableOpacity<{ variant?: 'primary' }>`
+  flex: 1;
+  padding: 16px 12px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.primary : theme.colors.gray200};
+`;
+
+const ModalButtonText = styled.Text<{ variant?: 'primary' }>`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${(p) =>
+    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
 `;

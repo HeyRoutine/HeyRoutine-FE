@@ -5,37 +5,27 @@ import { theme } from '../../styles/theme';
 
 interface BottomSheetDialogProps {
   visible: boolean;
-  title: string;
-  message?: string;
-  primaryText: string;
-  onPrimary: () => void;
-  secondaryText?: string;
-  onSecondary?: () => void;
   onRequestClose?: () => void;
-  /** 화면 높이 대비 시트 최소 높이 비율 (예: 0.45 => 화면의 45%) */
-  heightRatio?: number;
-  /** 메시지/컨텐츠 영역을 수직 중앙정렬할지 여부 (기본 true) */
-  contentCentered?: boolean;
-  /** 메시지 아래에 추가로 표시할 컨텐츠 */
-  children?: React.ReactNode;
+  /** 모달 내용 */
+  children: React.ReactNode;
+  /** 핸들 표시 여부 (기본 true) */
+  showHandle?: boolean;
+  /** 배경 터치로 닫기 가능 여부 (기본 true) */
+  dismissible?: boolean;
 }
 
 const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
   visible,
-  title,
-  message,
-  primaryText,
-  onPrimary,
-  secondaryText,
-  onSecondary,
   onRequestClose,
-  heightRatio = 0.4, // 기본값: 화면의 40%
-  contentCentered = true,
   children,
+  showHandle = true,
+  dismissible = true,
 }) => {
-  const hasSecondary = Boolean(secondaryText && onSecondary);
-  const screenHeight = Dimensions.get('window').height;
-  const minHeight = Math.max(240, Math.round(screenHeight * heightRatio));
+  const handleBackdropPress = () => {
+    if (dismissible && onRequestClose) {
+      onRequestClose();
+    }
+  };
 
   return (
     <Modal
@@ -44,40 +34,10 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
       animationType="fade"
       onRequestClose={onRequestClose}
     >
-      <ModalBackdrop>
-        <BottomSheet minHeight={minHeight}>
-          <SheetHandle />
-
-          {/* 가운데 영역 (버튼 제외 공간의 중앙 정렬) */}
-          <ContentCenter centered={contentCentered}>
-            <SheetTitle>{title}</SheetTitle>
-            {!!message && <SheetMessage>{message}</SheetMessage>}
-            {!!children && <ExtraContainer>{children}</ExtraContainer>}
-          </ContentCenter>
-
-          {/* 하단 버튼 영역 */}
-          {hasSecondary ? (
-            <ButtonsRow>
-              <SheetButton variant="ghost" onPress={onSecondary!}>
-                <SheetButtonText variant="ghost">
-                  {secondaryText}
-                </SheetButtonText>
-              </SheetButton>
-              <SheetButton variant="primary" onPress={onPrimary}>
-                <SheetButtonText variant="primary">
-                  {primaryText}
-                </SheetButtonText>
-              </SheetButton>
-            </ButtonsRow>
-          ) : (
-            <ButtonsRow>
-              <SheetButton variant="primary" onPress={onPrimary}>
-                <SheetButtonText variant="primary">
-                  {primaryText}
-                </SheetButtonText>
-              </SheetButton>
-            </ButtonsRow>
-          )}
+      <ModalBackdrop onPress={handleBackdropPress} activeOpacity={1}>
+        <BottomSheet>
+          {showHandle && <SheetHandle />}
+          <ContentContainer>{children}</ContentContainer>
         </BottomSheet>
       </ModalBackdrop>
     </Modal>
@@ -87,18 +47,19 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
 export default BottomSheetDialog;
 
 // styles
-const ModalBackdrop = styled.View`
+const ModalBackdrop = styled.TouchableOpacity`
   flex: 1;
   background-color: rgba(0, 0, 0, 0.35);
   justify-content: flex-end;
 `;
 
-const BottomSheet = styled.View<{ minHeight: number }>`
+const BottomSheet = styled.View`
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding: 20px 20px 24px 20px;
-  min-height: ${(p) => p.minHeight}px;
+  padding: 20px 20px 16px 20px;
+  align-self: flex-end;
+  width: 100%;
 `;
 
 const SheetHandle = styled.View`
@@ -110,54 +71,7 @@ const SheetHandle = styled.View`
   margin-bottom: 14px;
 `;
 
-const ContentCenter = styled.View<{ centered: boolean }>`
-  flex: 1;
-  align-items: center;
-  justify-content: ${(p) => (p.centered ? 'center' : 'flex-start')};
-  padding: 8px 4px 16px 4px;
-`;
-
-const ExtraContainer = styled.View`
-  margin-top: 12px;
+const ContentContainer = styled.View`
   width: 100%;
-  align-items: center;
-`;
-
-const SheetTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 24px;
-  color: ${theme.colors.gray900};
-  text-align: center;
-  margin-bottom: 8px;
-`;
-
-const SheetMessage = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-`;
-
-const ButtonsRow = styled.View`
-  flex-direction: row;
-  gap: 12px;
-`;
-
-type ButtonVariant = 'primary' | 'ghost';
-
-const SheetButton = styled.TouchableOpacity<{ variant: ButtonVariant }>`
-  flex: 1;
-  padding: 16px 12px;
-  border-radius: 12px;
-  align-items: center;
-  justify-content: center;
-  background-color: ${(p) =>
-    p.variant === 'primary' ? theme.colors.primary : theme.colors.gray200};
-`;
-
-const SheetButtonText = styled.Text<{ variant: ButtonVariant }>`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 16px;
-  color: ${(p) =>
-    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
+  padding: 36px 0;
 `;

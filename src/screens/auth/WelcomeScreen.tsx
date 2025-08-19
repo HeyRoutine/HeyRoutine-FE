@@ -36,7 +36,12 @@ const WelcomeScreen = ({ navigation, route }: any) => {
       </Content>
 
       <ButtonWrapper>
-        <CustomButton text="시작하기" onPress={handleStart} />
+        <CustomButton
+          text="시작하기"
+          onPress={handleStart}
+          backgroundColor={theme.colors.primary}
+          textColor={theme.colors.white}
+        />
       </ButtonWrapper>
     </Container>
   );

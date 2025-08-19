@@ -59,6 +59,10 @@ const EmailLoginScreen = ({ navigation }: any) => {
             text="로그인"
             onPress={handleLogin}
             disabled={!isFormValid}
+            backgroundColor={
+              isFormValid ? theme.colors.primary : theme.colors.gray200
+            }
+            textColor={isFormValid ? theme.colors.white : theme.colors.gray500}
           />
         </FormContainer>
 

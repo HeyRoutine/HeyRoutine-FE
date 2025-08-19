@@ -12,6 +12,14 @@ interface ICustomButtonProps {
   onPress: () => void;
   /** 비활성화 여부 */
   disabled?: boolean;
+  /** 배경 색상 */
+  backgroundColor?: string;
+  /** 글자 색상 */
+  textColor?: string;
+  /** 테두리 색상 */
+  borderColor?: string;
+  /** 테두리 두께 */
+  borderWidth?: number;
 }
 
 /**
@@ -23,10 +31,22 @@ const CustomButton = ({
   text,
   onPress,
   disabled = false,
+  backgroundColor,
+  textColor,
+  borderColor,
+  borderWidth = 0,
 }: ICustomButtonProps) => {
   return (
-    <Container onPress={onPress} disabled={disabled}>
-      <ButtonText active={!disabled}>{text}</ButtonText>
+    <Container
+      onPress={onPress}
+      disabled={disabled}
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      borderWidth={borderWidth}
+    >
+      <ButtonText disabled={disabled} textColor={textColor}>
+        {text}
+      </ButtonText>
     </Container>
   );
 };
@@ -34,21 +54,35 @@ const CustomButton = ({
 export default CustomButton;
 
 // 스타일 컴포넌트 정의
-const Container = styled.TouchableOpacity`
+const Container = styled.TouchableOpacity<{
+  disabled: boolean;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth: number;
+}>`
   width: 100%;
   padding: 18px;
   border-radius: 12px;
   align-items: center;
   justify-content: center;
+  border-width: ${(props) => props.borderWidth}px;
+  border-color: ${(props) => {
+    if (props.disabled) return theme.colors.gray300;
+    return props.borderColor || 'transparent';
+  }};
 
-  background-color: ${(props: { disabled: boolean }) =>
-    props.disabled ? theme.colors.gray200 : theme.colors.primary};
+  background-color: ${(props) => {
+    if (props.disabled) return theme.colors.gray200;
+    return props.backgroundColor || theme.colors.primary;
+  }};
 `;
 
-const ButtonText = styled.Text`
+const ButtonText = styled.Text<{ disabled: boolean; textColor?: string }>`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
 
-  color: ${(props: { disabled: boolean }) =>
-    props.disabled ? theme.colors.gray500 : theme.colors.white};
+  color: ${(props) => {
+    if (props.disabled) return theme.colors.gray500;
+    return props.textColor || theme.colors.white;
+  }};
 `;

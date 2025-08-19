@@ -96,6 +96,16 @@ const PasswordScreen = ({ navigation }: any) => {
           text="다음"
           onPress={handleNext}
           disabled={!isPasswordValid || !doPasswordsMatch}
+          backgroundColor={
+            isPasswordValid && doPasswordsMatch
+              ? theme.colors.primary
+              : theme.colors.gray200
+          }
+          textColor={
+            isPasswordValid && doPasswordsMatch
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>
