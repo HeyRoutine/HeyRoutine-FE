@@ -1,4 +1,3 @@
-export { default as TabNavigation } from './TabNavigation';
 export { default as AchievementCard } from './AchievementCard';
 export { default as WeeklySummary } from './WeeklySummary';
 export { default as RoutineStatusRow } from './RoutineStatusRow';

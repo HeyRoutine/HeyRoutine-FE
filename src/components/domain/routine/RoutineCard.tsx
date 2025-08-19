@@ -24,11 +24,9 @@ const RoutineCard = ({
   return (
     <Container onPress={onPress}>
       <Header>
-        <CategoryBadge>
-          <CategoryText>
-            [{category}] {progress}%
-          </CategoryText>
-        </CategoryBadge>
+        <CategoryText>
+          [{category}] {progress}%
+        </CategoryText>
         <MoreButton onPress={onMorePress}>
           <MoreIcon>⋯</MoreIcon>
         </MoreButton>
@@ -37,8 +35,8 @@ const RoutineCard = ({
       <TimeText>{timeRange}</TimeText>
       <DayContainer>
         {selectedDays.map((day) => (
-          <DayBadge key={day}>
-            <DayText>{day}</DayText>
+          <DayBadge key={day} isSelected={true}>
+            <DayText isSelected={true}>{day}</DayText>
           </DayBadge>
         ))}
       </DayContainer>
@@ -49,7 +47,7 @@ const RoutineCard = ({
 export default RoutineCard;
 
 const Container = styled.TouchableOpacity`
-  background-color: ${theme.colors.white};
+  background-color: #f7f8fa;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
@@ -59,19 +57,13 @@ const Header = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-`;
-
-const CategoryBadge = styled.View`
-  background-color: ${theme.colors.gray100};
-  padding: 4px 8px;
-  border-radius: 4px;
+  /* margin-bottom: 4px; */
 `;
 
 const CategoryText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 12px;
-  color: ${theme.colors.gray700};
+  color: ${theme.colors.primary};
 `;
 
 const MoreButton = styled.TouchableOpacity`
@@ -84,7 +76,7 @@ const MoreIcon = styled.Text`
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.Medium};
   font-size: 16px;
   color: ${theme.colors.gray800};
   margin-bottom: 4px;
@@ -92,9 +84,9 @@ const Title = styled.Text`
 
 const TimeText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  margin-bottom: 8px;
+  font-size: 12px;
+  color: ${theme.colors.gray500};
+  margin-bottom: 24px;
 `;
 
 const DayContainer = styled.View`
@@ -102,16 +94,21 @@ const DayContainer = styled.View`
   flex-wrap: wrap;
 `;
 
-const DayBadge = styled.View`
-  background-color: ${theme.colors.primary};
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-right: 4px;
+const DayBadge = styled.View<{ isSelected: boolean }>`
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: ${({ isSelected }) =>
+    isSelected ? theme.colors.primary : theme.colors.gray200};
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
   margin-bottom: 4px;
 `;
 
-const DayText = styled.Text`
+const DayText = styled.Text<{ isSelected: boolean }>`
   font-family: ${theme.fonts.Medium};
-  font-size: 12px;
-  color: ${theme.colors.white};
+  font-size: 10px;
+  color: ${({ isSelected }) =>
+    isSelected ? theme.colors.white : theme.colors.gray600};
 `;

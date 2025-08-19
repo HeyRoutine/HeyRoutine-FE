@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { TouchableOpacity, Text } from 'react-native';
 
-import { theme } from '../../../styles/theme';
+import { theme } from '../../styles/theme';
 
 /**
  * TabNavigation의 props 인터페이스
@@ -14,10 +14,12 @@ interface ITabNavigationProps {
   onTabChange: (index: number) => void;
   /** 탭 라벨 배열 */
   tabs: string[];
+  /** 컨테이너 스타일 */
+  containerStyle?: any;
 }
 
 /**
- * 분석 탭에서 사용하는 탭 네비게이션 컴포넌트
+ * 범용 탭 네비게이션 컴포넌트
  * @param props - 컴포넌트 props
  * @returns 탭 네비게이션 컴포넌트
  */
@@ -25,6 +27,7 @@ const TabNavigation = ({
   selectedIndex,
   onTabChange,
   tabs,
+  containerStyle,
 }: ITabNavigationProps) => {
   const [textWidths, setTextWidths] = useState<number[]>([]);
 
@@ -38,46 +41,42 @@ const TabNavigation = ({
   };
 
   return (
-    <Container>
+    <UnderlineContainer style={containerStyle}>
       {tabs.map((tab, index) => (
-        <TabButton
+        <UnderlineTabButton
           key={index}
           onPress={() => onTabChange(index)}
           isSelected={selectedIndex === index}
         >
-          <TabText
+          <UnderlineTabText
             isSelected={selectedIndex === index}
             onLayout={(event) => handleTextLayout(index, event)}
           >
             {tab}
-          </TabText>
+          </UnderlineTabText>
           {selectedIndex === index && (
             <SelectedIndicator style={{ width: textWidths[index] || 0 }} />
           )}
-        </TabButton>
+        </UnderlineTabButton>
       ))}
-    </Container>
+    </UnderlineContainer>
   );
 };
 
 export default TabNavigation;
 
-const Container = styled.View`
+// Underline 스타일 (기본)
+const UnderlineContainer = styled.View`
   flex-direction: row;
-  margin-right: 24px;
-  margin-bottom: 24px;
-  margin-top: 60px;
-  width: 30%;
-  justify-content: space-between;
   gap: 16px;
 `;
 
-const TabButton = styled(TouchableOpacity)<{ isSelected: boolean }>`
+const UnderlineTabButton = styled(TouchableOpacity)<{ isSelected: boolean }>`
   align-items: flex-start;
   padding: 16px 0;
 `;
 
-const TabText = styled.Text<{ isSelected: boolean }>`
+const UnderlineTabText = styled.Text<{ isSelected: boolean }>`
   font-size: 16px;
   font-family: ${(props) =>
     props.isSelected ? theme.fonts.SemiBold : theme.fonts.Regular};
