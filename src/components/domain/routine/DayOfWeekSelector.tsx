@@ -1,42 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components/native';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { theme } from '../../../styles/theme';
+import { Ionicons } from '@expo/vector-icons';
+import DayButton from './DayButton';
 
 interface DayOfWeekSelectorProps {
   selectedDays: string[];
-  onDayToggle: (day: string) => void;
+  onDaysChange: (days: string[]) => void;
   onStartDatePress?: () => void;
 }
 
 const DayOfWeekSelector = ({
   selectedDays,
-  onDayToggle,
+  onDaysChange,
   onStartDatePress,
 }: DayOfWeekSelectorProps) => {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
 
+  const handleDayPress = (day: string) => {
+    if (selectedDays.includes(day)) {
+      onDaysChange(selectedDays.filter((d) => d !== day));
+    } else {
+      onDaysChange([...selectedDays, day]);
+    }
+  };
+
   return (
     <Container>
-      <Header>
-        <Title>요일</Title>
-        {onStartDatePress && (
-          <StartDateButton onPress={onStartDatePress}>
-            <StartDateText>시작 날짜 선택</StartDateText>
-            <ArrowIcon>›</ArrowIcon>
-          </StartDateButton>
-        )}
-      </Header>
-      <DayContainer>
+      <HeaderRow>
+        <Label>요일</Label>
+        <StartDateButton onPress={onStartDatePress}>
+          <StartDateText>시작 날짜 선택</StartDateText>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={theme.colors.gray600}
+          />
+        </StartDateButton>
+      </HeaderRow>
+      <DaysContainer>
         {days.map((day) => (
           <DayButton
             key={day}
+            day={day}
             isSelected={selectedDays.includes(day)}
-            onPress={() => onDayToggle(day)}
-          >
-            <DayText isSelected={selectedDays.includes(day)}>{day}</DayText>
-          </DayButton>
+            onPress={() => handleDayPress(day)}
+          />
         ))}
-      </DayContainer>
+      </DaysContainer>
     </Container>
   );
 };
@@ -44,59 +56,39 @@ const DayOfWeekSelector = ({
 export default DayOfWeekSelector;
 
 const Container = styled.View`
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  padding: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background-color: #fafafa;
+  border-radius: 10px;
 `;
 
-const Header = styled.View`
+const HeaderRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 `;
 
-const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
+const Label = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.gray800};
 `;
 
-const StartDateButton = styled.TouchableOpacity`
+const StartDateButton = styled(TouchableOpacity)`
   flex-direction: row;
   align-items: center;
+  gap: 4px;
 `;
 
 const StartDateText = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 11px;
+  color: ${theme.colors.gray400};
 `;
 
-const ArrowIcon = styled.Text`
-  font-size: 16px;
-  color: ${theme.colors.gray600};
-  margin-left: 4px;
-`;
-
-const DayContainer = styled.View`
+const DaysContainer = styled.View`
   flex-direction: row;
-  justify-content: space-between;
-`;
-
-const DayButton = styled.TouchableOpacity<{ isSelected: boolean }>`
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  background-color: ${({ isSelected }) =>
-    isSelected ? theme.colors.primary : theme.colors.gray100};
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-`;
-
-const DayText = styled.Text<{ isSelected: boolean }>`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${({ isSelected }) =>
-    isSelected ? theme.colors.white : theme.colors.gray700};
 `;

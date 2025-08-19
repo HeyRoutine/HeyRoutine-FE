@@ -35,7 +35,7 @@ const BottomSheetDialog: React.FC<BottomSheetDialogProps> = ({
       onRequestClose={onRequestClose}
     >
       <ModalBackdrop onPress={handleBackdropPress} activeOpacity={1}>
-        <BottomSheet>
+        <BottomSheet onStartShouldSetResponder={() => true}>
           {showHandle && <SheetHandle />}
           <ContentContainer>{children}</ContentContainer>
         </BottomSheet>

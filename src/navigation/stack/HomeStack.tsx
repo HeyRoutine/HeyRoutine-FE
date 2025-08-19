@@ -2,7 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from '../../screens/home/HomeScreen';
-import CreateRoutineScreen from '../../screens/routine/CreateRoutineScreen';
+import CreateRoutineScreen from '../../screens/home/CreateRoutineScreen';
 import PersonalRoutineDetailScreen from '../../screens/routine/PersonalRoutineDetailScreen';
 import GroupBoardScreen from '../../screens/group/GroupBoardScreen';
 import GroupRoutineDetailScreen from '../../screens/group/GroupRoutineDetailScreen';

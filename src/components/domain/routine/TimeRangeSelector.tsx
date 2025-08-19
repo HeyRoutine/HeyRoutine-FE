@@ -1,30 +1,34 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { theme } from '../../../styles/theme';
 
 interface TimeRangeSelectorProps {
   startTime: string;
   endTime: string;
-  onStartTimeChange: (time: string) => void;
-  onEndTimeChange: (time: string) => void;
+  onStartTimePress: () => void;
+  onEndTimePress: () => void;
 }
 
 const TimeRangeSelector = ({
   startTime,
   endTime,
-  onStartTimeChange,
-  onEndTimeChange,
+  onStartTimePress,
+  onEndTimePress,
 }: TimeRangeSelectorProps) => {
   return (
     <Container>
-      <TimeSection>
-        <TimeLabel>시작 시간</TimeLabel>
-        <TimeValue>{startTime}</TimeValue>
-      </TimeSection>
-      <TimeSection>
-        <TimeLabel>완료 시간</TimeLabel>
-        <TimeValue>{endTime}</TimeValue>
-      </TimeSection>
+      <Label>시간</Label>
+      <TimeContainer>
+        <TimeButton onPress={onStartTimePress}>
+          <TimeLabel>시작 시간</TimeLabel>
+          <TimeValue>{startTime}</TimeValue>
+        </TimeButton>
+        <TimeButton onPress={onEndTimePress}>
+          <TimeLabel>완료 시간</TimeLabel>
+          <TimeValue>{endTime}</TimeValue>
+        </TimeButton>
+      </TimeContainer>
     </Container>
   );
 };
@@ -32,27 +36,41 @@ const TimeRangeSelector = ({
 export default TimeRangeSelector;
 
 const Container = styled.View`
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  padding: 16px;
-  flex-direction: row;
-  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 24px;
+  background-color: #fafafa;
+  border-radius: 10px;
 `;
 
-const TimeSection = styled.View`
+const Label = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 12px;
+`;
+
+const TimeContainer = styled.View`
+  flex-direction: row;
+  gap: 16px;
+`;
+
+const TimeButton = styled(TouchableOpacity)`
   flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
   align-items: center;
+  justify-content: center;
 `;
 
 const TimeLabel = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${theme.colors.gray700};
-  margin-bottom: 8px;
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 4px;
 `;
 
 const TimeValue = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-family: ${theme.fonts.Medium};
+  font-size: 20px;
+  color: ${theme.colors.gray400};
 `;
