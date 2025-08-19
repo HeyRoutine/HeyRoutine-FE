@@ -7,3 +7,4 @@ export { default as RoutineCard } from './RoutineCard';
 export { default as RoutineActionButton } from './RoutineActionButton';
 export { default as AddRoutineButton } from './AddRoutineButton';
 export { default as CommentCard } from './CommentCard';
+export { default as GroupRoutineCard } from './GroupRoutineCard';

@@ -2,20 +2,29 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
-import { RoutineCard } from '../../components/domain/routine';
-import { AddRoutineButton } from '../../components/domain/routine';
-import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import {
+  RoutineCard,
+  AddRoutineButton,
+  GroupRoutineCard,
+} from '../../components/domain/routine';
+import {
+  BottomSheetDialog,
+  CustomButton,
+  TabNavigation,
+} from '../../components/common';
 
 interface HomeScreenProps {
   navigation: any;
 }
 
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
-  const [selectedTab, setSelectedTab] = useState<'personal' | 'group'>(
-    'personal',
-  );
+  const [selectedTab, setSelectedTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(29);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(
+    null,
+  );
 
   // 요일과 날짜 데이터
   const weekData = [
@@ -46,11 +55,27 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       timeRange: '오전 8:00 ~ 오전 9:00',
       selectedDays: ['월', '화'],
     },
+    {
+      id: '3',
+      category: '운동',
+      progress: 67,
+      title: '저녁 운동 루틴',
+      timeRange: '오후 7:00 ~ 오후 8:00',
+      selectedDays: ['화', '목', '금'],
+    },
+    {
+      id: '4',
+      category: '학습',
+      progress: 45,
+      title: '독서 시간',
+      timeRange: '오후 9:00 ~ 오후 10:00',
+      selectedDays: ['월', '수', '토'],
+    },
   ];
 
   const groupRoutines = [
     {
-      id: '3',
+      id: '5',
       category: '생활',
       progress: 67,
       title: '저축 그룹 루틴',
@@ -58,12 +83,28 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       selectedDays: ['화'],
     },
     {
-      id: '4',
+      id: '6',
       category: '소비',
       progress: 67,
       title: '저축 그룹 루틴',
       timeRange: '오후 8:00 ~ 오후 9:00',
       selectedDays: ['화'],
+    },
+    {
+      id: '7',
+      category: '운동',
+      progress: 89,
+      title: '그룹 헬스 루틴',
+      timeRange: '오후 6:00 ~ 오후 7:00',
+      selectedDays: ['월', '수', '금'],
+    },
+    {
+      id: '8',
+      category: '학습',
+      progress: 23,
+      title: '스터디 그룹',
+      timeRange: '오후 10:00 ~ 오후 11:00',
+      selectedDays: ['화', '목'],
     },
   ];
 
@@ -72,15 +113,28 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   };
 
   const handleRoutinePress = (routineId: string) => {
-    if (selectedTab === 'personal') {
+    if (selectedTab === 0) {
       navigation.navigate('PersonalRoutineDetail');
     } else {
       navigation.navigate('GroupRoutineDetail');
     }
   };
 
-  const handleMorePress = () => {
-    // 더보기 액션 시트 표시
+  const handleMorePress = (routineId: string) => {
+    setSelectedRoutineId(routineId);
+    setShowActionSheet(true);
+  };
+
+  const handleEditRoutine = () => {
+    setShowActionSheet(false);
+    // TODO: 루틴 수정 화면으로 이동
+    console.log('수정할 루틴 ID:', selectedRoutineId);
+  };
+
+  const handleDeleteRoutine = () => {
+    setShowActionSheet(false);
+    // TODO: 루틴 삭제 로직
+    console.log('삭제할 루틴 ID:', selectedRoutineId);
   };
 
   const handleAddRoutine = () => {
@@ -98,22 +152,18 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     navigation.navigate('CreateRoutine');
   };
 
-  const currentRoutines =
-    selectedTab === 'personal' ? personalRoutines : groupRoutines;
+  const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
 
   return (
     <Container>
       <Content>
         {/* 날짜 선택기 */}
         <DateSelector>
-          <MonthSelector>
-            <MonthText>2025년 7월</MonthText>
-            <DropdownIcon>▼</DropdownIcon>
-          </MonthSelector>
+          <MonthText>2025년 7월</MonthText>
           <WeekContainer>
             {weekData.map((item) => (
               <DayItem key={item.date}>
-                <DayText>{item.day}</DayText>
+                <DayText day={item.day}>{item.day}</DayText>
                 <DateButton
                   isSelected={selectedDate === item.date}
                   onPress={() => setSelectedDate(item.date)}
@@ -127,27 +177,15 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </WeekContainer>
         </DateSelector>
 
-        {/* 그룹 루틴 배너 */}
-        <GroupBanner onPress={handleGroupBannerPress}>
-          <BannerText>함께 도전할 루틴 그룹</BannerText>
-          <GroupIcon>👥</GroupIcon>
-        </GroupBanner>
+        {/* 그룹 루틴 카드 */}
+        <GroupRoutineCard onPress={handleGroupBannerPress} />
 
         {/* 탭 선택 */}
-        <TabContainer>
-          <TabButton
-            isSelected={selectedTab === 'personal'}
-            onPress={() => setSelectedTab('personal')}
-          >
-            <TabText isSelected={selectedTab === 'personal'}>개인 루틴</TabText>
-          </TabButton>
-          <TabButton
-            isSelected={selectedTab === 'group'}
-            onPress={() => setSelectedTab('group')}
-          >
-            <TabText isSelected={selectedTab === 'group'}>그룹 루틴</TabText>
-          </TabButton>
-        </TabContainer>
+        <TabNavigation
+          selectedIndex={selectedTab}
+          onTabChange={setSelectedTab}
+          tabs={['개인 루틴', '그룹 루틴']}
+        />
 
         {/* 루틴 목록 */}
         <RoutineList>
@@ -160,7 +198,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
               timeRange={routine.timeRange}
               selectedDays={routine.selectedDays}
               onPress={() => handleRoutinePress(routine.id)}
-              onMorePress={handleMorePress}
+              onMorePress={() => handleMorePress(routine.id)}
             />
           ))}
         </RoutineList>
@@ -176,13 +214,38 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       >
         <ModalTitle>루틴 추가</ModalTitle>
         <SelectionButtonsContainer>
-          <SelectionButton onPress={handleAICreateRoutine}>
-            <SelectionButtonText>AI 추천 루틴 생성</SelectionButtonText>
-          </SelectionButton>
-          <SelectionButton onPress={handleManualCreateRoutine}>
-            <SelectionButtonText>직접 루틴 생성</SelectionButtonText>
-          </SelectionButton>
+          <CustomButton
+            text="AI 추천 루틴 생성"
+            onPress={handleAICreateRoutine}
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.primary}
+            borderColor="#8B5CF6"
+            borderWidth={1}
+          />
+          <CustomButton
+            text="직접 루틴 생성"
+            onPress={handleManualCreateRoutine}
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.gray800}
+            borderColor={theme.colors.gray300}
+            borderWidth={1}
+          />
         </SelectionButtonsContainer>
+      </BottomSheetDialog>
+
+      {/* 루틴 액션 시트 */}
+      <BottomSheetDialog
+        visible={showActionSheet}
+        onRequestClose={() => setShowActionSheet(false)}
+      >
+        <ActionButtonsContainer>
+          <ActionButton onPress={handleEditRoutine}>
+            <ActionButtonText>수정하기</ActionButtonText>
+          </ActionButton>
+          <DeleteActionButton onPress={handleDeleteRoutine}>
+            <DeleteButtonText>삭제</DeleteButtonText>
+          </DeleteActionButton>
+        </ActionButtonsContainer>
       </BottomSheetDialog>
     </Container>
   );
@@ -198,29 +261,18 @@ const Container = styled(SafeAreaView)`
 const Content = styled.ScrollView`
   flex: 1;
   padding: 16px;
+  showsverticalscrollindicator: false;
 `;
 
 const DateSelector = styled.View`
   margin-bottom: 16px;
 `;
 
-const MonthSelector = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-`;
-
 const MonthText = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 18px;
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
   color: ${theme.colors.gray800};
-  margin-right: 8px;
-`;
-
-const DropdownIcon = styled.Text`
-  font-size: 12px;
-  color: ${theme.colors.gray600};
+  margin-bottom: 12px;
 `;
 
 const WeekContainer = styled.View`
@@ -232,10 +284,14 @@ const DayItem = styled.View`
   align-items: center;
 `;
 
-const DayText = styled.Text`
+const DayText = styled.Text<{ day: string }>`
   font-family: ${theme.fonts.Regular};
   font-size: 12px;
-  color: ${theme.colors.gray600};
+  color: ${({ day }) => {
+    if (day === '토') return '#2283EC';
+    if (day === '일') return '#ED2929';
+    return theme.colors.gray600;
+  }};
   margin-bottom: 4px;
 `;
 
@@ -256,50 +312,6 @@ const DateText = styled.Text<{ isSelected: boolean }>`
     isSelected ? theme.colors.white : theme.colors.gray800};
 `;
 
-const GroupBanner = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary}20;
-  border-radius: 12px;
-  padding: 16px;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const BannerText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.primary};
-`;
-
-const GroupIcon = styled.Text`
-  font-size: 24px;
-`;
-
-const TabContainer = styled.View`
-  flex-direction: row;
-  background-color: ${theme.colors.gray100};
-  border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 16px;
-`;
-
-const TabButton = styled.TouchableOpacity<{ isSelected: boolean }>`
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background-color: ${({ isSelected }) =>
-    isSelected ? theme.colors.white : 'transparent'};
-  align-items: center;
-`;
-
-const TabText = styled.Text<{ isSelected: boolean }>`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${({ isSelected }) =>
-    isSelected ? theme.colors.primary : theme.colors.gray600};
-`;
-
 const RoutineList = styled.View`
   flex: 1;
 `;
@@ -317,17 +329,34 @@ const SelectionButtonsContainer = styled.View`
   gap: 12px;
 `;
 
-const SelectionButton = styled.TouchableOpacity`
-  padding: 20px 16px;
-  border-radius: 12px;
-  border: 1px solid ${theme.colors.gray300};
-  background-color: ${theme.colors.white};
-  align-items: center;
-  justify-content: center;
+const ActionButtonsContainer = styled.View`
+  gap: 8px;
 `;
 
-const SelectionButtonText = styled.Text`
+const ActionButton = styled.TouchableOpacity`
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.gray200};
+  background-color: ${theme.colors.white};
+  align-items: center;
+`;
+
+const DeleteActionButton = styled.TouchableOpacity`
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.error};
+  background-color: ${theme.colors.white};
+  align-items: center;
+`;
+
+const ActionButtonText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
   color: ${theme.colors.gray800};
+`;
+
+const DeleteButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.error};
 `;

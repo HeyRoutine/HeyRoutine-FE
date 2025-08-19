@@ -6,12 +6,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
 import {
-  TabNavigation,
   AchievementCard,
   WeeklySummary,
   BubbleCard,
   ConsumptionAnalysisCard,
 } from '../../components/domain/analysis';
+import { TabNavigation } from '../../components/common';
 
 /**
  * AnalysisScreen의 props 인터페이스
