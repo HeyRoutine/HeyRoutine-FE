@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { Image } from 'react-native';
+import { Image, Modal, TouchableWithoutFeedback, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import { RoutineItem, RoutineActionButton } from '../../components/domain/routine';
+import CustomButton from '../../components/common/CustomButton';
 
 interface GroupRoutineDetailScreenProps {
   navigation: any;
@@ -42,8 +43,15 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
     [route?.params?.routineId]
   );
 
+  const [isJoinModalVisible, setJoinModalVisible] = useState(false);
+
   const handleBack = () => navigation.goBack();
-  const handleJoin = () => {};
+  const handleJoin = () => setJoinModalVisible(true);
+  const handleCloseJoinModal = () => setJoinModalVisible(false);
+  const handleConfirmJoin = () => {
+    // 참여 확정 로직 (API 연동 등)
+    setJoinModalVisible(false);
+  };
 
   return (
     <Container>
@@ -96,6 +104,42 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
           </JoinButton>
         </JoinCta>
       </ScrollContent>
+
+      {/* 참여 확인 모달 */}
+      <Modal visible={isJoinModalVisible} transparent animationType="slide" onRequestClose={handleCloseJoinModal}>
+        <TouchableWithoutFeedback onPress={handleCloseJoinModal}>
+          <ModalOverlay>
+            <TouchableWithoutFeedback>
+              <BottomSheet>
+                <SheetHandle />
+                <ModalTitle>단체루틴에 참여하시겠습니까?</ModalTitle>
+                <ModalSubtitle>
+                  바로 단체 루틴에 (방장이 루틴을 수정시 루틴이 변경됩니다)
+                </ModalSubtitle>
+
+                <ButtonRow>
+                  <ButtonWrapper>
+                    <CustomButton
+                      text="취소"
+                      onPress={handleCloseJoinModal}
+                      backgroundColor={theme.colors.gray200}
+                      textColor={theme.colors.gray700}
+                    />
+                  </ButtonWrapper>
+                  <ButtonWrapper>
+                    <CustomButton
+                      text="참여하기"
+                      onPress={handleConfirmJoin}
+                      backgroundColor={theme.colors.primary}
+                      textColor={theme.colors.white}
+                    />
+                  </ButtonWrapper>
+                </ButtonRow>
+              </BottomSheet>
+            </TouchableWithoutFeedback>
+          </ModalOverlay>
+        </TouchableWithoutFeedback>
+      </Modal>
     </Container>
   );
 };
@@ -243,3 +287,52 @@ const JoinText = styled.Text`
 `;
 
 const ItemRow = styled.View``;
+
+// Modal Styles
+const ModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.35);
+  justify-content: flex-end;
+`;
+
+const BottomSheet = styled.View`
+  background-color: ${theme.colors.white};
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 24px 16px 40px 16px;
+  min-height: 240px;
+`;
+
+const SheetHandle = styled.View`
+  align-self: center;
+  width: 48px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: ${theme.colors.gray300};
+  margin-bottom: 12px;
+`;
+
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 18px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+`;
+
+const ModalSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 13px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-top: 8px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+  margin-top: 20px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex: 1;
+`;
