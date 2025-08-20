@@ -5,3 +5,4 @@ export { default as DayButton } from './DayButton';
 export { default as DayOfWeekSelector } from './DayOfWeekSelector';
 export { default as TimeRangeSelector } from './TimeRangeSelector';
 export { default as RoutineCategorySelector } from './RoutineCategorySelector';
+export { default as RoutineActionButton } from './RoutineActionButton';

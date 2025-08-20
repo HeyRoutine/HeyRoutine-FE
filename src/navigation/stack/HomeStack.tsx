@@ -7,6 +7,7 @@ import PersonalRoutineDetailScreen from '../../screens/home/PersonalRoutineDetai
 import GroupBoardScreen from '../../screens/group/GroupBoardScreen';
 import GroupRoutineDetailScreen from '../../screens/group/GroupRoutineDetailScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
+import ActiveRoutineScreen from '../../screens/home/ActiveRoutineScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const HomeStack = () => {
         name="GroupRoutineDetail"
         component={GroupRoutineDetailScreen}
       />
+      <Stack.Screen name="ActiveRoutine" component={ActiveRoutineScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />
     </Stack.Navigator>
   );
