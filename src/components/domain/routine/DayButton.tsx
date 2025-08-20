@@ -7,11 +7,21 @@ interface DayButtonProps {
   day: string;
   isSelected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
-const DayButton = ({ day, isSelected, onPress }: DayButtonProps) => {
+const DayButton = ({
+  day,
+  isSelected,
+  onPress,
+  disabled = false,
+}: DayButtonProps) => {
   return (
-    <Button onPress={onPress} isSelected={isSelected}>
+    <Button
+      onPress={disabled ? undefined : onPress}
+      isSelected={isSelected}
+      disabled={disabled}
+    >
       <ButtonText isSelected={isSelected}>{day}</ButtonText>
     </Button>
   );
@@ -27,7 +37,7 @@ const Button = styled(TouchableOpacity)<{ isSelected: boolean }>`
     isSelected ? theme.colors.primary : theme.colors.gray100};
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  margin-right: 10px;
 `;
 
 const ButtonText = styled(Text)<{ isSelected: boolean }>`

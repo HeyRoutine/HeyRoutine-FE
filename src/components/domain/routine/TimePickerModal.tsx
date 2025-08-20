@@ -8,19 +8,24 @@ import BottomSheetDialog from '../../common/BottomSheetDialog';
 interface TimePickerModalProps {
   visible: boolean;
   onRequestClose: () => void;
-  onTimeSelect: (time: string) => void;
+  onTimeSelect: (time: string | number) => void;
+  type: 'time' | 'minutes';
   initialTime?: string;
+  initialMinutes?: number;
 }
 
 const TimePickerModal = ({
   visible,
   onRequestClose,
   onTimeSelect,
+  type,
   initialTime = '09:00',
+  initialMinutes = 40,
 }: TimePickerModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
   const [selectedHour, setSelectedHour] = useState(9);
   const [selectedMinute, setSelectedMinute] = useState(0);
+  const [selectedMinutes, setSelectedMinutes] = useState(40);
 
   // 데이터 준비
   const periodData = [
@@ -38,9 +43,15 @@ const TimePickerModal = ({
     label: i.toString().padStart(2, '0'),
   }));
 
+  // 1분부터 999분까지 데이터 준비
+  const minutesData = Array.from({ length: 999 }, (_, i) => ({
+    value: i + 1,
+    label: (i + 1).toString(),
+  }));
+
   // 초기값 설정
   useEffect(() => {
-    if (initialTime) {
+    if (type === 'time' && initialTime) {
       const [hours, minutes] = initialTime.split(':');
       const hour = parseInt(hours);
       const period = hour < 12 ? '오전' : '오후';
@@ -50,12 +61,20 @@ const TimePickerModal = ({
       setSelectedPeriod(period);
       setSelectedHour(displayHour);
       setSelectedMinute(minute);
+    } else if (type === 'minutes' && initialMinutes) {
+      if (initialMinutes >= 1 && initialMinutes <= 999) {
+        setSelectedMinutes(initialMinutes);
+      }
     }
-  }, [initialTime]);
+  }, [initialTime, initialMinutes, type]);
 
   const handleComplete = () => {
-    const timeString = `${selectedPeriod} ${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
-    onTimeSelect(timeString);
+    if (type === 'time') {
+      const timeString = `${selectedPeriod} ${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
+      onTimeSelect(timeString);
+    } else {
+      onTimeSelect(selectedMinutes);
+    }
     onRequestClose();
   };
 
@@ -65,51 +84,72 @@ const TimePickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
-      <Title>시간 선택</Title>
+      <Title>{type === 'time' ? '시간 선택' : '분 선택'}</Title>
 
       <TimePickerContainer>
         <SelectionOverlay />
 
-        <WheelContainer>
-          <WheelPicker
-            data={periodData}
-            value={selectedPeriod}
-            onValueChanged={({ item }) =>
-              setSelectedPeriod(item.value as '오전' | '오후')
-            }
-            itemHeight={60}
-            visibleItemCount={5}
-            itemTextStyle={itemTextStyle}
-            overlayItemStyle={overlayItemStyle}
-            enableScrollByTapOnItem={true}
-          />
-        </WheelContainer>
+        {type === 'time' ? (
+          <>
+            <WheelContainer>
+              <WheelPicker
+                data={periodData}
+                value={selectedPeriod}
+                onValueChanged={({ item }) =>
+                  setSelectedPeriod(item.value as '오전' | '오후')
+                }
+                itemHeight={60}
+                visibleItemCount={5}
+                itemTextStyle={itemTextStyle}
+                overlayItemStyle={overlayItemStyle}
+                enableScrollByTapOnItem={true}
+              />
+            </WheelContainer>
 
-        <WheelContainer>
-          <WheelPicker
-            data={hourData}
-            value={selectedHour}
-            onValueChanged={({ item }) => setSelectedHour(item.value)}
-            itemHeight={60}
-            visibleItemCount={5}
-            itemTextStyle={itemTextStyle}
-            overlayItemStyle={overlayItemStyle}
-            enableScrollByTapOnItem={true}
-          />
-        </WheelContainer>
+            <WheelContainer>
+              <WheelPicker
+                data={hourData}
+                value={selectedHour}
+                onValueChanged={({ item }) => setSelectedHour(item.value)}
+                itemHeight={60}
+                visibleItemCount={5}
+                itemTextStyle={itemTextStyle}
+                overlayItemStyle={overlayItemStyle}
+                enableScrollByTapOnItem={true}
+              />
+            </WheelContainer>
 
-        <WheelContainer>
-          <WheelPicker
-            data={minuteData}
-            value={selectedMinute}
-            onValueChanged={({ item }) => setSelectedMinute(item.value)}
-            itemHeight={60}
-            visibleItemCount={5}
-            itemTextStyle={itemTextStyle}
-            overlayItemStyle={overlayItemStyle}
-            enableScrollByTapOnItem={true}
-          />
-        </WheelContainer>
+            <WheelContainer>
+              <WheelPicker
+                data={minuteData}
+                value={selectedMinute}
+                onValueChanged={({ item }) => setSelectedMinute(item.value)}
+                itemHeight={60}
+                visibleItemCount={5}
+                itemTextStyle={itemTextStyle}
+                overlayItemStyle={overlayItemStyle}
+                enableScrollByTapOnItem={true}
+              />
+            </WheelContainer>
+          </>
+        ) : (
+          <>
+            <WheelContainer>
+              <WheelPicker
+                data={minutesData}
+                value={selectedMinutes}
+                onValueChanged={({ item }) => setSelectedMinutes(item.value)}
+                itemHeight={60}
+                visibleItemCount={5}
+                itemTextStyle={itemTextStyle}
+                overlayItemStyle={overlayItemStyle}
+                enableScrollByTapOnItem={true}
+              />
+            </WheelContainer>
+
+            <MinutesText>분</MinutesText>
+          </>
+        )}
       </TimePickerContainer>
 
       <CompleteButton onPress={handleComplete}>
@@ -155,6 +195,13 @@ const TimePickerContainer = styled.View`
 const WheelContainer = styled.View`
   align-items: center;
   width: 80px;
+`;
+
+const MinutesText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 24;
+  color: ${theme.colors.gray900};
+  margin-left: 8px;
 `;
 
 const SelectionOverlay = styled.View`

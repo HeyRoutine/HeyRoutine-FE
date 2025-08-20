@@ -20,8 +20,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   const [routineName, setRoutineName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('life');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState('오전 09:00');
-  const [endTime, setEndTime] = useState('오전 11:00');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState('');
@@ -37,7 +37,17 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
       startTime,
       endTime,
     });
-    navigation.goBack();
+
+    // PersonalRoutineDetailScreen으로 이동
+    navigation.navigate('PersonalRoutineDetail', {
+      routineData: {
+        name: routineName,
+        category: selectedCategory,
+        days: selectedDays,
+        startTime,
+        endTime,
+      },
+    });
   };
 
   const isFormValid = routineName.trim() && selectedDays.length > 0;
@@ -57,13 +67,21 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
     setShowDatePicker(false);
   };
 
-  const handleStartTimeSelect = (time: string) => {
-    setStartTime(time);
+  const handleStartTimeSelect = (time: string | number) => {
+    console.log('시작 시간 선택됨:', time, typeof time);
+    if (typeof time === 'string') {
+      setStartTime(time);
+      console.log('시작 시간 설정됨:', time);
+    }
     setShowStartTimePicker(false);
   };
 
-  const handleEndTimeSelect = (time: string) => {
-    setEndTime(time);
+  const handleEndTimeSelect = (time: string | number) => {
+    console.log('종료 시간 선택됨:', time, typeof time);
+    if (typeof time === 'string') {
+      setEndTime(time);
+      console.log('종료 시간 설정됨:', time);
+    }
     setShowEndTimePicker(false);
   };
 
@@ -106,6 +124,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
           selectedDays={selectedDays}
           onDaysChange={setSelectedDays}
           onStartDatePress={() => setShowDatePicker(true)}
+          selectedStartDate={selectedStartDate}
         />
 
         {/* 시간 선택 */}
@@ -163,6 +182,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         visible={showStartTimePicker}
         onRequestClose={() => setShowStartTimePicker(false)}
         onTimeSelect={handleStartTimeSelect}
+        type="time"
         initialTime="09:00"
       />
 
@@ -171,6 +191,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         visible={showEndTimePicker}
         onRequestClose={() => setShowEndTimePicker(false)}
         onTimeSelect={handleEndTimeSelect}
+        type="time"
         initialTime="11:00"
       />
     </Container>
