@@ -66,8 +66,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
               progress={progress}
               size={280}
               strokeWidth={8}
-              progressColor={theme.colors.primary}
-              backgroundColor={theme.colors.gray200}
+              color={theme.colors.primary}
             />
             <TimerContent>
               <BreadIcon>🍞</BreadIcon>

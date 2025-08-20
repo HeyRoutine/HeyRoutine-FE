@@ -111,6 +111,8 @@ const StartDateText = styled.Text`
 
 const DaysContainer = styled.View`
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  gap: 4px;
 `;
