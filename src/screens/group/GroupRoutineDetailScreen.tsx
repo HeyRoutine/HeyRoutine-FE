@@ -4,7 +4,6 @@ import styled from 'styled-components/native';
 import { Image, Modal, TouchableWithoutFeedback, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
-import { RoutineItem } from '../../components/domain/routine';
 import CustomButton from '../../components/common/CustomButton';
 
 interface GroupRoutineDetailScreenProps {
@@ -12,7 +11,10 @@ interface GroupRoutineDetailScreenProps {
   route: { params?: { routineId?: string } };
 }
 
-const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScreenProps) => {
+const GroupRoutineDetailScreen = ({
+  navigation,
+  route,
+}: GroupRoutineDetailScreenProps) => {
   const routine = useMemo(
     () => ({
       id: route?.params?.routineId ?? '1',
@@ -40,32 +42,70 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
         'https://i.pravatar.cc/100?img=8',
       ],
     }),
-    [route?.params?.routineId]
+    [route?.params?.routineId],
   );
 
   const [isJoinModalVisible, setJoinModalVisible] = useState(false);
+  const [isJoined, setIsJoined] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [userRole, setUserRole] = useState<'host' | 'member' | null>(null);
 
   const handleBack = () => navigation.goBack();
   const handleJoin = () => setJoinModalVisible(true);
   const handleCloseJoinModal = () => setJoinModalVisible(false);
   const handleConfirmJoin = () => {
     // 참여 확정 로직 (API 연동 등)
+    setIsJoined(true);
+    setUserRole('member'); // 기본적으로 팀원으로 설정 (실제로는 API에서 사용자 역할 확인)
     setJoinModalVisible(false);
+  };
+
+  const handleMenuPress = () => {
+    setIsMenuVisible(!isMenuVisible);
+  };
+
+  const handleEditRoutine = () => {
+    // 루틴 수정 로직
+    setIsMenuVisible(false);
+  };
+
+  const handleDeleteRoutine = () => {
+    // 루틴 삭제 로직
+    setIsMenuVisible(false);
+  };
+
+  const handleLeaveRoutine = () => {
+    // 루틴 나가기 로직
+    setIsJoined(false);
+    setUserRole(null);
+    setIsMenuVisible(false);
   };
 
   return (
     <Container>
       <Header title="단체 루틴" onBackPress={handleBack} />
-      <ScrollContent showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <ScrollContent
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      >
         <SummaryCard>
           <SummaryHeader>
             <SummaryTitle>{routine.title}</SummaryTitle>
-            <MemberCountRow>
-              <MemberIcon>👥</MemberIcon>
-              <MemberCountText>{routine.membersCount}</MemberCountText>
-            </MemberCountRow>
+            {!isJoined && (
+              <MemberCountRow>
+                <MemberIcon>👥</MemberIcon>
+                <MemberCountText>{routine.membersCount}</MemberCountText>
+              </MemberCountRow>
+            )}
+            {isJoined && (
+              <MenuButton onPress={handleMenuPress}>
+                <MenuIcon>⋯</MenuIcon>
+              </MenuButton>
+            )}
           </SummaryHeader>
-          <SummaryDescription numberOfLines={2}>{routine.description}</SummaryDescription>
+          <SummaryDescription numberOfLines={2}>
+            {routine.description}
+          </SummaryDescription>
           <SummaryMetaRow>
             <MetaText>{routine.timeRange}</MetaText>
             <MetaDot>•</MetaDot>
@@ -81,7 +121,11 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
           <ItemList>
             {routine.tasks.map((t) => (
               <ItemRow key={t.title}>
-                <RoutineItem icon={t.icon} title={t.title} duration={t.duration} />
+                <TaskIcon>{t.icon}</TaskIcon>
+                <TaskContent>
+                  <TaskTitle>{t.title}</TaskTitle>
+                  <TaskDuration>{t.duration}</TaskDuration>
+                </TaskContent>
               </ItemRow>
             ))}
           </ItemList>
@@ -89,24 +133,82 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
 
         <ParticipantsCard>
           <SectionHeader>참여자</SectionHeader>
-          <AvatarRow horizontal showsHorizontalScrollIndicator={false}>
-            {routine.participants.map((uri, idx) => (
-              <AvatarWrapper key={`${uri}-${idx}`}>
-                <Avatar source={{ uri }} />
-              </AvatarWrapper>
-            ))}
-          </AvatarRow>
+
+          {!isJoined ? (
+            // 참여하기 전: 일반 참여자 목록
+            <AvatarRow horizontal showsHorizontalScrollIndicator={false}>
+              {routine.participants.slice(0, 8).map((uri, idx) => (
+                <AvatarWrapper key={`participant-${idx}`}>
+                  <Avatar source={{ uri }} />
+                </AvatarWrapper>
+              ))}
+            </AvatarRow>
+          ) : (
+            // 참여한 후: 완료자와 미달성자로 분류
+            <>
+              {/* 완료된 참여자 */}
+              <CompletedSection>
+                <CompletedTitle>완료</CompletedTitle>
+                <CompletedCountContainer>
+                  <CompletedIcon>👥</CompletedIcon>
+                  <CompletedCountText>12</CompletedCountText>
+                </CompletedCountContainer>
+                <CompletedAvatarRow
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {routine.participants.slice(0, 8).map((uri, idx) => (
+                    <AvatarWrapper key={`completed-${idx}`}>
+                      <Avatar source={{ uri }} />
+                    </AvatarWrapper>
+                  ))}
+                </CompletedAvatarRow>
+              </CompletedSection>
+
+              {/* 미달성 참여자 */}
+              <UnachievedSection>
+                <UnachievedTitle>미달성</UnachievedTitle>
+                <UnachievedCountContainer>
+                  <UnachievedIcon>👥</UnachievedIcon>
+                  <UnachievedCountText>252</UnachievedCountText>
+                </UnachievedCountContainer>
+                <UnachievedAvatarRow
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {routine.participants.slice(0, 8).map((uri, idx) => (
+                    <AvatarWrapper key={`unachieved-${idx}`}>
+                      <Avatar source={{ uri }} />
+                    </AvatarWrapper>
+                  ))}
+                </UnachievedAvatarRow>
+              </UnachievedSection>
+            </>
+          )}
         </ParticipantsCard>
 
-        <JoinCta>
-          <JoinButton onPress={handleJoin}>
-            <JoinText>단체루틴 참여</JoinText>
-          </JoinButton>
-        </JoinCta>
+        {!isJoined ? (
+          <JoinCta>
+            <JoinButton onPress={handleJoin}>
+              <JoinText>단체루틴 참여</JoinText>
+            </JoinButton>
+          </JoinCta>
+        ) : (
+          <JoinCta>
+            <JoinButton disabled>
+              <JoinText>참여 완료</JoinText>
+            </JoinButton>
+          </JoinCta>
+        )}
       </ScrollContent>
 
       {/* 참여 확인 모달 */}
-      <Modal visible={isJoinModalVisible} transparent animationType="slide" onRequestClose={handleCloseJoinModal}>
+      <Modal
+        visible={isJoinModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseJoinModal}
+      >
         <TouchableWithoutFeedback onPress={handleCloseJoinModal}>
           <ModalOverlay>
             <TouchableWithoutFeedback>
@@ -138,6 +240,41 @@ const GroupRoutineDetailScreen = ({ navigation, route }: GroupRoutineDetailScree
               </BottomSheet>
             </TouchableWithoutFeedback>
           </ModalOverlay>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* 메뉴 모달 */}
+      <Modal
+        visible={isMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsMenuVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsMenuVisible(false)}>
+          <MenuModalOverlay>
+            <TouchableWithoutFeedback>
+              <MenuContainer>
+                {userRole === 'host' ? (
+                  <>
+                    <MenuItem onPress={handleEditRoutine}>
+                      <MenuItemText>수정</MenuItemText>
+                    </MenuItem>
+                    <MenuItem onPress={handleDeleteRoutine}>
+                      <MenuItemText style={{ color: theme.colors.error }}>
+                        삭제
+                      </MenuItemText>
+                    </MenuItem>
+                  </>
+                ) : (
+                  <MenuItem onPress={handleLeaveRoutine}>
+                    <MenuItemText style={{ color: theme.colors.error }}>
+                      나가기
+                    </MenuItemText>
+                  </MenuItem>
+                )}
+              </MenuContainer>
+            </TouchableWithoutFeedback>
+          </MenuModalOverlay>
         </TouchableWithoutFeedback>
       </Modal>
     </Container>
@@ -253,8 +390,69 @@ const ParticipantsCard = styled.View`
   margin-bottom: 16px;
 `;
 
-const AvatarRow = styled.ScrollView`
+const AvatarRow = styled.ScrollView``;
+
+// Completed Participants Styles
+const CompletedSection = styled.View`
+  margin-bottom: 20px;
 `;
+
+const CompletedTitle = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 8px;
+`;
+
+const CompletedCountContainer = styled.View`
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const CompletedIcon = styled.Text`
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: ${theme.colors.gray400};
+`;
+
+const CompletedCountText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray400};
+`;
+
+const CompletedAvatarRow = styled.ScrollView``;
+
+// Unachieved Participants Styles
+const UnachievedSection = styled.View`
+  margin-bottom: 20px;
+`;
+
+const UnachievedTitle = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 8px;
+`;
+
+const UnachievedCountContainer = styled.View`
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const UnachievedIcon = styled.Text`
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: ${theme.colors.gray400};
+`;
+
+const UnachievedCountText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray400};
+`;
+
+const UnachievedAvatarRow = styled.ScrollView``;
 
 const AvatarWrapper = styled.View`
   width: 44px;
@@ -273,8 +471,9 @@ const JoinCta = styled.View`
   margin-top: 8px;
 `;
 
-const JoinButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+const JoinButton = styled.TouchableOpacity<{ disabled?: boolean }>`
+  background-color: ${(props) =>
+    props.disabled ? theme.colors.gray300 : theme.colors.primary};
   border-radius: 12px;
   padding: 16px;
   align-items: center;
@@ -286,7 +485,35 @@ const JoinText = styled.Text`
   color: ${theme.colors.white};
 `;
 
-const ItemRow = styled.View``;
+const ItemRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px;
+  background-color: ${theme.colors.gray50};
+  border-radius: 8px;
+`;
+
+const TaskIcon = styled.Text`
+  font-size: 20px;
+  margin-right: 12px;
+`;
+
+const TaskContent = styled.View`
+  flex: 1;
+`;
+
+const TaskTitle = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 2px;
+`;
+
+const TaskDuration = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray600};
+`;
 
 // Modal Styles
 const ModalOverlay = styled.View`
@@ -335,4 +562,42 @@ const ButtonRow = styled.View`
 
 const ButtonWrapper = styled.View`
   flex: 1;
+`;
+
+// Menu Styles
+const MenuButton = styled.TouchableOpacity`
+  margin-left: 12px;
+  padding: 4px;
+`;
+
+const MenuIcon = styled.Text`
+  font-size: 20px;
+  color: ${theme.colors.gray600};
+  font-weight: bold;
+`;
+
+const MenuModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.35);
+  justify-content: flex-end;
+`;
+
+const MenuContainer = styled.View`
+  background-color: ${theme.colors.white};
+  border-radius: 12px;
+  margin: 16px;
+  overflow: hidden;
+`;
+
+const MenuItem = styled.TouchableOpacity`
+  padding: 16px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${theme.colors.gray100};
+`;
+
+const MenuItemText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  text-align: center;
 `;
