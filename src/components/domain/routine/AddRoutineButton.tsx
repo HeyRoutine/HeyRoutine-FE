@@ -19,7 +19,7 @@ export default AddRoutineButton;
 
 const Container = styled.TouchableOpacity`
   position: absolute;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
   width: 56px;
   height: 56px;

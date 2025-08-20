@@ -10,6 +10,7 @@ import {
   DayOfWeekSelector,
   EmojiPickerModal,
 } from '../../components/domain/routine';
+import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
@@ -29,6 +30,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: string;
       text: string;
       time: string;
+      isCompleted: boolean;
     }>
   >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -101,6 +103,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
+          isCompleted: true,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -110,6 +113,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
+          isCompleted: true,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -121,11 +125,16 @@ const PersonalRoutineDetailScreen = ({
     }
   };
 
-  // 텍스트 입력 후 포커스가 벗어날 때 자동으로 추가/수정
-  const handleTextBlur = () => {
-    if (currentText && currentText.trim() && selectedEmoji && selectedTime) {
+  // 세 개 필드가 모두 채워졌을 때 자동으로 추가/수정
+  useEffect(() => {
+    if (selectedEmoji && currentText && selectedTime) {
       handleCompleteEdit();
     }
+  }, [selectedEmoji, currentText, selectedTime]);
+
+  const handleDeleteItem = (index: number) => {
+    const updatedItems = routineItems.filter((_, i) => i !== index);
+    setRoutineItems(updatedItems);
   };
 
   const handleSave = () => {
@@ -144,13 +153,13 @@ const PersonalRoutineDetailScreen = ({
       description: '새로운 루틴이 성공적으로 생성되었습니다.',
       onSuccess: () => {
         // 홈 화면으로 이동
-        navigation.navigate('HomeMain');
+        navigation.navigate('Home');
       },
     });
   };
 
   return (
-    <Container edges={['top', 'left', 'right']}>
+    <Container>
       <Header title="루틴 상세 설정" onBackPress={handleBack} />
       <Content>
         <RoutineCard>
@@ -174,7 +183,6 @@ const PersonalRoutineDetailScreen = ({
                 onPlusPress={handlePlusPress}
                 onClockPress={handleClockPress}
                 onTextChange={handleTextChange}
-                onBlur={handleTextBlur}
                 selectedTime={selectedTime}
                 selectedEmoji={selectedEmoji}
                 currentText={currentText}
@@ -183,24 +191,23 @@ const PersonalRoutineDetailScreen = ({
             </AdderContainer>
           )}
 
-          {/* 기존 루틴 아이템들 */}
+          {/* 완성된 루틴 아이템들 */}
           {routineItems.map((item, index) => (
             <AdderContainer key={index}>
-              <RoutineItemAdder
-                onPlusPress={() => handleEditItem(index)}
-                onClockPress={() => handleEditItem(index)}
-                onTextChange={(text) => {
-                  if (editingIndex === index) {
-                    setCurrentText(text);
-                  }
+              <CompletedRoutineItem
+                item={item}
+                index={index}
+                onEdit={(index, emoji, text, time) => {
+                  const updatedItems = [...routineItems];
+                  updatedItems[index] = {
+                    emoji,
+                    text,
+                    time,
+                    isCompleted: true,
+                  };
+                  setRoutineItems(updatedItems);
                 }}
-                onBlur={editingIndex === index ? handleTextBlur : undefined}
-                selectedTime={editingIndex === index ? selectedTime : item.time}
-                selectedEmoji={
-                  editingIndex === index ? selectedEmoji : item.emoji
-                }
-                currentText={editingIndex === index ? currentText : item.text}
-                placeholder="루틴을 추가해주세요"
+                onDelete={handleDeleteItem}
               />
             </AdderContainer>
           ))}

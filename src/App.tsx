@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from './styles/theme';
@@ -20,7 +21,7 @@ export default function App() {
   // 2. Zustand 스토어에서 로그인 상태 가져오기
   const { isLoggedIn } = useAuthStore();
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(true); // 온보딩 표시 여부
+  const [showOnboarding, setShowOnboarding] = useState(false); // 온보딩 표시 여부
 
   // 온보딩 완료 시 호출되는 함수
   const handleOnboardingComplete = () => {
@@ -54,42 +55,44 @@ export default function App() {
 
   // 4. 로그인 상태에 따라 다른 화면 렌더링
   return (
-    <SafeAreaProvider>
-      <ThemeProvider theme={theme}>
-        {isLoading ? (
-          <SplashScreen />
-        ) : showOnboarding ? (
-          <NavigationContainer>
-            <OnboardingNavigator
-              onComplete={handleOnboardingComplete}
-              initialParams={{
-                nextScreen: 'Result',
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider theme={theme}>
+          {isLoading ? (
+            <SplashScreen />
+          ) : showOnboarding ? (
+            <NavigationContainer>
+              <OnboardingNavigator
+                onComplete={handleOnboardingComplete}
+                initialParams={{
+                  nextScreen: 'Result',
+                }}
+              />
+            </NavigationContainer>
+          ) : showCelebration ? (
+            <ResultScreen
+              navigation={{
+                navigate: () => setShowCelebration(false),
+              }}
+              route={{
+                params: {
+                  type: 'celebration',
+                  title: '냥멍이님',
+                  description:
+                    '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
+                  points: 100,
+                  lottieSource: require('./assets/images/animation/confetti.json'),
+                  onComplete: () => setShowCelebration(false),
+                },
               }}
             />
-          </NavigationContainer>
-        ) : showCelebration ? (
-          <ResultScreen
-            navigation={{
-              navigate: () => setShowCelebration(false),
-            }}
-            route={{
-              params: {
-                type: 'celebration',
-                title: '냥멍이님',
-                description:
-                  '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
-                points: 100,
-                lottieSource: require('./assets/images/animation/confetti.json'),
-                onComplete: () => setShowCelebration(false),
-              },
-            }}
-          />
-        ) : (
-          <NavigationContainer>
-            {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
-          </NavigationContainer>
-        )}
-      </ThemeProvider>
-    </SafeAreaProvider>
+          ) : (
+            <NavigationContainer>
+              {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}
+            </NavigationContainer>
+          )}
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
