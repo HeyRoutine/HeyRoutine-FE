@@ -1,16 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
 const ActiveRoutineScreen = ({ navigation }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [isPauseModalVisible, setPauseModalVisible] = useState(false);
+  const [isCompleteModalVisible, setCompleteModalVisible] = useState(false);
+  const [isResumeModalVisible, setResumeModalVisible] = useState(false);
+  const [isSkipModalVisible, setSkipModalVisible] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  const tasks = useMemo(
+    () => [
+      { icon: '🍞', title: '식빵 굽기', duration: '10분' },
+      { icon: '☕', title: '커피 내리기', duration: '5분' },
+      { icon: '🧼', title: '샤워하기', duration: '15분' },
+    ],
+    []
+  );
+  const [activeTaskIndex, setActiveTaskIndex] = useState(0);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -34,19 +50,62 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePause = () => {
-    setIsActive(!isActive);
+  const handlePausePress = () => {
+    if (isActive) {
+      setPauseModalVisible(true);
+    } else {
+      // 재시작 모달 오픈
+      setResumeModalVisible(true);
+    }
   };
 
-  const handleComplete = () => {
-    // 루틴 완료 로직
-    navigation.goBack();
+  const handleConfirmPause = () => {
+    setIsActive(false);
+    setPauseModalVisible(false);
   };
 
-  const handleSkip = () => {
-    // 루틴 건너뛰기 로직
-    navigation.goBack();
+  const handleClosePauseModal = () => setPauseModalVisible(false);
+
+  const handleConfirmResume = () => {
+    setIsActive(true);
+    setResumeModalVisible(false);
   };
+
+  const handleCloseResumeModal = () => setResumeModalVisible(false);
+
+  const handleCompletePress = () => {
+    setCompleteModalVisible(true);
+  };
+
+  const handleConfirmComplete = () => {
+    setCompleteModalVisible(false);
+    setIsActive(false);
+    setIsCompleted(true);
+  };
+
+  const handleCloseCompleteModal = () => setCompleteModalVisible(false);
+
+  const handleSkipPress = () => {
+    setSkipModalVisible(true);
+  };
+
+  const goToNextTask = () => {
+    if (activeTaskIndex < tasks.length - 1) {
+      setActiveTaskIndex((prev) => prev + 1);
+      setTimeLeft(10 * 60);
+      setProgress(0);
+      setIsActive(true);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const handleConfirmSkip = () => {
+    setSkipModalVisible(false);
+    goToNextTask();
+  };
+
+  const handleCloseSkipModal = () => setSkipModalVisible(false);
 
   const handleBack = () => navigation.goBack();
 
@@ -55,34 +114,134 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
       <Header title="루틴 타이머" onBackPress={handleBack} />
       <ScrollContent
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
       >
         <ContentContainer>
-          <Title>식빵 굽기</Title>
+          <Title>{tasks[activeTaskIndex].title}</Title>
           <Subtitle>병병이의 아침루틴</Subtitle>
 
           <TimerContainer>
-            <ProgressCircle
-              progress={progress}
-              size={280}
-              strokeWidth={8}
-              progressColor={theme.colors.primary}
-              backgroundColor={theme.colors.gray200}
-            />
-            <TimerContent>
-              <BreadIcon>🍞</BreadIcon>
-              <TimeLeft>{formatTime(timeLeft)}</TimeLeft>
-              <TotalTime>10분</TotalTime>
-            </TimerContent>
+            {isCompleted ? (
+              <SuccessContainer>
+                <SuccessCircle>
+                  <CheckIcon>✓</CheckIcon>
+                </SuccessCircle>
+                <SuccessTitle>루틴 성공🎉</SuccessTitle>
+                <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
+              </SuccessContainer>
+            ) : (
+              <>
+                <ProgressCircle
+                  progress={progress}
+                  size={280}
+                  strokeWidth={12}
+                  progressColor={theme.colors.primary}
+                  backgroundColor={theme.colors.gray200}
+                  showText={false}
+                  reverse
+                />
+                <TimerContent>
+                  <BreadIcon>{tasks[activeTaskIndex].icon}</BreadIcon>
+                  <TimeLeft>{formatTime(timeLeft)}</TimeLeft>
+                  <TotalTime>{tasks[activeTaskIndex].duration}</TotalTime>
+                </TimerContent>
+              </>
+            )}
           </TimerContainer>
 
-          <ActionButtonsContainer>
-            <RoutineActionButton type="pause" onPress={handlePause} />
-            <RoutineActionButton type="complete" onPress={handleComplete} />
-            <RoutineActionButton type="skip" onPress={handleSkip} />
-          </ActionButtonsContainer>
+          {!isCompleted && (
+            <ActionButtonsContainer>
+              <RoutineActionButton type={isActive ? 'pause' : 'play'} onPress={handlePausePress} />
+              <RoutineActionButton type="complete" onPress={handleCompletePress} />
+              <RoutineActionButton type="skip" onPress={handleSkipPress} />
+            </ActionButtonsContainer>
+          )}
         </ContentContainer>
       </ScrollContent>
+
+      {/* 일시정지 확인 모달 */}
+      <BottomSheetDialog
+        visible={isPauseModalVisible}
+        onRequestClose={handleClosePauseModal}
+      >
+        <ModalTitle>루틴 일시정지</ModalTitle>
+        <ModalSubtitle>해당 루틴을 일시정지 하시겠습니까?</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleClosePauseModal}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <PauseButton onPress={handleConfirmPause}>
+              <PauseText>일시정지</PauseText>
+            </PauseButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 스킵 확인 모달 */}
+      <BottomSheetDialog
+        visible={isSkipModalVisible}
+        onRequestClose={handleCloseSkipModal}
+      >
+        <ModalTitle>루틴 넘어가기</ModalTitle>
+        <ModalSubtitle>다음 루틴으로 넘어가시겠습니까?</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleCloseSkipModal}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <SkipButton onPress={handleConfirmSkip}>
+              <SkipText>스킵</SkipText>
+            </SkipButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 완료 확인 모달 */}
+      <BottomSheetDialog
+        visible={isCompleteModalVisible}
+        onRequestClose={handleCloseCompleteModal}
+      >
+        <ModalTitle>루틴 완료</ModalTitle>
+        <ModalSubtitle>해당 루틴을 완료하시겠습니까?</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleCloseCompleteModal}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CompleteButton onPress={handleConfirmComplete}>
+              <CompleteText>완료</CompleteText>
+            </CompleteButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 재시작 확인 모달 */}
+      <BottomSheetDialog
+        visible={isResumeModalVisible}
+        onRequestClose={handleCloseResumeModal}
+      >
+        <ModalTitle>루틴 다시 시작</ModalTitle>
+        <ModalSubtitle>해당 루틴을 다시 시작하시겠습니까?</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleCloseResumeModal}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <ResumeButton onPress={handleConfirmResume}>
+              <ResumeText>다시 시작</ResumeText>
+            </ResumeButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -102,7 +261,7 @@ const ContentContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding: 40px 0;
+  padding: 16px 0;
 `;
 
 const Title = styled.Text`
@@ -110,7 +269,7 @@ const Title = styled.Text`
   font-size: 28px;
   color: ${theme.colors.gray900};
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `;
 
 const Subtitle = styled.Text`
@@ -118,11 +277,11 @@ const Subtitle = styled.Text`
   font-size: 16px;
   color: ${theme.colors.gray600};
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 16px;
 `;
 
 const TimerContainer = styled.View`
-  margin-bottom: 60px;
+  margin: 8px 0 24px 0;
   position: relative;
   width: 280px;
   height: 280px;
@@ -158,4 +317,129 @@ const ActionButtonsContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  margin-top: -8px;
+`;
+
+// Success styles
+const SuccessContainer = styled.View`
+  align-items: center;
+`;
+
+const SuccessCircle = styled.View`
+  width: 180px;
+  height: 180px;
+  border-radius: 90px;
+  background-color: ${theme.colors.primary};
+  align-items: center;
+  justify-content: center;
+`;
+
+const CheckIcon = styled.Text`
+  font-size: 72px;
+  color: ${theme.colors.white};
+  margin-top: -6px;
+`;
+
+const SuccessTitle = styled.Text`
+  margin-top: 20px;
+  font-family: ${theme.fonts.Bold};
+  font-size: 22px;
+  color: ${theme.colors.gray900};
+`;
+
+const SuccessSubtitle = styled.Text`
+  margin-top: 6px;
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+`;
+
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 18px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+`;
+
+const ModalSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-top: 8px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+  margin-top: 20px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex: 1;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.gray200};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CancelText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray700};
+`;
+
+const PauseButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const PauseText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const CompleteButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CompleteText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const ResumeButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const ResumeText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const SkipButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const SkipText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
 `;
