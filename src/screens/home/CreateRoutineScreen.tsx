@@ -86,7 +86,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
           <Ionicons

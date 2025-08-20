@@ -121,12 +121,12 @@ const PersonalRoutineDetailScreen = ({
     }
   };
 
-  // 세 개 필드가 모두 채워졌을 때 자동으로 추가/수정
-  useEffect(() => {
-    if (selectedEmoji && currentText && selectedTime) {
+  // 텍스트 입력 후 포커스가 벗어날 때 자동으로 추가/수정
+  const handleTextBlur = () => {
+    if (currentText && currentText.trim() && selectedEmoji && selectedTime) {
       handleCompleteEdit();
     }
-  }, [selectedEmoji, currentText, selectedTime]);
+  };
 
   const handleSave = () => {
     // 루틴 저장 로직
@@ -144,13 +144,13 @@ const PersonalRoutineDetailScreen = ({
       description: '새로운 루틴이 성공적으로 생성되었습니다.',
       onSuccess: () => {
         // 홈 화면으로 이동
-        navigation.navigate('Home');
+        navigation.navigate('HomeMain');
       },
     });
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="루틴 상세 설정" onBackPress={handleBack} />
       <Content>
         <RoutineCard>
@@ -174,6 +174,7 @@ const PersonalRoutineDetailScreen = ({
                 onPlusPress={handlePlusPress}
                 onClockPress={handleClockPress}
                 onTextChange={handleTextChange}
+                onBlur={handleTextBlur}
                 selectedTime={selectedTime}
                 selectedEmoji={selectedEmoji}
                 currentText={currentText}
@@ -193,6 +194,7 @@ const PersonalRoutineDetailScreen = ({
                     setCurrentText(text);
                   }
                 }}
+                onBlur={editingIndex === index ? handleTextBlur : undefined}
                 selectedTime={editingIndex === index ? selectedTime : item.time}
                 selectedEmoji={
                   editingIndex === index ? selectedEmoji : item.emoji

@@ -51,7 +51,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
   const handleBack = () => navigation.goBack();
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="루틴 타이머" onBackPress={handleBack} />
       <ScrollContent
         showsVerticalScrollIndicator={false}

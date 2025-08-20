@@ -156,7 +156,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Content>
         {/* 날짜 선택기 */}
         <DateSelector>
@@ -257,11 +257,12 @@ export default HomeScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
+  padding-bottom: 0;
 `;
 
 const Content = styled.ScrollView`
   flex: 1;
-  padding: 24px 24px 24px 24px;
+  padding: 24px;
 `;
 
 const DateSelector = styled.View`
