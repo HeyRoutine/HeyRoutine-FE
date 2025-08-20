@@ -4,30 +4,33 @@ import { theme } from '../../../styles/theme';
 
 interface CommentCardProps {
   profileImage: string;
-  username: string;
-  role?: string;
-  timeAgo: string;
-  message: string;
+  nickname: string;
+  comment: string;
+  timestamp: string;
+  likeCount: number;
 }
 
 const CommentCard = ({
   profileImage,
-  username,
-  role,
-  timeAgo,
-  message,
+  nickname,
+  comment,
+  timestamp,
+  likeCount,
 }: CommentCardProps) => {
   return (
     <Container>
-      <ProfileImage source={{ uri: profileImage }} />
-      <ContentContainer>
-        <Header>
-          <Username>{username}</Username>
-          {role && <Role>({role})</Role>}
-          <TimeAgo>{timeAgo}</TimeAgo>
-        </Header>
-        <Message>{message}</Message>
-      </ContentContainer>
+      <Header>
+        <ProfileImage source={{ uri: profileImage }} />
+        <UserInfo>
+          <Nickname>{nickname}</Nickname>
+          <Timestamp>{timestamp}</Timestamp>
+        </UserInfo>
+      </Header>
+      <CommentText>{comment}</CommentText>
+      <LikeButton>
+        <LikeIcon>❤️</LikeIcon>
+        <LikeCount>{likeCount}</LikeCount>
+      </LikeButton>
     </Container>
   );
 };
@@ -35,52 +38,63 @@ const CommentCard = ({
 export default CommentCard;
 
 const Container = styled.View`
-  flex-direction: row;
-  padding: 12px 0;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray100};
-`;
-
-const ProfileImage = styled.Image`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  margin-right: 12px;
-`;
-
-const ContentContainer = styled.View`
-  flex: 1;
+  background-color: ${theme.colors.white};
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
 `;
 
 const Header = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 `;
 
-const Username = styled.Text`
+const ProfileImage = styled.Image`
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  margin-right: 8px;
+`;
+
+const UserInfo = styled.View`
+  flex: 1;
+`;
+
+const Nickname = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray800};
 `;
 
-const Role = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 12px;
-  color: ${theme.colors.gray600};
-  margin-left: 4px;
-`;
-
-const TimeAgo = styled.Text`
+const Timestamp = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 12px;
   color: ${theme.colors.gray500};
-  margin-left: auto;
+  margin-top: 2px;
 `;
 
-const Message = styled.Text`
+const CommentText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
   color: ${theme.colors.gray700};
   line-height: 20px;
+  margin-bottom: 8px;
+`;
+
+const LikeButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  align-self: flex-start;
+`;
+
+const LikeIcon = styled.Text`
+  font-size: 14px;
+  margin-right: 4px;
+`;
+
+const LikeCount = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray600};
 `;
