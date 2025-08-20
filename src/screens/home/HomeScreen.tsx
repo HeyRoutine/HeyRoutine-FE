@@ -261,8 +261,7 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.ScrollView`
   flex: 1;
-  padding: 16px;
-  showsverticalscrollindicator: false;
+  padding: 24px 24px 24px 24px;
 `;
 
 const DateSelector = styled.View`
