@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 import { Image, Modal, TouchableWithoutFeedback, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
-import { RoutineItem, RoutineActionButton } from '../../components/domain/routine';
+import { RoutineItem } from '../../components/domain/routine';
 import CustomButton from '../../components/common/CustomButton';
 
 interface GroupRoutineDetailScreenProps {
