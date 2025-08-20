@@ -6,10 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
-import {
-  RoutineCard,
-  AddRoutineButton,
-} from '../../components/domain/routine';
+import { RoutineCard, AddRoutineButton } from '../../components/domain/routine';
 
 const MOCK_ROUTINES = [
   {
@@ -40,7 +37,7 @@ const MOCK_ROUTINES = [
     id: '4',
     category: '자기개발',
     progress: 45,
-    title: '넌 도서를 하게 될거시야',
+    title: '넌 독서를 하게 될거시야',
     timeRange: '오전 7:00 - 오전 9:00',
     selectedDays: ['월', '화', '수', '목', '금', '토', '일'],
   },
@@ -56,7 +53,9 @@ const GroupBoardScreen = ({ navigation }: any) => {
       title={item.title}
       timeRange={item.timeRange}
       selectedDays={item.selectedDays}
-      onPress={() => navigation.navigate('GroupRoutineDetail', { routineId: item.id })}
+      onPress={() =>
+        navigation.navigate('GroupRoutineDetail', { routineId: item.id })
+      }
       onMorePress={() => {}}
     />
   );
@@ -73,9 +72,15 @@ const GroupBoardScreen = ({ navigation }: any) => {
           ListHeaderComponent={() => (
             <Banner>
               <BannerIcon>
-                <Ionicons name="megaphone-outline" size={18} color={theme.colors.white} />
+                <Ionicons
+                  name="megaphone-outline"
+                  size={18}
+                  color={theme.colors.white}
+                />
               </BannerIcon>
-              <BannerText>부적절한 게시글을 작성할 경우, 앱 이용이 제한될 수 있습니다.</BannerText>
+              <BannerText>
+                부적절한 게시글을 작성할 경우, 앱 이용이 제한될 수 있습니다.
+              </BannerText>
             </Banner>
           )}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
