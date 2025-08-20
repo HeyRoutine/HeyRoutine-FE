@@ -9,16 +9,22 @@ interface DayOfWeekSelectorProps {
   selectedDays: string[];
   onDaysChange: (days: string[]) => void;
   onStartDatePress?: () => void;
+  selectedStartDate?: string;
+  readOnly?: boolean;
 }
 
 const DayOfWeekSelector = ({
   selectedDays,
   onDaysChange,
   onStartDatePress,
+  selectedStartDate,
+  readOnly = false,
 }: DayOfWeekSelectorProps) => {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
 
   const handleDayPress = (day: string) => {
+    if (readOnly) return; // 읽기 전용일 때는 클릭 무시
+
     if (selectedDays.includes(day)) {
       onDaysChange(selectedDays.filter((d) => d !== day));
     } else {
@@ -26,19 +32,34 @@ const DayOfWeekSelector = ({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월 ${day}일`;
+  };
+
   return (
     <Container>
-      <HeaderRow>
-        <Label>요일</Label>
-        <StartDateButton onPress={onStartDatePress}>
-          <StartDateText>시작 날짜 선택</StartDateText>
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={theme.colors.gray600}
-          />
-        </StartDateButton>
-      </HeaderRow>
+      {!readOnly && (
+        <HeaderRow>
+          <Label>요일</Label>
+          {onStartDatePress && (
+            <StartDateButton onPress={onStartDatePress}>
+              <StartDateText>
+                {selectedStartDate
+                  ? formatDate(selectedStartDate)
+                  : '시작 날짜 선택'}
+              </StartDateText>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.gray600}
+              />
+            </StartDateButton>
+          )}
+        </HeaderRow>
+      )}
       <DaysContainer>
         {days.map((day) => (
           <DayButton
@@ -46,6 +67,7 @@ const DayOfWeekSelector = ({
             day={day}
             isSelected={selectedDays.includes(day)}
             onPress={() => handleDayPress(day)}
+            disabled={readOnly}
           />
         ))}
       </DaysContainer>
@@ -89,6 +111,6 @@ const StartDateText = styled.Text`
 
 const DaysContainer = styled.View`
   flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
+  width: 100%;
 `;

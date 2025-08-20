@@ -22,11 +22,11 @@ const TimeRangeSelector = ({
       <TimeContainer>
         <TimeButton onPress={onStartTimePress}>
           <TimeLabel>시작 시간</TimeLabel>
-          <TimeValue>{startTime}</TimeValue>
+          <TimeValue>{startTime || '시간 선택'}</TimeValue>
         </TimeButton>
         <TimeButton onPress={onEndTimePress}>
           <TimeLabel>완료 시간</TimeLabel>
-          <TimeValue>{endTime}</TimeValue>
+          <TimeValue>{endTime || '시간 선택'}</TimeValue>
         </TimeButton>
       </TimeContainer>
     </Container>
