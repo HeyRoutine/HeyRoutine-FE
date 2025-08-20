@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../styles/theme';
 
 interface RoutineActionButtonProps {
-  type: 'pause' | 'complete' | 'skip';
+  type: 'pause' | 'complete' | 'skip' | 'play';
   onPress: () => void;
   disabled?: boolean;
 }
@@ -22,6 +22,12 @@ const RoutineActionButton = ({
           icon: 'pause' as const,
           backgroundColor: theme.colors.gray200,
           iconColor: theme.colors.gray600,
+        };
+      case 'play':
+        return {
+          icon: 'play' as const,
+          backgroundColor: theme.colors.primary,
+          iconColor: theme.colors.white,
         };
       case 'complete':
         return {

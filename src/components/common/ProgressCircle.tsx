@@ -8,7 +8,16 @@ interface ProgressCircleProps {
   progress: number; // 0-100
   size?: number;
   strokeWidth?: number;
+  /** 과거 prop 호환용 */
   color?: string;
+  /** 진행 원 색상 (권장) */
+  progressColor?: string;
+  /** 배경 원 색상 (옵션) */
+  backgroundColor?: string;
+  /** 가운데 % 텍스트 표시 여부 (기본값: true) */
+  showText?: boolean;
+  /** 진행 방향을 반대로(가득 찬 상태에서 감소) 표시 */
+  reverse?: boolean;
 }
 
 const ProgressCircle = ({
@@ -16,6 +25,10 @@ const ProgressCircle = ({
   size = 200,
   strokeWidth = 8,
   color = theme.colors.primary,
+  progressColor,
+  backgroundColor,
+  showText = true,
+  reverse = false,
 }: ProgressCircleProps) => {
   const animatedProgress = useRef(new Animated.Value(0)).current;
   const animatedText = useRef(new Animated.Value(0)).current;
@@ -40,13 +53,16 @@ const ProgressCircle = ({
 
   const strokeDashoffset = animatedProgress.interpolate({
     inputRange: [0, 100],
-    outputRange: [circumference, 0],
+    outputRange: reverse ? [0, circumference] : [circumference, 0],
   });
 
   const animatedTextValue = animatedText.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 100],
   });
+
+  const progressStrokeColor = progressColor ?? color ?? theme.colors.primary;
+  const backgroundStrokeColor = backgroundColor ?? theme.colors.gray200;
 
   return (
     <Container size={size}>
@@ -56,7 +72,7 @@ const ProgressCircle = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={theme.colors.gray200}
+          stroke={backgroundStrokeColor}
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -65,7 +81,7 @@ const ProgressCircle = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={color}
+          stroke={progressStrokeColor}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -74,7 +90,9 @@ const ProgressCircle = ({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      <AnimatedProgressText>{Math.round(progress)}%</AnimatedProgressText>
+      {showText && (
+        <AnimatedProgressText>{Math.round(progress)}%</AnimatedProgressText>
+      )}
     </Container>
   );
 };
