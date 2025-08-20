@@ -9,6 +9,7 @@ import { theme } from './styles/theme';
 import SplashScreen from './screens/auth/SplashScreen';
 import MainNavigator from './navigation/MainNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
+import OnboardingNavigator from './navigation/OnboardingNavigator';
 import { useAuthStore } from './store';
 import ResultScreen from './screens/common/ResultScreen';
 
@@ -19,6 +20,12 @@ export default function App() {
   // 2. Zustand 스토어에서 로그인 상태 가져오기
   const { isLoggedIn } = useAuthStore();
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true); // 온보딩 표시 여부
+
+  // 온보딩 완료 시 호출되는 함수
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
 
   const [fontsLoaded] = useFonts({
     'Pretendard-Light': require('./assets/fonts/Pretendard-Light.otf'),
@@ -51,6 +58,15 @@ export default function App() {
       <ThemeProvider theme={theme}>
         {isLoading ? (
           <SplashScreen />
+        ) : showOnboarding ? (
+          <NavigationContainer>
+            <OnboardingNavigator
+              onComplete={handleOnboardingComplete}
+              initialParams={{
+                nextScreen: 'Result',
+              }}
+            />
+          </NavigationContainer>
         ) : showCelebration ? (
           <ResultScreen
             navigation={{
