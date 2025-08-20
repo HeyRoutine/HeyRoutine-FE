@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface AddRoutineButtonProps {
   onPress: () => void;
@@ -9,7 +10,7 @@ interface AddRoutineButtonProps {
 const AddRoutineButton = ({ onPress }: AddRoutineButtonProps) => {
   return (
     <Container onPress={onPress}>
-      <PlusIcon>+</PlusIcon>
+      <Ionicons name="add" size={24} color={theme.colors.white} />
     </Container>
   );
 };
@@ -26,15 +27,4 @@ const Container = styled.TouchableOpacity`
   background-color: ${theme.colors.primary};
   align-items: center;
   justify-content: center;
-  elevation: 8;
-  shadow-color: ${theme.colors.primary};
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.3;
-  shadow-radius: 8px;
-`;
-
-const PlusIcon = styled.Text`
-  font-size: 24px;
-  color: ${theme.colors.white};
-  font-weight: bold;
 `;

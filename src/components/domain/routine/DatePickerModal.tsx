@@ -65,7 +65,14 @@ const DatePickerModal = ({
   );
 
   const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 오늘 날짜 이전은 선택 불가
+    if (selectedDate >= today) {
+      setSelectedDate(date);
+    }
   };
 
   const handleComplete = () => {

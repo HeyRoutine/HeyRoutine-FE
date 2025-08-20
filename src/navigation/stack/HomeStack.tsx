@@ -8,13 +8,14 @@ import GroupBoardScreen from '../../screens/group/GroupBoardScreen';
 import GroupRoutineDetailScreen from '../../screens/group/GroupRoutineDetailScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
 import ActiveRoutineScreen from '../../screens/home/ActiveRoutineScreen';
+import ResultScreen from '../../screens/common/ResultScreen';
 
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeMain" component={HomeScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="CreateRoutine" component={CreateRoutineScreen} />
       <Stack.Screen
         name="PersonalRoutineDetail"
@@ -27,6 +28,7 @@ const HomeStack = () => {
       />
       <Stack.Screen name="ActiveRoutine" component={ActiveRoutineScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />
+      <Stack.Screen name="Result" component={ResultScreen} />
     </Stack.Navigator>
   );
 };
