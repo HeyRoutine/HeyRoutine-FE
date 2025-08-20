@@ -15,7 +15,7 @@ const Stack = createNativeStackNavigator();
 const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="HomeMain" component={HomeScreen} />
       <Stack.Screen name="CreateRoutine" component={CreateRoutineScreen} />
       <Stack.Screen
         name="PersonalRoutineDetail"

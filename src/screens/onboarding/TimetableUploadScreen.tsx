@@ -4,50 +4,54 @@ import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 
-interface AiRecommendationScreenProps {
+interface TimetableUploadScreenProps {
   navigation: any;
 }
 
-const AiRecommendationScreen = ({
-  navigation,
-}: AiRecommendationScreenProps) => {
-  const handleComplete = () => {
+const TimetableUploadScreen = ({ navigation }: TimetableUploadScreenProps) => {
+  const handlePhotoUpload = () => {
+    // 사진으로 불러오기 로직
     navigation.navigate('OnboardingLoading', {
       nextScreen: 'Result',
-      isRoutineRegistration: true,
+      isUpload: true,
+    });
+  };
+
+  const handleCancel = () => {
+    // 취소 시 메인 화면으로 이동
+    navigation.navigate('OnboardingLoading', {
+      nextScreen: null,
     });
   };
 
   return (
     <Container>
       <Content>
-        <Title>AI 추천</Title>
+        <Title>시간표 업로드</Title>
         <Description>
-          당신의 시간표를 분석한 결과,{'\n'}
-          다음과 같은 루틴을 추천해드려요.
+          시간표를 업로드하여 AI 루틴 추천을 받아보세요.
         </Description>
-
-        <RecommendationCard>
-          <RecommendationText>
-            • 아침 운동: 30분{'\n'}• 점심 식사: 1시간{'\n'}• 저녁 공부: 2시간
-            {'\n'}• 취침 준비: 30분
-          </RecommendationText>
-        </RecommendationCard>
       </Content>
 
       <ButtonWrapper>
         <CustomButton
-          text="완료"
-          onPress={handleComplete}
+          text="사진으로 불러오기"
+          onPress={handlePhotoUpload}
           backgroundColor={theme.colors.primary}
           textColor={theme.colors.white}
+        />
+        <CustomButton
+          text="취소"
+          onPress={handleCancel}
+          backgroundColor={theme.colors.gray200}
+          textColor={theme.colors.gray600}
         />
       </ButtonWrapper>
     </Container>
   );
 };
 
-export default AiRecommendationScreen;
+export default TimetableUploadScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
@@ -75,24 +79,9 @@ const Description = styled.Text`
   color: ${theme.colors.gray600};
   text-align: center;
   line-height: 24px;
-  margin-bottom: 32px;
-`;
-
-const RecommendationCard = styled.View`
-  background-color: ${theme.colors.gray50};
-  padding: 24px;
-  border-radius: 12px;
-  width: 100%;
-  margin-bottom: 32px;
-`;
-
-const RecommendationText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-  line-height: 24px;
 `;
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+  gap: 12px;
 `;

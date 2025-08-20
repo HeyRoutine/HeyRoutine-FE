@@ -14,8 +14,8 @@ interface AuthState {
 
 // Zustand 스토어 생성
 export const useAuthStore = create<AuthState>((set) => ({
-  // 초기 상태 (테스트를 위해 임시로 true로 설정)
-  isLoggedIn: true,
+  // 초기 상태 (로그인 화면부터 시작하려면 false로 설정)
+  isLoggedIn: false,
   isLoading: false,
 
   // 액션들
