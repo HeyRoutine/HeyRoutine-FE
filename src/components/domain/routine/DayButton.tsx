@@ -30,19 +30,18 @@ const DayButton = ({
 export default DayButton;
 
 const Button = styled(TouchableOpacity)<{ isSelected: boolean }>`
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
   background-color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray100};
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
 `;
 
 const ButtonText = styled(Text)<{ isSelected: boolean }>`
   font-family: ${theme.fonts.Medium};
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.white : theme.colors.gray600};
 `;

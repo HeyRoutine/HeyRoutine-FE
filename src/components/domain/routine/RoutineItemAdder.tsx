@@ -8,27 +8,28 @@ interface RoutineItemAdderProps {
   onPlusPress: () => void;
   onClockPress: () => void;
   onTextChange?: (text: string) => void;
+  onBlur?: () => void;
+  onTextPress?: () => void;
   placeholder?: string;
   selectedTime?: string;
   selectedEmoji?: string;
   currentText?: string;
+  isCompleted?: boolean;
 }
 
 const RoutineItemAdder = ({
   onPlusPress,
   onClockPress,
   onTextChange,
+  onBlur,
+  onTextPress,
   placeholder = '루틴을 추가해주세요',
   selectedTime,
   selectedEmoji,
   currentText,
+  isCompleted = false,
 }: RoutineItemAdderProps) => {
   const [text, setText] = useState(currentText || '');
-
-  // 디버깅용 로그
-  console.log('RoutineItemAdder selectedTime:', selectedTime);
-  console.log('RoutineItemAdder selectedEmoji:', selectedEmoji);
-  console.log('RoutineItemAdder currentText:', currentText);
 
   const handleTextChange = (newText: string) => {
     setText(newText);
@@ -48,21 +49,28 @@ const RoutineItemAdder = ({
           <Ionicons name="add" size={28} color={theme.colors.gray400} />
         )}
       </PlusSection>
-      <TextSection>
-        <TextInput
-          value={text}
-          onChangeText={handleTextChange}
-          placeholder={placeholder}
-          placeholderTextColor={theme.colors.gray400}
-          style={{
-            fontFamily: theme.fonts.Medium,
-            fontSize: 13,
-            color: theme.colors.gray800,
-            width: '100%',
-            height: '100%',
-          }}
-        />
-      </TextSection>
+      {isCompleted ? (
+        <TextSectionCompleted onPress={onTextPress}>
+          <CompletedText>{text}</CompletedText>
+        </TextSectionCompleted>
+      ) : (
+        <TextSection>
+          <TextInput
+            value={text}
+            onChangeText={handleTextChange}
+            onBlur={onBlur}
+            placeholder={placeholder}
+            placeholderTextColor={theme.colors.gray400}
+            style={{
+              fontFamily: theme.fonts.Medium,
+              fontSize: 13,
+              color: theme.colors.gray800,
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        </TextSection>
+      )}
       <TimeSection onPress={onClockPress}>
         {selectedTime ? (
           <TimeText>{selectedTime}</TimeText>
@@ -97,7 +105,7 @@ const PlusSection = styled.TouchableOpacity`
 `;
 
 const TextSection = styled.View`
-  flex: 2;
+  flex: 1;
   align-items: flex-start;
   justify-content: center;
   height: 48px;
@@ -105,6 +113,23 @@ const TextSection = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 8px;
   border: 1px solid ${theme.colors.gray200};
+`;
+
+const TextSectionCompleted = styled.TouchableOpacity`
+  flex: 1;
+  align-items: flex-start;
+  justify-content: center;
+  height: 48px;
+  padding: 0 12px;
+  background-color: ${theme.colors.white};
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.gray200};
+`;
+
+const CompletedText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 13px;
+  color: ${theme.colors.gray800};
 `;
 
 const TimeSection = styled.TouchableOpacity`

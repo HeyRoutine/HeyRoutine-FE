@@ -128,7 +128,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Content>
           {/* 탭 네비게이션 */}
@@ -193,6 +193,7 @@ export default AnalysisScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
+  padding-bottom: 0;
 `;
 
 const Content = styled.View`

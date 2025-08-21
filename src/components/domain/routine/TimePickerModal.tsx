@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components/native';
 import { TouchableOpacity, Text, View } from 'react-native';
 import WheelPicker from '@quidone/react-native-wheel-picker';
@@ -27,27 +27,44 @@ const TimePickerModal = ({
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(40);
 
-  // 데이터 준비
-  const periodData = [
-    { value: '오전', label: '오전' },
-    { value: '오후', label: '오후' },
-  ];
+  // 데이터 준비 - useMemo로 최적화
+  const periodData = useMemo(
+    () => [
+      { value: '오전', label: '오전' },
+      { value: '오후', label: '오후' },
+    ],
+    [],
+  );
 
-  const hourData = Array.from({ length: 12 }, (_, i) => ({
-    value: i + 1,
-    label: (i + 1).toString(),
-  }));
+  const hourData = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        value: i + 1,
+        label: (i + 1).toString(),
+      })),
+    [],
+  );
 
-  const minuteData = Array.from({ length: 60 }, (_, i) => ({
-    value: i,
-    label: i.toString().padStart(2, '0'),
-  }));
+  const minuteData = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        value: i,
+        label: i.toString().padStart(2, '0'),
+      })),
+    [],
+  );
 
-  // 1분부터 999분까지 데이터 준비
-  const minutesData = Array.from({ length: 999 }, (_, i) => ({
-    value: i + 1,
-    label: (i + 1).toString(),
-  }));
+  // 1분부터 180분까지 데이터 준비 - 성능 최적화
+  const minutesData = useMemo(() => {
+    const data: Array<{ value: number; label: string }> = [];
+    for (let i = 1; i <= 180; i++) {
+      data.push({
+        value: i,
+        label: i.toString(),
+      });
+    }
+    return data;
+  }, []);
 
   // 초기값 설정
   useEffect(() => {
@@ -62,7 +79,7 @@ const TimePickerModal = ({
       setSelectedHour(displayHour);
       setSelectedMinute(minute);
     } else if (type === 'minutes' && initialMinutes) {
-      if (initialMinutes >= 1 && initialMinutes <= 999) {
+      if (initialMinutes >= 1 && initialMinutes <= 180) {
         setSelectedMinutes(initialMinutes);
       }
     }
@@ -140,7 +157,7 @@ const TimePickerModal = ({
                 value={selectedMinutes}
                 onValueChanged={({ item }) => setSelectedMinutes(item.value)}
                 itemHeight={60}
-                visibleItemCount={5}
+                visibleItemCount={3}
                 itemTextStyle={itemTextStyle}
                 overlayItemStyle={overlayItemStyle}
                 enableScrollByTapOnItem={true}
@@ -159,7 +176,7 @@ const TimePickerModal = ({
   );
 };
 
-export default TimePickerModal;
+export default React.memo(TimePickerModal);
 
 const Title = styled.Text`
   font-family: ${theme.fonts.SemiBold};
@@ -199,7 +216,7 @@ const WheelContainer = styled.View`
 
 const MinutesText = styled.Text`
   font-family: ${theme.fonts.Medium};
-  font-size: 24;
+  font-size: 24px;
   color: ${theme.colors.gray900};
   margin-left: 8px;
 `;

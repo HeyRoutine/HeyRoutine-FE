@@ -77,7 +77,7 @@ const ResultScreen = ({ navigation, route }: any) => {
 
           <Description>{description}</Description>
 
-          {points && <PointsText>+{points}p</PointsText>}
+          {points > 0 && <PointsText>+{points}p</PointsText>}
         </Content>
       </CenterContainer>
 

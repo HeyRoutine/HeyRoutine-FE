@@ -85,7 +85,7 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Content>
         <ProfileSection insets={insets}>
           <ProfileImage

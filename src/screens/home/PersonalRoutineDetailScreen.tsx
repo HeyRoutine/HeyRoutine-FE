@@ -10,6 +10,7 @@ import {
   DayOfWeekSelector,
   EmojiPickerModal,
 } from '../../components/domain/routine';
+import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
@@ -29,6 +30,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: string;
       text: string;
       time: string;
+      isCompleted: boolean;
     }>
   >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -101,6 +103,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
+          isCompleted: true,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -110,6 +113,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
+          isCompleted: true,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -127,6 +131,11 @@ const PersonalRoutineDetailScreen = ({
       handleCompleteEdit();
     }
   }, [selectedEmoji, currentText, selectedTime]);
+
+  const handleDeleteItem = (index: number) => {
+    const updatedItems = routineItems.filter((_, i) => i !== index);
+    setRoutineItems(updatedItems);
+  };
 
   const handleSave = () => {
     // 루틴 저장 로직
@@ -182,23 +191,23 @@ const PersonalRoutineDetailScreen = ({
             </AdderContainer>
           )}
 
-          {/* 기존 루틴 아이템들 */}
+          {/* 완성된 루틴 아이템들 */}
           {routineItems.map((item, index) => (
             <AdderContainer key={index}>
-              <RoutineItemAdder
-                onPlusPress={() => handleEditItem(index)}
-                onClockPress={() => handleEditItem(index)}
-                onTextChange={(text) => {
-                  if (editingIndex === index) {
-                    setCurrentText(text);
-                  }
+              <CompletedRoutineItem
+                item={item}
+                index={index}
+                onEdit={(index, emoji, text, time) => {
+                  const updatedItems = [...routineItems];
+                  updatedItems[index] = {
+                    emoji,
+                    text,
+                    time,
+                    isCompleted: true,
+                  };
+                  setRoutineItems(updatedItems);
                 }}
-                selectedTime={editingIndex === index ? selectedTime : item.time}
-                selectedEmoji={
-                  editingIndex === index ? selectedEmoji : item.emoji
-                }
-                currentText={editingIndex === index ? currentText : item.text}
-                placeholder="루틴을 추가해주세요"
+                onDelete={handleDeleteItem}
               />
             </AdderContainer>
           ))}
