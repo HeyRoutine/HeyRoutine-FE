@@ -9,9 +9,10 @@ interface TimePickerModalProps {
   visible: boolean;
   onRequestClose: () => void;
   onTimeSelect: (time: string | number) => void;
-  type: 'time' | 'minutes';
+  type?: 'time' | 'minutes';
   initialTime?: string;
   initialMinutes?: number;
+  hideTitle?: boolean;
 }
 
 const TimePickerModal = ({
@@ -21,6 +22,7 @@ const TimePickerModal = ({
   type,
   initialTime = '09:00',
   initialMinutes = 40,
+  hideTitle = false,
 }: TimePickerModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
   const [selectedHour, setSelectedHour] = useState(9);
@@ -90,7 +92,7 @@ const TimePickerModal = ({
       const timeString = `${selectedPeriod} ${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
       onTimeSelect(timeString);
     } else {
-      onTimeSelect(selectedMinutes);
+      onTimeSelect(`${selectedMinutes}분`);
     }
     onRequestClose();
   };
@@ -101,7 +103,7 @@ const TimePickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
-      <Title>{type === 'time' ? '시간 선택' : '분 선택'}</Title>
+      {!hideTitle && <Title>{type === 'time' ? '시간 선택' : '분 선택'}</Title>}
 
       <TimePickerContainer>
         <SelectionOverlay />

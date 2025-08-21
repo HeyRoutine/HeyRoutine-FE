@@ -125,6 +125,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
           onDaysChange={setSelectedDays}
           onStartDatePress={() => setShowDatePicker(true)}
           selectedStartDate={selectedStartDate}
+          buttonSize={40}
+          borderRadius={20}
         />
 
         {/* 시간 선택 */}

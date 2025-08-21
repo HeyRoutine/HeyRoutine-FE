@@ -8,6 +8,8 @@ interface DayButtonProps {
   isSelected: boolean;
   onPress: () => void;
   disabled?: boolean;
+  buttonSize?: number;
+  borderRadius?: number;
 }
 
 const DayButton = ({
@@ -15,12 +17,16 @@ const DayButton = ({
   isSelected,
   onPress,
   disabled = false,
+  buttonSize = 28,
+  borderRadius = 14,
 }: DayButtonProps) => {
   return (
     <Button
       onPress={disabled ? undefined : onPress}
       isSelected={isSelected}
       disabled={disabled}
+      buttonSize={buttonSize}
+      borderRadius={borderRadius}
     >
       <ButtonText isSelected={isSelected}>{day}</ButtonText>
     </Button>
@@ -29,10 +35,14 @@ const DayButton = ({
 
 export default DayButton;
 
-const Button = styled(TouchableOpacity)<{ isSelected: boolean }>`
-  width: 28px;
-  height: 28px;
-  border-radius: 14px;
+const Button = styled(TouchableOpacity)<{
+  isSelected: boolean;
+  buttonSize: number;
+  borderRadius: number;
+}>`
+  width: ${({ buttonSize }) => buttonSize}px;
+  height: ${({ buttonSize }) => buttonSize}px;
+  border-radius: ${({ borderRadius }) => borderRadius}px;
   background-color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray100};
   align-items: center;

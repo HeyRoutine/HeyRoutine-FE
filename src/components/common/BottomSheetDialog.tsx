@@ -58,8 +58,8 @@ const BottomSheet = styled.View`
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   padding: 20px 20px 16px 20px;
-  align-self: flex-end;
   width: 100%;
+  max-height: 80%;
 `;
 
 const SheetHandle = styled.View`
@@ -73,5 +73,5 @@ const SheetHandle = styled.View`
 
 const ContentContainer = styled.View`
   width: 100%;
-  padding: 36px 0;
+  padding: 0;
 `;

@@ -9,6 +9,7 @@ import {
   TimePickerModal,
   DayOfWeekSelector,
   EmojiPickerModal,
+  RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
 
@@ -42,6 +43,10 @@ const PersonalRoutineDetailScreen = ({
   // 수정 중인 아이템 인덱스 (null이면 새로 추가하는 중)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
+  // 루틴 추천 모달 상태
+  const [routineSuggestionVisible, setRoutineSuggestionVisible] =
+    useState(false);
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -53,13 +58,11 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handlePlusPress = () => {
-    // 이모지 선택 모달 열기
-    setEmojiPickerVisible(true);
+    setRoutineSuggestionVisible(true);
   };
 
   const handleClockPress = () => {
-    // 시간 선택 모달 열기
-    setTimePickerVisible(true);
+    setRoutineSuggestionVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -82,6 +85,10 @@ const PersonalRoutineDetailScreen = ({
   const handleTextChange = (text: string) => {
     console.log('입력된 텍스트:', text);
     setCurrentText(text);
+  };
+
+  const handleTextPress = () => {
+    setRoutineSuggestionVisible(true);
   };
 
   // 기존 아이템 수정 시작
@@ -137,6 +144,28 @@ const PersonalRoutineDetailScreen = ({
     setRoutineItems(updatedItems);
   };
 
+  // 루틴 추천 선택 핸들러 (완료 버튼 클릭 시 호출)
+  const handleRoutineSuggestionSelect = (routine: any) => {
+    // 완성된 루틴 아이템을 화면에 추가
+    const newItem = {
+      emoji: routine.icon,
+      text: routine.title,
+      time: '30분', // 기본 시간 설정
+      isCompleted: true,
+    };
+    setRoutineItems([...routineItems, newItem]);
+
+    // 필드 초기화
+    setSelectedEmoji('');
+    setCurrentText('');
+    setSelectedTime('');
+  };
+
+  // 루틴 추천 모달이 닫힐 때 호출되는 핸들러
+  const handleRoutineSuggestionClose = () => {
+    setRoutineSuggestionVisible(false);
+  };
+
   const handleSave = () => {
     // 루틴 저장 로직
     console.log('루틴 저장:', {
@@ -174,6 +203,8 @@ const PersonalRoutineDetailScreen = ({
             selectedDays={selectedDays}
             onDaysChange={setSelectedDays}
             readOnly={true}
+            buttonSize={40}
+            borderRadius={20}
           />
 
           {/* 새로운 루틴 추가 (첫 번째 빈 adder) */}
@@ -183,6 +214,7 @@ const PersonalRoutineDetailScreen = ({
                 onPlusPress={handlePlusPress}
                 onClockPress={handleClockPress}
                 onTextChange={handleTextChange}
+                onTextPress={handleTextPress}
                 selectedTime={selectedTime}
                 selectedEmoji={selectedEmoji}
                 currentText={currentText}
@@ -230,6 +262,18 @@ const PersonalRoutineDetailScreen = ({
         visible={emojiPickerVisible}
         onRequestClose={() => setEmojiPickerVisible(false)}
         onEmojiSelect={handleEmojiSelect}
+      />
+
+      <RoutineSuggestionModal
+        visible={routineSuggestionVisible}
+        onRequestClose={handleRoutineSuggestionClose}
+        onRoutineSelect={handleRoutineSuggestionSelect}
+        onPlusPress={() => setRoutineSuggestionVisible(true)}
+        onClockPress={handleClockPress}
+        onTextChange={handleTextChange}
+        selectedTime={selectedTime}
+        selectedEmoji={selectedEmoji}
+        currentText={currentText}
       />
     </Container>
   );
