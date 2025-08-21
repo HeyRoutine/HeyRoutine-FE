@@ -12,7 +12,7 @@ import SplashScreen from './screens/auth/SplashScreen';
 import MainNavigator from './navigation/MainNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
 import OnboardingNavigator from './navigation/OnboardingNavigator';
-import { useAuthStore } from './store';
+import { useAuthStore, useOnboardingStore } from './store';
 import ResultScreen from './screens/common/ResultScreen';
 
 // React Query 클라이언트 생성
@@ -30,14 +30,15 @@ export default function App() {
   // 1. 앱 로딩 상태 (폰트 등 비동기 작업 처리)
   const [isLoading, setIsLoading] = useState(true);
 
-  // 2. Zustand 스토어에서 로그인 상태 가져오기
+  // 2. Zustand 스토어에서 상태 가져오기
   const { isLoggedIn } = useAuthStore();
+  const { onboardingData, completeOnboarding } = useOnboardingStore();
+
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false); // 온보딩 표시 여부
 
   // 온보딩 완료 시 호출되는 함수
   const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
+    completeOnboarding();
   };
 
   const [fontsLoaded] = useFonts({
@@ -65,6 +66,9 @@ export default function App() {
     }
   }, [fontsLoaded, isLoggedIn]);
 
+  // 온보딩 표시 여부 결정
+  const shouldShowOnboarding = !onboardingData.isCompleted && !isLoggedIn;
+
   // 4. 로그인 상태에 따라 다른 화면 렌더링
   return (
     <QueryClientProvider client={queryClient}>
@@ -73,7 +77,7 @@ export default function App() {
           <ThemeProvider theme={theme}>
             {isLoading ? (
               <SplashScreen />
-            ) : showOnboarding ? (
+            ) : shouldShowOnboarding ? (
               <NavigationContainer>
                 <OnboardingNavigator
                   onComplete={handleOnboardingComplete}

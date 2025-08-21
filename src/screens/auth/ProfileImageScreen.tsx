@@ -7,14 +7,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
-import { useSignupStore } from '../../store';
+import { useAuthStore } from '../../store';
 
 const ProfileImageScreen = ({ navigation }: any) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  // Zustand 회원가입 스토어에서 데이터 가져오기
-  const { signupData, setProfileImage: setSignupProfileImage } =
-    useSignupStore();
+  // Zustand 스토어에서 프로필 이미지 설정 함수와 회원가입 데이터 가져오기
+  const { setSignupProfileImage, signupData } = useAuthStore();
   const { nickname } = signupData;
 
   const handlePickImage = async () => {

@@ -29,18 +29,29 @@ interface IProfileEditScreenProps {
  */
 const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [marketingConsent, setMarketingConsent] = useState(true);
-  const [notificationConsent, setNotificationConsent] = useState(true);
-  const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
 
   // Zustand 스토어에서 사용자 정보와 인증 상태 가져오기
-  const { userInfo } = useUserStore();
+  const { userInfo, updateUserInfo } = useUserStore();
   const { logout } = useAuthStore();
 
-  // 계좌 정보 (임시 데이터)
-  const accountInfo = {
+  // 사용자 설정 상태 (userStore에서 관리)
+  const marketingConsent = userInfo?.marketingConsent ?? true;
+  const notificationConsent = userInfo?.notificationConsent ?? true;
+  const profileImageUri = userInfo?.profileImage;
+
+  // 설정 변경 핸들러들
+  const handleMarketingConsentChange = (value: boolean) => {
+    updateUserInfo({ marketingConsent: value });
+  };
+
+  const handleNotificationConsentChange = (value: boolean) => {
+    updateUserInfo({ notificationConsent: value });
+  };
+
+  // 계좌 정보 (userStore에서 관리)
+  const accountInfo = userInfo?.accountInfo || {
     hasAccount: false,
-    accountNumber: '신한 123-12-123456-1',
+    accountNumber: '',
   };
 
   const handleAccountAction = () => {
@@ -91,14 +102,14 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       type: 'toggle',
       title: '알림 설정',
       toggleValue: notificationConsent,
-      onToggleChange: setNotificationConsent,
+      onToggleChange: handleNotificationConsentChange,
     },
     {
       id: 'marketing',
       type: 'toggle',
       title: '마케팅 수신동의',
       toggleValue: marketingConsent,
-      onToggleChange: setMarketingConsent,
+      onToggleChange: handleMarketingConsentChange,
     },
   ];
 

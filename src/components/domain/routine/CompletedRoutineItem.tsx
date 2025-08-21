@@ -18,6 +18,7 @@ interface CompletedRoutineItemProps {
   index: number;
   onEdit: (index: number, emoji: string, text: string, time: string) => void;
   onDelete: (index: number) => void;
+  isEditMode?: boolean; // 수정 모드 prop 추가
 }
 
 const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
@@ -25,6 +26,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
   index,
   onEdit,
   onDelete,
+  isEditMode = false, // 기본값 false
 }) => {
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -45,11 +47,13 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
   };
 
   const handleEmojiClick = () => {
+    if (!isEditMode) return; // 수정 모드가 아니면 클릭 무시
     console.log('이모지 클릭됨');
     setEmojiPickerVisible(true);
   };
 
   const handleTimeClick = () => {
+    if (!isEditMode) return; // 수정 모드가 아니면 클릭 무시
     console.log('시간 클릭됨');
     setTimePickerVisible(true);
   };
@@ -86,14 +90,18 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
     <>
       <Swipeable
         ref={swipeableRef}
-        renderRightActions={renderRightActions}
+        renderRightActions={isEditMode ? renderRightActions : undefined}
         rightThreshold={40}
-        enabled={!emojiPickerVisible && !timePickerVisible}
+        enabled={isEditMode && !emojiPickerVisible && !timePickerVisible}
       >
         <RoutineItemAdder
           onPlusPress={handleEmojiClick}
           onClockPress={handleTimeClick}
-          onTextChange={(text) => onEdit(index, item.emoji, text, item.time)}
+          onTextChange={
+            isEditMode
+              ? (text) => onEdit(index, item.emoji, text, item.time)
+              : undefined
+          }
           selectedTime={item.time}
           selectedEmoji={item.emoji}
           currentText={item.text}

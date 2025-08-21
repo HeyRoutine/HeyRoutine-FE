@@ -15,7 +15,7 @@ const OnboardingLoadingScreen = ({
   navigation,
   route,
 }: OnboardingLoadingScreenProps) => {
-  const { login } = useAuthStore();
+  const { setLoggedIn } = useAuthStore();
   const [progress, setProgress] = useState(0);
   const {
     nextScreen = 'Result',
@@ -85,7 +85,7 @@ const OnboardingLoadingScreen = ({
         navigation.navigate(nextScreen);
       } else {
         // nextScreen이 없으면 로그인 상태로 변경하여 메인 화면으로 이동
-        login();
+        setLoggedIn(true);
       }
     }, 5000);
 
@@ -93,13 +93,13 @@ const OnboardingLoadingScreen = ({
       clearInterval(progressInterval);
       clearTimeout(timer);
     };
-  }, [navigation, nextScreen, login, isUpload, isAiAnalysis]);
+  }, [navigation, nextScreen, setLoggedIn, isUpload, isAiAnalysis]);
 
   const handleSkip = () => {
     if (nextScreen) {
       navigation.navigate(nextScreen);
     } else {
-      login();
+      setLoggedIn(true);
     }
   };
 

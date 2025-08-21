@@ -38,8 +38,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
       endTime,
     });
 
-    // PersonalRoutineDetailScreen으로 이동
-    navigation.navigate('PersonalRoutineDetail', {
+    // CreateRoutineDetailScreen으로 이동
+    navigation.navigate('CreateRoutineDetail', {
       routineData: {
         name: routineName,
         category: selectedCategory,

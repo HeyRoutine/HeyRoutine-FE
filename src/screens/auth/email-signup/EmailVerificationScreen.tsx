@@ -8,14 +8,14 @@ import CustomButton from '../../../components/common/CustomButton';
 import Header from '../../../components/common/Header';
 import OtpInput from '../../../components/common/OtpInput';
 import Timer from '../../../components/common/Timer';
-import { useSignupStore } from '../../../store';
+import { useAuthStore } from '../../../store';
 
 const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
 
-  // Zustand 회원가입 스토어에서 이메일 가져오기
-  const { signupData } = useSignupStore();
+  // Zustand 스토어에서 회원가입 데이터 가져오기
+  const { signupData } = useAuthStore();
   const { email } = signupData;
 
   const { isEmailChange, onSuccess } = route.params || {};

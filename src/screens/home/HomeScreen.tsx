@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import styled from 'styled-components/native';
+import { Ionicons } from '@expo/vector-icons';
+
 import { theme } from '../../styles/theme';
-import {
-  RoutineCard,
-  AddRoutineButton,
-  GroupRoutineCard,
-} from '../../components/domain/routine';
-import {
-  BottomSheetDialog,
-  CustomButton,
-  TabNavigation,
-} from '../../components/common';
+import Header from '../../components/common/Header';
+import TabNavigation from '../../components/common/TabNavigation';
+import RoutineCard from '../../components/domain/routine/RoutineCard';
+import AddRoutineButton from '../../components/domain/routine/AddRoutineButton';
+import GroupRoutineCard from '../../components/domain/routine/GroupRoutineCard';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import CustomButton from '../../components/common/CustomButton';
+import { useRoutineStore } from '../../store';
 
 interface HomeScreenProps {
   navigation: any;
@@ -19,8 +20,13 @@ interface HomeScreenProps {
 
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedDate, setSelectedDate] = useState(29);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
+
+  // Zustand 스토어에서 루틴 상태 가져오기
+  const { selectedDate, setSelectedDate } = useRoutineStore();
+
+  // 현재 선택된 날짜의 일자 추출
+  const currentDay = selectedDate.getDate();
 
   // 요일과 날짜 데이터
   const weekData = [
@@ -110,7 +116,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      navigation.navigate('RoutineDetail', {
+      navigation.navigate('PersonalRoutineDetail', {
         routineData: {
           name: '빵빵이의 점심루틴',
           startTime: '오후 7:00',
@@ -138,6 +144,13 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     navigation.navigate('CreateRoutine');
   };
 
+  const handleDateSelect = (date: number) => {
+    // 현재 월의 해당 날짜로 Date 객체 생성
+    const newDate = new Date();
+    newDate.setDate(date);
+    setSelectedDate(newDate);
+  };
+
   const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
 
   return (
@@ -151,10 +164,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
               <DayItem key={item.date}>
                 <DayText day={item.day}>{item.day}</DayText>
                 <DateButton
-                  isSelected={selectedDate === item.date}
-                  onPress={() => setSelectedDate(item.date)}
+                  isSelected={currentDay === item.date}
+                  onPress={() => handleDateSelect(item.date)}
                 >
-                  <DateText isSelected={selectedDate === item.date}>
+                  <DateText isSelected={currentDay === item.date}>
                     {item.date}
                   </DateText>
                 </DateButton>

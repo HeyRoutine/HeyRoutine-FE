@@ -7,15 +7,15 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import TermItem from '../../components/domain/auth/TermItem';
-import { useSignupStore } from '../../store';
+import { useAuthStore } from '../../store';
 
 const TermsAgreementScreen = ({ navigation }: any) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
-  // Zustand 회원가입 스토어에서 데이터와 완료 함수 가져오기
-  const { signupData, completeSignup } = useSignupStore();
+  // Zustand 스토어에서 회원가입 데이터와 완료 함수 가져오기
+  const { signupData, completeSignup } = useAuthStore();
   const { nickname } = signupData;
 
   // '완료' 버튼 활성화 조건 (필수 약관 모두 동의)

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert } from 'react-native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
+import CustomButton from '../../components/common/CustomButton';
 import PointButton from '../../components/domain/mypage/PointButton';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
-import { useUserStore } from '../../store';
+import { useUserStore, useFinanceStore } from '../../store';
 
 interface IPointCashoutScreenProps {
   navigation: any;
@@ -17,7 +19,11 @@ interface IPointCashoutScreenProps {
 const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   const [pointAmount, setPointAmount] = useState('0');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+
+  // Zustand 스토어에서 상태 가져오기
   const { userInfo, deductPoints } = useUserStore();
+  const { currentBalance, setCurrentBalance } = useFinanceStore();
+
   const maxPoints = userInfo?.points ?? 0; // Zustand에서 가져온 포인트
 
   const handleInputChange = (text: string) => {
@@ -47,7 +53,13 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
 
   const handleConfirmTransfer = () => {
     const amount = parseInt(pointAmount) || 0;
+
+    // 포인트 차감
     deductPoints(amount);
+
+    // 계좌 잔액 증가 (1P = 1원으로 가정)
+    setCurrentBalance(currentBalance + amount);
+
     setIsTransferModalOpen(false);
     navigation.navigate('PointCashoutComplete', { transferredPoints: amount });
   };
