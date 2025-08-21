@@ -48,12 +48,44 @@ const MainNavigator = () => {
       <Tab.Screen
         name="Analysis"
         component={AnalysisStack}
-        options={{ tabBarLabel: '분석' }}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'Analysis';
+          const hideOnScreens = ['Result'];
+
+          return {
+            tabBarStyle: {
+              display: hideOnScreens.includes(routeName) ? 'none' : 'flex',
+              height: 60 + insets.bottom,
+              paddingBottom: insets.bottom,
+              paddingTop: 8,
+              backgroundColor: theme.colors.white,
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.gray200,
+            },
+            tabBarLabel: '분석',
+          };
+        }}
       />
       <Tab.Screen
         name="Home"
         component={HomeStack}
-        options={{ tabBarLabel: '홈' }}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
+          const hideOnScreens = ['Result'];
+
+          return {
+            tabBarStyle: {
+              display: hideOnScreens.includes(routeName) ? 'none' : 'flex',
+              height: 60 + insets.bottom,
+              paddingBottom: insets.bottom,
+              paddingTop: 8,
+              backgroundColor: theme.colors.white,
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.gray200,
+            },
+            tabBarLabel: '홈',
+          };
+        }}
       />
       <Tab.Screen
         name="Profile"

@@ -9,4 +9,5 @@ export { default as RoutineCategorySelector } from './RoutineCategorySelector';
 export { default as RoutineActionButton } from './RoutineActionButton';
 export { default as TimePickerModal } from './TimePickerModal';
 export { default as EmojiPickerModal } from './EmojiPickerModal';
-
+export { default as RoutineSuggestionModal } from './RoutineSuggestionModal';
+export { default as RoutineSuggestionItem } from './RoutineSuggestionItem';

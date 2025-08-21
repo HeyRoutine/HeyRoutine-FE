@@ -9,7 +9,7 @@ interface RoutineCardProps {
   timeRange: string;
   selectedDays: string[];
   onPress: () => void;
-  onMorePress: () => void;
+  onMorePress?: () => void;
 }
 
 const RoutineCard = ({
@@ -27,9 +27,11 @@ const RoutineCard = ({
         <CategoryText>
           [{category}] {progress}%
         </CategoryText>
-        <MoreButton onPress={onMorePress}>
-          <MoreIcon>⋯</MoreIcon>
-        </MoreButton>
+        {onMorePress && (
+          <MoreButton onPress={onMorePress}>
+            <MoreIcon>⋯</MoreIcon>
+          </MoreButton>
+        )}
       </Header>
       <Title>{title}</Title>
       <TimeText>{timeRange}</TimeText>

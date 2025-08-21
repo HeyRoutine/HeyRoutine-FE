@@ -54,7 +54,7 @@ const RoutineItemAdder = ({
           <CompletedText>{text}</CompletedText>
         </TextSectionCompleted>
       ) : (
-        <TextSection>
+        <TextSection onPress={onTextPress}>
           <TextInput
             value={text}
             onChangeText={handleTextChange}
@@ -68,6 +68,7 @@ const RoutineItemAdder = ({
               width: '100%',
               height: '100%',
             }}
+            editable={true}
           />
         </TextSection>
       )}
@@ -104,7 +105,7 @@ const PlusSection = styled.TouchableOpacity`
   border: 1px solid ${theme.colors.gray200};
 `;
 
-const TextSection = styled.View`
+const TextSection = styled.TouchableOpacity`
   flex: 1;
   align-items: flex-start;
   justify-content: center;

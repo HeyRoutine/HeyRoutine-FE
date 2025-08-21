@@ -12,25 +12,33 @@ import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import DatePickerModal from '../../components/domain/routine/DatePickerModal';
 import TimePickerModal from '../../components/domain/routine/TimePickerModal';
 
-interface CreateRoutineScreenProps {
+interface EditRoutineScreenProps {
   navigation: any;
+  route: { params?: { routineData?: any } };
 }
 
-const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
-  const [routineName, setRoutineName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('life');
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
+  const routineData = route?.params?.routineData;
+  const [routineName, setRoutineName] = useState(routineData?.name || '');
+  const [selectedCategory, setSelectedCategory] = useState(
+    routineData?.category || 'life',
+  );
+  const [selectedDays, setSelectedDays] = useState<string[]>(
+    routineData?.days || [],
+  );
+  const [startTime, setStartTime] = useState(routineData?.startTime || '');
+  const [endTime, setEndTime] = useState(routineData?.endTime || '');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedStartDate, setSelectedStartDate] = useState('');
+  const [selectedStartDate, setSelectedStartDate] = useState(
+    routineData?.startDate || '2025-01-01',
+  );
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  const handleCreateRoutine = () => {
-    // TODO: 루틴 생성 로직
-    console.log('루틴 생성:', {
+  const handleEditRoutine = () => {
+    // TODO: 루틴 수정 로직
+    console.log('루틴 수정:', {
       name: routineName,
       category: selectedCategory,
       days: selectedDays,
@@ -38,15 +46,12 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
       endTime,
     });
 
-    // PersonalRoutineDetailScreen으로 이동
-    navigation.navigate('PersonalRoutineDetail', {
-      routineData: {
-        name: routineName,
-        category: selectedCategory,
-        days: selectedDays,
-        startTime,
-        endTime,
-      },
+    // 수정 완료 후 ResultScreen으로 이동
+    navigation.navigate('Result', {
+      type: 'success',
+      title: '루틴 수정 완료',
+      description: '루틴이 성공적으로 수정되었습니다.',
+      nextScreen: 'Home',
     });
   };
 
@@ -95,7 +100,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
             color={theme.colors.gray800}
           />
         </BackButton>
-        <Title>루틴 생성</Title>
+        <Title>루틴 수정</Title>
         <Spacer />
       </Header>
 
@@ -125,6 +130,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
           onDaysChange={setSelectedDays}
           onStartDatePress={() => setShowDatePicker(true)}
           selectedStartDate={selectedStartDate}
+          readOnly={false}
           buttonSize={40}
           borderRadius={20}
         />
@@ -141,8 +147,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
       {/* 하단 버튼 */}
       <ButtonWrapper>
         <CustomButton
-          text="루틴 생성"
-          onPress={handleCreateRoutine}
+          text="루틴 수정"
+          onPress={handleEditRoutine}
           disabled={!isFormValid}
           backgroundColor={
             isFormValid ? theme.colors.primary : theme.colors.gray300
@@ -200,7 +206,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   );
 };
 
-export default CreateRoutineScreen;
+export default EditRoutineScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
@@ -212,8 +218,6 @@ const Header = styled.View`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
 `;
 
 const BackButton = styled(TouchableOpacity)`
@@ -267,8 +271,6 @@ const Underline = styled.View`
 const ButtonWrapper = styled.View`
   padding: 24px 16px;
   background-color: ${theme.colors.white};
-  border-top-width: 1px;
-  border-top-color: ${theme.colors.gray200};
 `;
 
 // 모달 관련 스타일

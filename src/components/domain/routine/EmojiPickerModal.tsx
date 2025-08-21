@@ -8,16 +8,15 @@ interface EmojiPickerModalProps {
   visible: boolean;
   onRequestClose: () => void;
   onEmojiSelect: (emoji: string) => void;
+  categories?: string[];
+  hideTitle?: boolean;
 }
 
 const EmojiPickerModal = ({
   visible,
   onRequestClose,
   onEmojiSelect,
-}: EmojiPickerModalProps) => {
-  const [selectedCategory, setSelectedCategory] = useState('음식');
-
-  const categories = [
+  categories = [
     '음식',
     '운동',
     '취미',
@@ -26,7 +25,10 @@ const EmojiPickerModal = ({
     '동물',
     '자연',
     '기타',
-  ];
+  ],
+  hideTitle = false,
+}: EmojiPickerModalProps) => {
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
 
   // 이모지 데이터 (랜덤하게 선택된 이모지들)
   const emojiData = {
@@ -475,7 +477,7 @@ const EmojiPickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
-      <Title>이모지 선택</Title>
+      {!hideTitle && <Title>이모지 선택</Title>}
 
       <CategoryContainer>
         <CategoryScrollView horizontal showsHorizontalScrollIndicator={false}>

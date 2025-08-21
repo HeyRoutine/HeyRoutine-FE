@@ -11,6 +11,8 @@ interface DayOfWeekSelectorProps {
   onStartDatePress?: () => void;
   selectedStartDate?: string;
   readOnly?: boolean;
+  buttonSize?: number;
+  borderRadius?: number;
 }
 
 const DayOfWeekSelector = ({
@@ -19,6 +21,8 @@ const DayOfWeekSelector = ({
   onStartDatePress,
   selectedStartDate,
   readOnly = false,
+  buttonSize = 28,
+  borderRadius = 14,
 }: DayOfWeekSelectorProps) => {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -68,6 +72,8 @@ const DayOfWeekSelector = ({
             isSelected={selectedDays.includes(day)}
             onPress={() => handleDayPress(day)}
             disabled={readOnly}
+            buttonSize={buttonSize}
+            borderRadius={borderRadius}
           />
         ))}
       </DaysContainer>

@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../../screens/home/HomeScreen';
 import CreateRoutineScreen from '../../screens/home/CreateRoutineScreen';
 import PersonalRoutineDetailScreen from '../../screens/home/PersonalRoutineDetailScreen';
+import RoutineDetailScreen from '../../screens/home/RoutineDetailScreen';
+import EditRoutineScreen from '../../screens/home/EditRoutineScreen';
 import GroupBoardScreen from '../../screens/group/GroupBoardScreen';
 import GroupRoutineDetailScreen from '../../screens/group/GroupRoutineDetailScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
@@ -21,6 +23,8 @@ const HomeStack = () => {
         name="PersonalRoutineDetail"
         component={PersonalRoutineDetailScreen}
       />
+      <Stack.Screen name="RoutineDetail" component={RoutineDetailScreen} />
+      <Stack.Screen name="EditRoutine" component={EditRoutineScreen} />
       <Stack.Screen name="GroupBoard" component={GroupBoardScreen} />
       <Stack.Screen
         name="GroupRoutineDetail"

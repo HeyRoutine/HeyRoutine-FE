@@ -21,10 +21,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(29);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
-  const [showActionSheet, setShowActionSheet] = useState(false);
-  const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(
-    null,
-  );
 
   // 요일과 날짜 데이터
   const weekData = [
@@ -109,33 +105,22 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   const handleGroupBannerPress = () => {
-    // navigation.navigate('GroupBoard');
-    navigation.navigate('ActiveRoutine');
+    navigation.navigate('GroupBoard');
   };
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      navigation.navigate('PersonalRoutineDetail');
+      navigation.navigate('RoutineDetail', {
+        routineData: {
+          name: '빵빵이의 점심루틴',
+          startTime: '오후 7:00',
+          endTime: '오후 10:00',
+          days: ['월', '화'],
+        },
+      });
     } else {
       navigation.navigate('GroupRoutineDetail');
     }
-  };
-
-  const handleMorePress = (routineId: string) => {
-    setSelectedRoutineId(routineId);
-    setShowActionSheet(true);
-  };
-
-  const handleEditRoutine = () => {
-    setShowActionSheet(false);
-    // TODO: 루틴 수정 화면으로 이동
-    console.log('수정할 루틴 ID:', selectedRoutineId);
-  };
-
-  const handleDeleteRoutine = () => {
-    setShowActionSheet(false);
-    // TODO: 루틴 삭제 로직
-    console.log('삭제할 루틴 ID:', selectedRoutineId);
   };
 
   const handleAddRoutine = () => {
@@ -199,7 +184,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
               timeRange={routine.timeRange}
               selectedDays={routine.selectedDays}
               onPress={() => handleRoutinePress(routine.id)}
-              onMorePress={() => handleMorePress(routine.id)}
             />
           ))}
         </RoutineList>
@@ -232,21 +216,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             borderWidth={1}
           />
         </SelectionButtonsContainer>
-      </BottomSheetDialog>
-
-      {/* 루틴 액션 시트 */}
-      <BottomSheetDialog
-        visible={showActionSheet}
-        onRequestClose={() => setShowActionSheet(false)}
-      >
-        <ActionButtonsContainer>
-          <ActionButton onPress={handleEditRoutine}>
-            <ActionButtonText>수정하기</ActionButtonText>
-          </ActionButton>
-          <DeleteActionButton onPress={handleDeleteRoutine}>
-            <DeleteButtonText>삭제</DeleteButtonText>
-          </DeleteActionButton>
-        </ActionButtonsContainer>
       </BottomSheetDialog>
     </Container>
   );
@@ -328,36 +297,4 @@ const ModalTitle = styled.Text`
 
 const SelectionButtonsContainer = styled.View`
   gap: 12px;
-`;
-
-const ActionButtonsContainer = styled.View`
-  gap: 8px;
-`;
-
-const ActionButton = styled.TouchableOpacity`
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid ${theme.colors.gray200};
-  background-color: ${theme.colors.white};
-  align-items: center;
-`;
-
-const DeleteActionButton = styled.TouchableOpacity`
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid ${theme.colors.error};
-  background-color: ${theme.colors.white};
-  align-items: center;
-`;
-
-const ActionButtonText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-`;
-
-const DeleteButtonText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.error};
 `;
