@@ -339,6 +339,7 @@ const ActionButton = styled.TouchableOpacity`
   border: 1px solid ${theme.colors.gray200};
   background-color: ${theme.colors.white};
   align-items: center;
+  margin-bottom: 8px;
 `;
 
 const DeleteActionButton = styled.TouchableOpacity`
