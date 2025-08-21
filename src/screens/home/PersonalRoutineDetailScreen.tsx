@@ -33,7 +33,20 @@ const PersonalRoutineDetailScreen = ({
       time: string;
       isCompleted: boolean;
     }>
-  >([]);
+  >([
+    {
+      emoji: '🍞',
+      text: '식빵 굽기',
+      time: '30분',
+      isCompleted: true,
+    },
+    {
+      emoji: '☕',
+      text: '커피 마시기',
+      time: '15분',
+      isCompleted: true,
+    },
+  ]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -178,12 +191,9 @@ const PersonalRoutineDetailScreen = ({
     // 결과 화면으로 이동
     navigation.navigate('Result', {
       type: 'success',
-      title: '루틴 생성이 완료되었습니다',
-      description: '새로운 루틴이 성공적으로 생성되었습니다.',
-      onSuccess: () => {
-        // 홈 화면으로 이동
-        navigation.navigate('Home');
-      },
+      title: '루틴 상세 수정 완료',
+      description: '루틴 상세가 성공적으로 수정되었습니다.',
+      nextScreen: 'RoutineDetail',
     });
   };
 
