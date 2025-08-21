@@ -33,20 +33,7 @@ const PersonalRoutineDetailScreen = ({
       time: string;
       isCompleted: boolean;
     }>
-  >([
-    {
-      emoji: '🍞',
-      text: '식빵 굽기',
-      time: '30분',
-      isCompleted: true,
-    },
-    {
-      emoji: '☕',
-      text: '커피 마시기',
-      time: '15분',
-      isCompleted: true,
-    },
-  ]);
+  >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);

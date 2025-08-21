@@ -24,7 +24,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
       { icon: '☕', title: '커피 내리기', duration: '5분' },
       { icon: '🧼', title: '샤워하기', duration: '15분' },
     ],
-    []
+    [],
   );
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
 
@@ -117,7 +117,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
         contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
       >
         <ContentContainer>
-          <Title>{tasks[activeTaskIndex].title}</Title>
+          <Title>{tasks[activeTaskIndex]?.title || '루틴'}</Title>
           <Subtitle>병병이의 아침루틴</Subtitle>
 
           <TimerContainer>
@@ -141,9 +141,11 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
                   reverse
                 />
                 <TimerContent>
-                  <BreadIcon>{tasks[activeTaskIndex].icon}</BreadIcon>
+                  <BreadIcon>{tasks[activeTaskIndex]?.icon || '⏰'}</BreadIcon>
                   <TimeLeft>{formatTime(timeLeft)}</TimeLeft>
-                  <TotalTime>{tasks[activeTaskIndex].duration}</TotalTime>
+                  <TotalTime>
+                    {tasks[activeTaskIndex]?.duration || '10분'}
+                  </TotalTime>
                 </TimerContent>
               </>
             )}
@@ -151,8 +153,14 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
 
           {!isCompleted && (
             <ActionButtonsContainer>
-              <RoutineActionButton type={isActive ? 'pause' : 'play'} onPress={handlePausePress} />
-              <RoutineActionButton type="complete" onPress={handleCompletePress} />
+              <RoutineActionButton
+                type={isActive ? 'pause' : 'play'}
+                onPress={handlePausePress}
+              />
+              <RoutineActionButton
+                type="complete"
+                onPress={handleCompletePress}
+              />
               <RoutineActionButton type="skip" onPress={handleSkipPress} />
             </ActionButtonsContainer>
           )}
