@@ -58,25 +58,35 @@ const TimetableUploadScreen = ({ navigation }: TimetableUploadScreenProps) => {
       <Header onBackPress={() => navigation.goBack()} />
 
       <Content>
-        <Title>시간표 이미지를{"\n"}업로드해주세요.</Title>
+        <Title>시간표 이미지를{'\n'}업로드해주세요.</Title>
         <SubTitle>
           {imageUri
             ? '업로드한 이미지에서 시간을 자동 인식할게요.'
             : '명확한 해상도의 이미지를 올려주세요!'}
         </SubTitle>
 
-        <UploadContainer onPress={handlePickImage} activeOpacity={0.8}>
-          {imageUri ? (
-            <UploadImage source={{ uri: imageUri }} resizeMode="cover" />
-          ) : (
-            <Placeholder>
-              <MaterialCommunityIcons name="calendar-month" size={44} color={theme.colors.primary} />
-            </Placeholder>
-          )}
-          <EditIconWrapper>
-            <MaterialCommunityIcons name="pencil" size={18} color={theme.colors.white} />
-          </EditIconWrapper>
-        </UploadContainer>
+        <UploadSection>
+          <UploadContainer onPress={handlePickImage} activeOpacity={0.8}>
+            {imageUri ? (
+              <UploadImage source={{ uri: imageUri }} resizeMode="cover" />
+            ) : (
+              <Placeholder>
+                <MaterialCommunityIcons
+                  name="calendar-month"
+                  size={44}
+                  color={theme.colors.primary}
+                />
+              </Placeholder>
+            )}
+            <EditIconWrapper>
+              <MaterialCommunityIcons
+                name="pencil"
+                size={18}
+                color={theme.colors.white}
+              />
+            </EditIconWrapper>
+          </UploadContainer>
+        </UploadSection>
       </Content>
 
       <ButtonWrapper>
@@ -117,6 +127,16 @@ const SubTitle = styled.Text`
   color: ${theme.colors.gray600};
   margin-top: 8px;
   margin-bottom: 60px;
+`;
+
+const UploadSection = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  justify-content: center;
+  align-items: center;
 `;
 
 const ButtonWrapper = styled.View`
