@@ -4,6 +4,7 @@ import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import YesNoButton from '../../components/onboarding/YesNoButton';
+import Header from '../../components/common/Header';
 
 interface AiConsentScreenProps {
   navigation: any;
@@ -15,15 +16,13 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
   );
 
   const handleOptionSelect = (option: 'yes' | 'no') => {
+    console.log('Button selected:', option);
     setSelectedOption(option);
   };
 
   const handleNext = () => {
     if (selectedOption === 'yes') {
-      navigation.navigate('OnboardingLoading', {
-        nextScreen: 'AiRecommendation',
-        isRoutineRecommendation: true,
-      });
+      navigation.navigate('AiRecommendation');
     } else {
       // 'no' 선택 시 다음 화면으로 이동 (AI 추천 없이)
       navigation.navigate('OnboardingLoading', {
@@ -35,11 +34,7 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
 
   return (
     <Container>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackIcon>{'<'}</BackIcon>
-        </BackButton>
-      </Header>
+      <Header onBackPress={() => navigation.goBack()} />
 
       <Content>
         <WelcomeText>환영합니다.</WelcomeText>
@@ -65,11 +60,13 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
       <FooterSection>
         <InfoText>사용자님의 시간표를 참조하여 AI가 추천해줘요!</InfoText>
         <NextButton
-          onPress={handleNext}
+          onPress={selectedOption !== null ? handleNext : undefined}
           disabled={selectedOption === null}
-          disabledStyle={selectedOption === null}
+          activeOpacity={selectedOption !== null ? 0.8 : 1}
         >
-          <NextButtonText>다음</NextButtonText>
+          <NextButtonText disabled={selectedOption === null}>
+            다음
+          </NextButtonText>
         </NextButton>
       </FooterSection>
     </Container>
@@ -83,21 +80,6 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Header = styled.View`
-  flex-direction: row;
-  align-items: center;
-  padding: 16px 24px;
-`;
-
-const BackButton = styled.TouchableOpacity`
-  padding: 8px;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: ${theme.colors.gray800};
-`;
-
 const Content = styled.View`
   position: absolute;
   top: 0;
@@ -106,6 +88,7 @@ const Content = styled.View`
   padding: 24px;
   padding-top: 80px;
   z-index: 1;
+  pointer-events: none;
 `;
 
 const WelcomeText = styled.Text`
@@ -145,7 +128,8 @@ const ButtonSection = styled.View`
   bottom: 0;
   justify-content: center;
   align-items: center;
-  z-index: 2;
+  z-index: 10;
+  pointer-events: auto;
 `;
 
 const FooterSection = styled.View`
@@ -154,7 +138,8 @@ const FooterSection = styled.View`
   left: 0;
   right: 0;
   padding: 0 24px 24px;
-  z-index: 1;
+  z-index: 10;
+  pointer-events: auto;
 `;
 
 const InfoText = styled.Text`
@@ -165,16 +150,18 @@ const InfoText = styled.Text`
   margin-bottom: 24px;
 `;
 
-const NextButton = styled.TouchableOpacity<{ disabledStyle: boolean }>`
-  background-color: ${({ disabledStyle }) =>
-    disabledStyle ? theme.colors.gray300 : theme.colors.primary};
+const NextButton = styled.TouchableOpacity<{ disabled: boolean }>`
+  background-color: ${({ disabled }) =>
+    disabled ? theme.colors.gray300 : theme.colors.primary};
   padding: 16px;
   border-radius: 12px;
   align-items: center;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 `;
 
-const NextButtonText = styled.Text`
+const NextButtonText = styled.Text<{ disabled: boolean }>`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
-  color: ${theme.colors.white};
+  color: ${({ disabled }) =>
+    disabled ? theme.colors.gray500 : theme.colors.white};
 `;
