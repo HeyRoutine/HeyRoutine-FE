@@ -116,7 +116,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      navigation.navigate('RoutineDetail', {
+      navigation.navigate('PersonalRoutineDetail', {
         routineData: {
           name: '빵빵이의 점심루틴',
           startTime: '오후 7:00',

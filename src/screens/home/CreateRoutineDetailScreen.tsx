@@ -12,21 +12,17 @@ import {
   RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
-import { useRoutineStore } from '../../store';
-import { Ionicons } from '@expo/vector-icons';
-import { Alert } from 'react-native';
 
-interface PersonalRoutineDetailScreenProps {
+interface CreateRoutineDetailScreenProps {
   navigation: any;
   route: { params?: { routineData?: any } };
 }
 
-const PersonalRoutineDetailScreen = ({
+const CreateRoutineDetailScreen = ({
   navigation,
   route,
-}: PersonalRoutineDetailScreenProps) => {
+}: CreateRoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
-  const { setActiveRoutineId, isEditMode, setEditMode } = useRoutineStore();
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || [],
   );
@@ -37,20 +33,7 @@ const PersonalRoutineDetailScreen = ({
       time: string;
       isCompleted: boolean;
     }>
-  >([
-    {
-      emoji: '🍞',
-      text: '식빵 굽기',
-      time: '30분',
-      isCompleted: true,
-    },
-    {
-      emoji: '☕',
-      text: '커피 마시기',
-      time: '15분',
-      isCompleted: true,
-    },
-  ]);
+  >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -192,71 +175,21 @@ const PersonalRoutineDetailScreen = ({
       selectedTime,
     });
 
-    // 수정 모드 비활성화
-    setEditMode(false);
-
     // 결과 화면으로 이동
     navigation.navigate('Result', {
       type: 'success',
-      title: '루틴 상세 수정 완료',
-      description: '루틴 상세가 성공적으로 수정되었습니다.',
-      nextScreen: 'RoutineDetail',
+      title: '루틴 생성 완료',
+      description: '루틴이 성공적으로 생성되었습니다.',
+      nextScreen: 'Home',
     });
-  };
-
-  const handleMorePress = () => {
-    Alert.alert('루틴 관리', '어떤 작업을 하시겠습니까?', [
-      {
-        text: '루틴 수정',
-        onPress: () => navigation.navigate('EditRoutine'),
-      },
-      {
-        text: '루틴 상세 수정',
-        onPress: () => setEditMode(true),
-      },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert('루틴 삭제', '이 루틴을 삭제하시겠습니까?', [
-            { text: '취소', style: 'cancel' },
-            {
-              text: '삭제',
-              style: 'destructive',
-              onPress: () => {
-                // 루틴 삭제 로직
-                navigation.goBack();
-              },
-            },
-          ]);
-        },
-      },
-      { text: '취소', style: 'cancel' },
-    ]);
   };
 
   return (
     <Container>
-      <Header
-        title={isEditMode ? '루틴 상세 수정' : '루틴 상세'}
-        onBackPress={handleBack}
-      />
+      <Header title="상세 루틴" onBackPress={handleBack} />
       <Content>
         <RoutineCard>
-          <TitleContainer>
-            <RoutineTitle>
-              {routineData?.name || '빵빵이의 점심루틴'}
-            </RoutineTitle>
-            {!isEditMode && (
-              <MoreButton onPress={handleMorePress}>
-                <Ionicons
-                  name="ellipsis-horizontal"
-                  size={20}
-                  color={theme.colors.gray600}
-                />
-              </MoreButton>
-            )}
-          </TitleContainer>
+          <RoutineTitle>{routineData?.name || '새 루틴'}</RoutineTitle>
           <RoutineTime>
             {routineData?.startTime || '오후 7:00'} -{' '}
             {routineData?.endTime || '오후 10:00'}
@@ -269,8 +202,8 @@ const PersonalRoutineDetailScreen = ({
             borderRadius={20}
           />
 
-          {/* 새로운 루틴 추가 (수정 모드일 때만) */}
-          {isEditMode && editingIndex === null && (
+          {/* 새로운 루틴 추가 */}
+          {editingIndex === null && (
             <AdderContainer>
               <RoutineItemAdder
                 onPlusPress={handlePlusPress}
@@ -302,7 +235,7 @@ const PersonalRoutineDetailScreen = ({
                   setRoutineItems(updatedItems);
                 }}
                 onDelete={handleDeleteItem}
-                isEditMode={isEditMode}
+                isEditMode={true} // 생성 화면에서는 항상 편집 가능
               />
             </AdderContainer>
           ))}
@@ -342,7 +275,7 @@ const PersonalRoutineDetailScreen = ({
   );
 };
 
-export default PersonalRoutineDetailScreen;
+export default CreateRoutineDetailScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
@@ -392,15 +325,4 @@ const CreateButtonText = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.white};
-`;
-
-const TitleContainer = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-`;
-
-const MoreButton = styled.TouchableOpacity`
-  padding: 4px;
 `;
