@@ -17,6 +17,7 @@ interface RoutineState {
   isCalendarOpen: boolean;
   isLoading: boolean;
   activeRoutineId: string | null;
+  isEditMode: boolean; // 루틴 수정 모드 상태 추가
 
   // 액션 (상태를 변경하는 함수들)
   setSelectedDate: (date: Date) => void;
@@ -24,6 +25,7 @@ interface RoutineState {
   setCalendarOpen: (isOpen: boolean) => void;
   setLoading: (loading: boolean) => void;
   setActiveRoutineId: (id: string | null) => void;
+  setEditMode: (isEdit: boolean) => void; // 수정 모드 설정 액션 추가
   resetRoutineState: () => void;
 }
 
@@ -35,6 +37,7 @@ export const useRoutineStore = create<RoutineState>((set) => ({
   isCalendarOpen: false,
   isLoading: false,
   activeRoutineId: null,
+  isEditMode: false, // 초기 수정 모드 상태
 
   // 액션들
   setSelectedDate: (date) => set({ selectedDate: date }),
@@ -47,6 +50,8 @@ export const useRoutineStore = create<RoutineState>((set) => ({
 
   setActiveRoutineId: (id) => set({ activeRoutineId: id }),
 
+  setEditMode: (isEdit) => set({ isEditMode: isEdit }),
+
   resetRoutineState: () =>
     set({
       selectedDate: new Date(),
@@ -54,6 +59,7 @@ export const useRoutineStore = create<RoutineState>((set) => ({
       isCalendarOpen: false,
       isLoading: false,
       activeRoutineId: null,
+      isEditMode: false, // 상태 초기화 시 수정 모드도 초기화
     }),
 }));
 
@@ -69,6 +75,7 @@ if (!isWeb) {
       selectedDate: state.selectedDate,
       routineFilter: state.routineFilter,
       activeRoutineId: state.activeRoutineId,
+      isEditMode: state.isEditMode, // 수정 모드도 파티셜라이즈
     }),
   });
 

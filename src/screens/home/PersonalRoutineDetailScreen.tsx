@@ -12,6 +12,7 @@ import {
   RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
+import { useRoutineStore } from '../../store';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
@@ -23,6 +24,7 @@ const PersonalRoutineDetailScreen = ({
   route,
 }: PersonalRoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
+  const { isEditMode, setEditMode } = useRoutineStore();
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || [],
   );
@@ -175,6 +177,9 @@ const PersonalRoutineDetailScreen = ({
       selectedTime,
     });
 
+    // 수정 모드 비활성화
+    setEditMode(false);
+
     // 결과 화면으로 이동
     navigation.navigate('Result', {
       type: 'success',
@@ -204,8 +209,8 @@ const PersonalRoutineDetailScreen = ({
             borderRadius={20}
           />
 
-          {/* 새로운 루틴 추가 (첫 번째 빈 adder) */}
-          {editingIndex === null && (
+          {/* 새로운 루틴 추가 (수정 모드일 때만) */}
+          {isEditMode && editingIndex === null && (
             <AdderContainer>
               <RoutineItemAdder
                 onPlusPress={handlePlusPress}
@@ -237,6 +242,7 @@ const PersonalRoutineDetailScreen = ({
                   setRoutineItems(updatedItems);
                 }}
                 onDelete={handleDeleteItem}
+                isEditMode={isEditMode}
               />
             </AdderContainer>
           ))}

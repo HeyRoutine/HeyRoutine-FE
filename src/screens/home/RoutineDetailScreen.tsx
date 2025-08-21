@@ -21,9 +21,7 @@ const RoutineDetailScreen = ({
   route,
 }: RoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
-
-  // Zustand 스토어에서 루틴 상태 가져오기
-  const { setActiveRoutineId } = useRoutineStore();
+  const { setActiveRoutineId, isEditMode, setEditMode } = useRoutineStore();
 
   // 로컬 상태 (화면 내에서만 사용)
   const [selectedDays, setSelectedDays] = useState<string[]>(
@@ -131,6 +129,7 @@ const RoutineDetailScreen = ({
 
   const handleEditRoutineDetail = () => {
     setShowActionSheet(false);
+    setEditMode(true); // 수정 모드 활성화
     navigation.navigate('PersonalRoutineDetail', {
       routineData: {
         name: routineData?.name || '빵빵이의 점심루틴',
@@ -171,9 +170,15 @@ const RoutineDetailScreen = ({
             <RoutineTitle>
               {routineData?.name || '빵빵이의 점심루틴'}
             </RoutineTitle>
-            <MoreButton onPress={handleMorePress}>
-              <MoreButtonText>⋯</MoreButtonText>
-            </MoreButton>
+            {isEditMode ? (
+              <EditButton onPress={() => setEditMode(false)}>
+                <EditButtonText>완료</EditButtonText>
+              </EditButton>
+            ) : (
+              <MoreButton onPress={handleMorePress}>
+                <MoreButtonText>⋯</MoreButtonText>
+              </MoreButton>
+            )}
           </RoutineHeader>
           <RoutineTime>
             {routineData?.startTime || '오후 7:00'} -{' '}
@@ -197,6 +202,7 @@ const RoutineDetailScreen = ({
                   // 편집 로직
                 }}
                 onDelete={handleDeleteItem}
+                isEditMode={isEditMode}
               />
             </AdderContainer>
           ))}
@@ -429,5 +435,19 @@ const CancelButtonText = styled.Text`
 const ConfirmDeleteButtonText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const EditButton = styled.TouchableOpacity`
+  padding: 8px 12px;
+  background-color: ${theme.colors.primary};
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const EditButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
   color: ${theme.colors.white};
 `;
