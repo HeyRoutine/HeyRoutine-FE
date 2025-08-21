@@ -2,4 +2,5 @@
 export * from './auth';
 export * from './onboarding';
 export * from './routine'; // 루틴 (group + personal)
+export * from './analysis'; // 분석
 export * from './mypage';
