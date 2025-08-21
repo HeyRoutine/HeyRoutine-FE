@@ -3,7 +3,8 @@ export { default as apiClient } from './client';
 
 // 대분류별 API 모듈들
 // export * from './auth';
+export * from './user';
 // export * from './onboarding';
-export * from './routine'; // 루틴 (group + personal)
-// export * from './analysis'; // 분석
-// export * from './mypage';
+export * from './routine'; // 루틴 (personal + group)
+export * from './finance'; // 금융
+export * from './analysis'; // 분석
