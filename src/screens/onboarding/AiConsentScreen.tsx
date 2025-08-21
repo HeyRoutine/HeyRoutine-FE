@@ -49,8 +49,6 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
         <QuestionText>시간표를 토대로 루틴을 짜드릴까요?</QuestionText>
       </Content>
 
-      <Spacer />
-
       <ButtonSection>
         <YesNoButton
           type="yes"
@@ -63,8 +61,6 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
           isSelected={selectedOption === 'no'}
         />
       </ButtonSection>
-
-      <Spacer />
 
       <FooterSection>
         <InfoText>사용자님의 시간표를 참조하여 AI가 추천해줘요!</InfoText>
@@ -103,7 +99,13 @@ const BackIcon = styled.Text`
 `;
 
 const Content = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   padding: 24px;
+  padding-top: 80px;
+  z-index: 1;
 `;
 
 const WelcomeText = styled.Text`
@@ -136,16 +138,23 @@ const QuestionText = styled.Text`
 const ButtonSection = styled.View`
   flex-direction: row;
   padding: 0 24px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   justify-content: center;
   align-items: center;
-`;
-
-const Spacer = styled.View`
-  flex: 1;
+  z-index: 2;
 `;
 
 const FooterSection = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 0 24px 24px;
+  z-index: 1;
 `;
 
 const InfoText = styled.Text`
