@@ -105,8 +105,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   const handleGroupBannerPress = () => {
-    // navigation.navigate('GroupBoard');
-    navigation.navigate('ActiveRoutine');
+    navigation.navigate('GroupBoard');
   };
 
   const handleRoutinePress = (routineId: string) => {
