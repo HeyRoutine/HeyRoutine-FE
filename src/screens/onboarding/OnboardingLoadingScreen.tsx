@@ -4,6 +4,7 @@ import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import { useAuthStore } from '../../store';
 import CustomButton from '../../components/common/CustomButton';
+import ProgressCircle from '../../components/common/ProgressCircle';
 
 interface OnboardingLoadingScreenProps {
   navigation: any;
@@ -122,9 +123,7 @@ const OnboardingLoadingScreen = ({
     <Container>
       <Content>
         <ProgressSection>
-          <ProgressCircle>
-            <ProgressText>{progress}%</ProgressText>
-          </ProgressCircle>
+          <ProgressCircle progress={progress} />
         </ProgressSection>
 
         <TextSection>
@@ -162,22 +161,6 @@ const ProgressSection = styled.View`
   justify-content: center;
   align-items: center;
   padding-top: 60px;
-`;
-
-const ProgressCircle = styled.View`
-  width: 200px;
-  height: 200px;
-  border-radius: 100px;
-  border: 8px solid ${theme.colors.gray200};
-  justify-content: center;
-  align-items: center;
-  background-color: ${theme.colors.white};
-`;
-
-const ProgressText = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 24px;
-  color: ${theme.colors.gray900};
 `;
 
 const TextSection = styled.View`

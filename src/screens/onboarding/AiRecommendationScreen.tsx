@@ -3,6 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
+import Header from '../../components/common/Header';
+import RoutineCard from '../../components/domain/routine/RoutineCard';
 
 interface AiRecommendationScreenProps {
   navigation: any;
@@ -11,36 +13,87 @@ interface AiRecommendationScreenProps {
 const AiRecommendationScreen = ({
   navigation,
 }: AiRecommendationScreenProps) => {
-  const handleComplete = () => {
+  const handleSkip = () => {
     navigation.navigate('OnboardingLoading', {
       nextScreen: 'Result',
       isRoutineRegistration: true,
     });
   };
 
+  const handleRoutinePress = (routineId: string) => {
+    // 루틴 상세 화면으로 이동
+    console.log('Routine pressed:', routineId);
+  };
+
+  const handleMorePress = (routineId: string) => {
+    // 루틴 옵션 메뉴 표시
+    console.log('More pressed:', routineId);
+  };
+
+  // 샘플 루틴 데이터
+  const sampleRoutines = [
+    {
+      id: '1',
+      category: '아침',
+      progress: 0,
+      title: '빵빵이의 아침 루틴',
+      timeRange: '오전 8:00 - 오전 9:00',
+      selectedDays: ['월', '화', '수', '목', '금'],
+      totalItems: 5,
+    },
+    {
+      id: '2',
+      category: '운동',
+      progress: 0,
+      title: '빵빵이의 운동 루틴',
+      timeRange: '오전 8:00 - 오전 9:00',
+      selectedDays: ['월', '화', '수', '목', '금'],
+      totalItems: 5,
+    },
+    {
+      id: '3',
+      category: '테스트',
+      progress: 0,
+      title: '빵빵이의 테스트 루틴',
+      timeRange: '오전 8:00 - 오전 9:00',
+      selectedDays: ['월', '화', '수', '목', '금'],
+      totalItems: 5,
+    },
+  ];
+
   return (
     <Container>
+      <Header onBackPress={() => navigation.goBack()} />
+
       <Content>
-        <Title>AI 추천</Title>
+        <Title>루틴 추천</Title>
         <Description>
-          당신의 시간표를 분석한 결과,{'\n'}
-          다음과 같은 루틴을 추천해드려요.
+          <HighlightedText>빵빵이님</HighlightedText>의 시간표를 참고하여{'\n'}
+          AI가 루틴을 만들었어요.
         </Description>
 
-        <RecommendationCard>
-          <RecommendationText>
-            • 아침 운동: 30분{'\n'}• 점심 식사: 1시간{'\n'}• 저녁 공부: 2시간
-            {'\n'}• 취침 준비: 30분
-          </RecommendationText>
-        </RecommendationCard>
+        <RoutineList>
+          {sampleRoutines.map((routine) => (
+            <RoutineCard
+              key={routine.id}
+              category={routine.category}
+              progress={routine.progress}
+              title={routine.title}
+              timeRange={routine.timeRange}
+              selectedDays={routine.selectedDays}
+              onPress={() => handleRoutinePress(routine.id)}
+              onMorePress={() => handleMorePress(routine.id)}
+            />
+          ))}
+        </RoutineList>
       </Content>
 
       <ButtonWrapper>
         <CustomButton
-          text="완료"
-          onPress={handleComplete}
-          backgroundColor={theme.colors.primary}
-          textColor={theme.colors.white}
+          text="건너뛰기"
+          onPress={handleSkip}
+          backgroundColor={theme.colors.gray300}
+          textColor={theme.colors.gray800}
         />
       </ButtonWrapper>
     </Container>
@@ -56,8 +109,6 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   flex: 1;
-  justify-content: center;
-  align-items: center;
   padding: 24px;
 `;
 
@@ -78,19 +129,12 @@ const Description = styled.Text`
   margin-bottom: 32px;
 `;
 
-const RecommendationCard = styled.View`
-  background-color: ${theme.colors.gray50};
-  padding: 24px;
-  border-radius: 12px;
-  width: 100%;
-  margin-bottom: 32px;
+const HighlightedText = styled.Text`
+  color: ${theme.colors.primary};
 `;
 
-const RecommendationText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-  line-height: 24px;
+const RoutineList = styled.View`
+  flex: 1;
 `;
 
 const ButtonWrapper = styled.View`
