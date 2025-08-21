@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TouchableOpacity, ScrollView, Image } from 'react-native';
+import { ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
@@ -12,6 +12,7 @@ import {
   ConsumptionAnalysisCard,
 } from '../../components/domain/analysis';
 import { TabNavigation } from '../../components/common';
+import { useAnalysisStore } from '../../store';
 
 /**
  * AnalysisScreen의 props 인터페이스
@@ -28,13 +29,18 @@ interface IAnalysisScreenProps {
  * @returns 분석 화면 컴포넌트
  */
 const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
-  // 탭 상태 관리
+  // Zustand 스토어에서 분석 상태 가져오기
+  const { selectedChartType, setSelectedChartType } = useAnalysisStore();
+
+  // 탭 상태 관리 (로컬 상태로 유지 - 화면 내에서만 사용)
   const [selectedTab, setSelectedTab] = useState(0);
   const tabs = ['일상 루틴', '금융 루틴'];
 
   // 탭 변경 핸들러
   const handleTabChange = (index: number) => {
     setSelectedTab(index);
+    // 탭 변경 시 차트 타입도 함께 변경
+    setSelectedChartType(index === 0 ? 'routine' : 'expense');
   };
 
   // 주간 데이터

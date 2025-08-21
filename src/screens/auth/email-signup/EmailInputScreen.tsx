@@ -6,14 +6,14 @@ import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
-import { useSignupStore } from '../../../store';
+import { useAuthStore } from '../../../store';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Zustand 회원가입 스토어에서 이메일 설정 함수 가져오기
-  const { setEmail: setSignupEmail } = useSignupStore();
+  // Zustand 스토어에서 이메일 설정 함수 가져오기
+  const { setSignupEmail } = useAuthStore();
 
   // 이메일 형식 유효성 검사
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);

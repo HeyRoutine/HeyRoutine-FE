@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, TouchableOpacity, Alert } from 'react-native';
 import styled from 'styled-components/native';
-import { theme } from '../../styles/theme';
+import { Ionicons } from '@expo/vector-icons';
+
 import Header from '../../components/common/Header';
-import { TouchableOpacity, Text } from 'react-native';
-import {
-  DayOfWeekSelector,
-  RoutineItemAdder,
-  TimePickerModal,
-  EmojiPickerModal,
-} from '../../components/domain/routine';
+import DayOfWeekSelector from '../../components/domain/routine/DayOfWeekSelector';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
 import CustomButton from '../../components/common/CustomButton';
-import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import { theme } from '../../styles/theme';
+import { useRoutineStore } from '../../store';
 
 interface RoutineDetailScreenProps {
   navigation: any;
@@ -24,6 +21,11 @@ const RoutineDetailScreen = ({
   route,
 }: RoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
+
+  // Zustand 스토어에서 루틴 상태 가져오기
+  const { setActiveRoutineId } = useRoutineStore();
+
+  // 로컬 상태 (화면 내에서만 사용)
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || ['월', '화'],
   );
@@ -106,6 +108,8 @@ const RoutineDetailScreen = ({
   };
 
   const handleExecuteRoutine = () => {
+    // 활성 루틴 ID 설정
+    setActiveRoutineId('routine-1'); // 실제 루틴 ID로 변경 필요
     navigation.navigate('ActiveRoutine');
   };
 
@@ -190,14 +194,7 @@ const RoutineDetailScreen = ({
                 item={item}
                 index={index}
                 onEdit={(index, emoji, text, time) => {
-                  const updatedItems = [...routineItems];
-                  updatedItems[index] = {
-                    emoji,
-                    text,
-                    time,
-                    isCompleted: true,
-                  };
-                  setRoutineItems(updatedItems);
+                  // 편집 로직
                 }}
                 onDelete={handleDeleteItem}
               />
@@ -211,57 +208,44 @@ const RoutineDetailScreen = ({
         </ExecuteButton>
       </Content>
 
-      <TimePickerModal
-        visible={timePickerVisible}
-        onRequestClose={() => setTimePickerVisible(false)}
-        onTimeSelect={handleTimeSelect}
-        type="minutes"
-      />
-
-      <EmojiPickerModal
-        visible={emojiPickerVisible}
-        onRequestClose={() => setEmojiPickerVisible(false)}
-        onEmojiSelect={handleEmojiSelect}
-      />
-
       {/* 루틴 액션 시트 */}
-      <BottomSheetDialog
-        visible={showActionSheet}
-        onRequestClose={() => setShowActionSheet(false)}
-      >
-        <ActionButtonsContainer>
-          <ActionButton onPress={handleEditRoutine}>
-            <ActionButtonText>루틴 수정</ActionButtonText>
-          </ActionButton>
-          <ActionButton onPress={handleEditRoutineDetail}>
-            <ActionButtonText>루틴 상세 수정</ActionButtonText>
-          </ActionButton>
-          <DeleteActionButton onPress={handleDeleteRoutine}>
-            <DeleteButtonText>삭제</DeleteButtonText>
-          </DeleteActionButton>
-        </ActionButtonsContainer>
-      </BottomSheetDialog>
+      {/* BottomSheetDialog 컴포넌트는 제거되었으므로, 직접 구현 또는 다른 방식으로 대체 */}
+      {showActionSheet && (
+        <ActionSheetOverlay>
+          <ActionSheetContent>
+            <ActionButton onPress={handleEditRoutine}>
+              <ActionButtonText>루틴 수정</ActionButtonText>
+            </ActionButton>
+            <ActionButton onPress={handleEditRoutineDetail}>
+              <ActionButtonText>루틴 상세 수정</ActionButtonText>
+            </ActionButton>
+            <DeleteActionButton onPress={handleDeleteRoutine}>
+              <DeleteButtonText>삭제</DeleteButtonText>
+            </DeleteActionButton>
+          </ActionSheetContent>
+        </ActionSheetOverlay>
+      )}
 
       {/* 삭제 확인 모달 */}
-      <BottomSheetDialog
-        visible={showDeleteModal}
-        onRequestClose={handleCancelDelete}
-      >
-        <DeleteModalContainer>
-          <DeleteModalTitle>루틴 삭제</DeleteModalTitle>
-          <DeleteModalMessage>
-            정말 해당 루틴을 삭제하시겠습니까?
-          </DeleteModalMessage>
-          <DeleteModalButtons>
-            <CancelButton onPress={handleCancelDelete}>
-              <CancelButtonText>취소</CancelButtonText>
-            </CancelButton>
-            <ConfirmDeleteButton onPress={handleConfirmDelete}>
-              <ConfirmDeleteButtonText>삭제</ConfirmDeleteButtonText>
-            </ConfirmDeleteButton>
-          </DeleteModalButtons>
-        </DeleteModalContainer>
-      </BottomSheetDialog>
+      {/* BottomSheetDialog 컴포넌트는 제거되었으므로, 직접 구현 또는 다른 방식으로 대체 */}
+      {showDeleteModal && (
+        <DeleteModalOverlay>
+          <DeleteModalContent>
+            <DeleteModalTitle>루틴 삭제</DeleteModalTitle>
+            <DeleteModalMessage>
+              정말 해당 루틴을 삭제하시겠습니까?
+            </DeleteModalMessage>
+            <DeleteModalButtons>
+              <CancelButton onPress={handleCancelDelete}>
+                <CancelButtonText>취소</CancelButtonText>
+              </CancelButton>
+              <ConfirmDeleteButton onPress={handleConfirmDelete}>
+                <ConfirmDeleteButtonText>삭제</ConfirmDeleteButtonText>
+              </ConfirmDeleteButton>
+            </DeleteModalButtons>
+          </DeleteModalContent>
+        </DeleteModalOverlay>
+      )}
     </Container>
   );
 };
@@ -325,8 +309,22 @@ const ExecuteButtonText = styled.Text`
 `;
 
 // 액션 시트 관련 스타일
-const ActionButtonsContainer = styled.View`
-  gap: 8px;
+const ActionSheetOverlay = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const ActionSheetContent = styled.View`
+  background-color: ${theme.colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  width: 100%;
 `;
 
 const ActionButton = styled.TouchableOpacity`
@@ -361,14 +359,28 @@ const MoreButton = styled(TouchableOpacity)`
   padding: 4px;
 `;
 
-const MoreButtonText = styled(Text)`
+const MoreButtonText = styled.Text`
   font-size: 16px;
   color: ${theme.colors.gray500};
 `;
 
 // 삭제 확인 모달 관련 스타일
-const DeleteModalContainer = styled.View`
-  padding: 24px;
+const DeleteModalOverlay = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const DeleteModalContent = styled.View`
+  background-color: ${theme.colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  width: 100%;
 `;
 
 const DeleteModalTitle = styled.Text`

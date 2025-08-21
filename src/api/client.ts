@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, ApiError } from '../types/api';
+import { useAuthStore } from '../store';
 
 // API 기본 URL (환경에 따라 변경 필요)
 const API_BASE_URL = 'https://your-api-domain.com';
@@ -17,7 +18,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // 토큰이 있다면 헤더에 추가
-    const token = getAuthToken(); // 이 함수는 별도로 구현 필요
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,16 +35,22 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // 401 에러 시 토큰 만료 처리
+    if (error.response?.status === 401) {
+      const { logout } = useAuthStore.getState();
+      logout();
+    }
+
     // 에러 처리 로직
     console.error('API Error:', error);
     return Promise.reject(error);
   },
 );
 
-// 인증 토큰 가져오기 함수 (임시 구현)
+// 인증 토큰 가져오기 함수 (Zustand store에서 가져오기)
 function getAuthToken(): string | null {
-  // 실제로는 AsyncStorage나 다른 저장소에서 토큰을 가져와야 함
-  return null;
+  const { accessToken } = useAuthStore.getState();
+  return accessToken;
 }
 
 export default apiClient;
