@@ -54,7 +54,9 @@ const EmailLoginScreen = ({ navigation }: any) => {
               isPassword={true}
             />
           </FormGroup>
+        </FormContainer>
 
+        <BottomActions>
           <CustomButton
             text="로그인"
             onPress={handleLogin}
@@ -64,21 +66,21 @@ const EmailLoginScreen = ({ navigation }: any) => {
             }
             textColor={isFormValid ? theme.colors.white : theme.colors.gray500}
           />
-        </FormContainer>
 
-        <Footer>
-          <FooterLink onPress={() => navigation.navigate('EmailInput')}>
-            회원가입
-          </FooterLink>
-          <Separator>|</Separator>
-          <FooterLink onPress={() => navigation.navigate('FindId')}>
-            아이디 찾기
-          </FooterLink>
-          <Separator>|</Separator>
-          <FooterLink onPress={() => navigation.navigate('FindPassword')}>
-            비밀번호 찾기
-          </FooterLink>
-        </Footer>
+          <Footer>
+            <FooterLink onPress={() => navigation.navigate('EmailInput')}>
+              회원가입
+            </FooterLink>
+            <Separator>|</Separator>
+            <FooterLink onPress={() => navigation.navigate('FindId')}>
+              아이디 찾기
+            </FooterLink>
+            <Separator>|</Separator>
+            <FooterLink onPress={() => navigation.navigate('FindPassword')}>
+              비밀번호 찾기
+            </FooterLink>
+          </Footer>
+        </BottomActions>
       </ContentWrapper>
     </Container>
   );
@@ -123,6 +125,10 @@ const HighlightText = styled.Text`
 
 const FormContainer = styled.View`
   width: 100%;
+`;
+
+const BottomActions = styled.View`
+  margin-top: auto;
 `;
 
 const Footer = styled.View`
