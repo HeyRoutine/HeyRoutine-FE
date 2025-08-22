@@ -9,6 +9,11 @@ import {
   UpdateGroupRoutineResponse,
   DeleteGroupRoutineResponse,
   JoinGroupRoutineResponse,
+  CreateGroupRoutineDetailRequest,
+  CreateGroupRoutineDetailResponse,
+  UpdateGroupRoutineDetailRequest,
+  UpdateGroupRoutineDetailResponse,
+  DeleteGroupRoutineDetailResponse,
 } from '../../../types/api';
 
 // 단체루틴 생성 API
@@ -18,6 +23,42 @@ export const createGroupRoutine = async (
   const response = await apiClient.post<
     ApiResponse<CreateGroupRoutineResponse>
   >('/api/v1/routines/groups', data);
+
+  return response.data;
+};
+
+// 단체루틴 상세 생성 API
+export const createGroupRoutineDetail = async (
+  groupRoutineListId: string,
+  data: CreateGroupRoutineDetailRequest,
+): Promise<ApiResponse<CreateGroupRoutineDetailResponse>> => {
+  const response = await apiClient.post<
+    ApiResponse<CreateGroupRoutineDetailResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}/sub-routines`, data);
+
+  return response.data;
+};
+
+// 단체루틴 상세 수정 API
+export const updateGroupRoutineDetail = async (
+  groupRoutineListId: string,
+  data: UpdateGroupRoutineDetailRequest,
+): Promise<ApiResponse<UpdateGroupRoutineDetailResponse>> => {
+  const response = await apiClient.put<
+    ApiResponse<UpdateGroupRoutineDetailResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}/sub-routines`, data);
+
+  return response.data;
+};
+
+// 단체루틴 상세 삭제 API
+export const deleteGroupRoutineDetail = async (
+  groupRoutineListId: string,
+  routineId: string,
+): Promise<ApiResponse<DeleteGroupRoutineDetailResponse>> => {
+  const response = await apiClient.delete<
+    ApiResponse<DeleteGroupRoutineDetailResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}/sub-routines/${routineId}`);
 
   return response.data;
 };
