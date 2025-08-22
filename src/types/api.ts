@@ -9,6 +9,20 @@ export interface ApiResponse<T> {
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 
+// 단체루틴 상세 정보 타입
+export interface GroupRoutineInfo {
+  id: number;
+  routineType: RoutineType;
+  title: string;
+  description: string;
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineNums: number;
+  peopleNums: number;
+  dayOfWeek: string[]; // ['월', '화', '수'] 형식
+  isJoined: boolean;
+}
+
 // 루틴 상세 아이템 타입 (생성용)
 export interface RoutineDetailItem {
   templateId: number | null; // 연결된 템플릿 ID (연결 안 했으면 null)
@@ -24,6 +38,32 @@ export interface RoutineDetailUpdateItem {
   emojiId: number; // 선택한 이모지 ID
   name: string; // 루틴 명
   time: number; // 루틴 걸리는 시간 (1~999)
+}
+
+// 루틴 정보 타입 (미참여자용)
+export interface RoutineInfo {
+  id: number;
+  emojiId: number;
+  name: string;
+  time: number;
+}
+
+// 루틴 정보 타입 (참여자용 - isCompleted 포함)
+export interface RoutineInfoWithCompletion extends RoutineInfo {
+  isCompleted: boolean;
+}
+
+// 미참여자용 멤버 정보 타입
+export interface NonParticipantMemberInfo {
+  profileImageUrl: string[]; // 참여자 프로필 이미지 URL 배열 (최대 8개)
+}
+
+// 참여자/방장용 멤버 정보 타입
+export interface ParticipantMemberInfo {
+  successPeopleNums: number; // 성공한 사람 수
+  successPeopleProfileImageUrl: string[]; // 성공한 사람들의 프로필 이미지 URL 배열 (최대 8개)
+  failedPeopleNums: number; // 실패한 사람 수
+  failedPeopleProfileImageUrl: string[]; // 실패한 사람들의 프로필 이미지 URL 배열 (최대 8개)
 }
 
 // 단체루틴 상세 생성 요청 타입
@@ -121,4 +161,35 @@ export interface ApiError {
   isSuccess: false;
   code: string;
   message: string;
+}
+
+// 미참여자용 단체루틴 상세 조회 응답 타입
+export interface NonParticipantGroupRoutineDetailResponse {
+  isAdmin: boolean;
+  groupRoutineInfo: GroupRoutineInfo;
+  RoutineInfos: RoutineInfo[]; // isCompleted 없음
+  groupRoutineMemberInfo: NonParticipantMemberInfo;
+}
+
+// 참여자/방장용 단체루틴 상세 조회 응답 타입
+export interface ParticipantGroupRoutineDetailResponse {
+  isAdmin: boolean;
+  groupRoutineInfo: GroupRoutineInfo;
+  RoutineInfos: RoutineInfoWithCompletion[]; // isCompleted 포함
+  groupRoutineMemberInfo: ParticipantMemberInfo;
+}
+
+// 단체루틴 상세 조회 응답 타입 (Union 타입)
+export type GroupRoutineDetailResponse =
+  | NonParticipantGroupRoutineDetailResponse
+  | ParticipantGroupRoutineDetailResponse;
+
+// 단체루틴 상세루틴 성공/실패 요청 타입
+export interface UpdateGroupRoutineStatusRequest {
+  status: boolean; // 루틴 성공/실패 여부
+}
+
+// 단체루틴 상세루틴 성공/실패 응답 타입
+export interface UpdateGroupRoutineStatusResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
