@@ -193,3 +193,44 @@ export interface UpdateGroupRoutineStatusRequest {
 export interface UpdateGroupRoutineStatusResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
+
+// 방명록 아이템 타입
+export interface GuestbookItem {
+  id: number;
+  userId: number;
+  nickname: string;
+  profileImageUrl: string;
+  content: string;
+  createdAt: string; // yyyy-MM-dd HH:mm:ss 형식
+  isWriter: boolean; // 현재 사용자가 작성자인지 여부
+}
+
+// 방명록 조회 응답 타입
+export interface GroupGuestbookListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: GuestbookItem[];
+}
+
+// 방명록 조회 파라미터 타입
+export interface GroupGuestbookListParams {
+  page?: number; // 기본값: 0
+  size?: number; // 기본값: 20
+}
+
+// 방명록 작성 요청 타입
+export interface CreateGroupGuestbookRequest {
+  content: string; // 방명록 내용
+}
+
+// 방명록 작성 응답 타입
+export interface CreateGroupGuestbookResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 방명록 삭제 응답 타입
+export interface DeleteGroupGuestbookResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
