@@ -3,7 +3,20 @@ import {
   ApiResponse,
   GroupRoutineListResponse,
   GroupRoutineListParams,
+  CreateGroupRoutineRequest,
+  CreateGroupRoutineResponse,
 } from '../../../types/api';
+
+// 단체루틴 생성 API
+export const createGroupRoutine = async (
+  data: CreateGroupRoutineRequest,
+): Promise<ApiResponse<CreateGroupRoutineResponse>> => {
+  const response = await apiClient.post<
+    ApiResponse<CreateGroupRoutineResponse>
+  >('/api/v1/routines/groups', data);
+
+  return response.data;
+};
 
 // 단체루틴 리스트 조회 API
 export const getGroupRoutines = async (
