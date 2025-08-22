@@ -9,6 +9,21 @@ export interface ApiResponse<T> {
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 
+// 단체루틴 생성 요청 타입
+export interface CreateGroupRoutineRequest {
+  title: string;
+  description: string;
+  routineType: RoutineType;
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  daysOfWeek: string[]; // ['월', '화', '수'] 형식
+}
+
+// 단체루틴 생성 응답 타입
+export interface CreateGroupRoutineResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
   id: number;
