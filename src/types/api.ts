@@ -39,6 +39,16 @@ export interface UpdateGroupRoutineResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
 
+// 단체루틴 삭제 응답 타입
+export interface DeleteGroupRoutineResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 단체루틴 가입 응답 타입
+export interface JoinGroupRoutineResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
   id: number;
