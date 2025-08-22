@@ -9,6 +9,33 @@ export interface ApiResponse<T> {
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 
+// 루틴 상세 아이템 타입 (생성용)
+export interface RoutineDetailItem {
+  templateId: number | null; // 연결된 템플릿 ID (연결 안 했으면 null)
+  emojiId: number; // 선택한 이모지 ID
+  name: string; // 루틴 명
+  time: number; // 루틴 걸리는 시간 (1~999)
+}
+
+// 루틴 상세 수정 아이템 타입 (수정용)
+export interface RoutineDetailUpdateItem {
+  routineId: number; // 수정할 개별 루틴의 ID
+  templateId: number | null; // 연결된 템플릿 ID (연결 안 했으면 null)
+  emojiId: number; // 선택한 이모지 ID
+  name: string; // 루틴 명
+  time: number; // 루틴 걸리는 시간 (1~999)
+}
+
+// 단체루틴 상세 생성 요청 타입
+export interface CreateGroupRoutineDetailRequest {
+  routines: RoutineDetailItem[];
+}
+
+// 단체루틴 상세 수정 요청 타입
+export interface UpdateGroupRoutineDetailRequest {
+  routines: RoutineDetailUpdateItem[];
+}
+
 // 단체루틴 생성 요청 타입
 export interface CreateGroupRoutineRequest {
   title: string;
@@ -31,6 +58,21 @@ export interface UpdateGroupRoutineRequest {
 
 // 단체루틴 생성 응답 타입
 export interface CreateGroupRoutineResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 단체루틴 상세 생성 응답 타입
+export interface CreateGroupRoutineDetailResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 단체루틴 상세 수정 응답 타입
+export interface UpdateGroupRoutineDetailResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 단체루틴 상세 삭제 응답 타입
+export interface DeleteGroupRoutineDetailResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
 
