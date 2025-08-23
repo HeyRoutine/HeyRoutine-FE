@@ -97,39 +97,25 @@ export interface UpdateGroupRoutineRequest {
 }
 
 // 단체루틴 생성 응답 타입
-export interface CreateGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 상세 생성 응답 타입
-export interface CreateGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 상세 수정 응답 타입
-export interface UpdateGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 상세 삭제 응답 타입
-export interface DeleteGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeleteGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 수정 응답 타입
-export interface UpdateGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 삭제 응답 타입
-export interface DeleteGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeleteGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 가입 응답 타입
-export interface JoinGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type JoinGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
@@ -163,6 +149,11 @@ export interface ApiError {
   message: string;
 }
 
+// 공통 응답 타입 (성공 시 별도 데이터 없음)
+export interface EmptyResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
@@ -190,9 +181,7 @@ export interface UpdateGroupRoutineStatusRequest {
 }
 
 // 단체루틴 상세루틴 성공/실패 응답 타입
-export interface UpdateGroupRoutineStatusResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineStatusResponse = EmptyResponse;
 
 // 방명록 아이템 타입
 export interface GuestbookItem {
@@ -226,14 +215,10 @@ export interface CreateGroupGuestbookRequest {
 }
 
 // 방명록 작성 응답 타입
-export interface CreateGroupGuestbookResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupGuestbookResponse = EmptyResponse;
 
 // 방명록 삭제 응답 타입
-export interface DeleteGroupGuestbookResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeleteGroupGuestbookResponse = EmptyResponse;
 
 // 루틴 템플릿 아이템 타입
 export interface RoutineTemplateItem {
@@ -308,14 +293,10 @@ export interface UpdatePersonalRoutineListRequest {
 }
 
 // 개인루틴 리스트 수정 응답 타입
-export interface UpdatePersonalRoutineListResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdatePersonalRoutineListResponse = EmptyResponse;
 
 // 개인루틴 리스트 삭제 응답 타입
-export interface DeletePersonalRoutineListResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeletePersonalRoutineListResponse = EmptyResponse;
 
 // 개인루틴 리스트 아이템 타입
 export interface PersonalRoutineListItem {
@@ -352,9 +333,7 @@ export interface CreatePersonalRoutineDetailRequest {
 }
 
 // 개인루틴 상세 생성 응답 타입
-export interface CreatePersonalRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreatePersonalRoutineDetailResponse = EmptyResponse;
 
 // 개인루틴 상세 아이템 타입
 export interface PersonalRoutineDetailItem {
@@ -383,19 +362,13 @@ export interface UpdatePersonalRoutineDetailRequest {
 }
 
 // 개인루틴 상세 수정 응답 타입
-export interface UpdatePersonalRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdatePersonalRoutineDetailResponse = EmptyResponse;
 
 // 개인루틴 상세 삭제 응답 타입
-export interface DeletePersonalRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeletePersonalRoutineDetailResponse = EmptyResponse;
 
 // 개인루틴 수행 응답 타입
-export interface DonePersonalRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DonePersonalRoutineResponse = EmptyResponse;
 
 // 개인루틴 수행 파라미터 타입
 export interface DonePersonalRoutineParams {
@@ -403,6 +376,4 @@ export interface DonePersonalRoutineParams {
 }
 
 // 개인루틴 리스트 완료 응답 타입
-export interface DoneMyRoutineListResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DoneMyRoutineListResponse = EmptyResponse;
