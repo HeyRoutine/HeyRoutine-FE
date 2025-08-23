@@ -17,11 +17,26 @@ const apiClient: AxiosInstance = axios.create({
 // 요청 인터셉터 (토큰 추가 등)
 apiClient.interceptors.request.use(
   (config) => {
-    // 토큰이 있다면 헤더에 추가
-    const token = getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // 인증이 필요 없는 API들은 토큰 제외
+    const authNotRequired = [
+      '/api/v1/user/sign-in',
+      '/api/v1/user/sign-up',
+      '/api/v1/user/email-duplicate-check',
+      '/api/v1/user/nickname-duplicate-check',
+    ];
+
+    const isAuthNotRequired = authNotRequired.some((path) =>
+      config.url?.includes(path),
+    );
+
+    // 토큰이 필요 없는 API가 아니면 토큰 추가
+    if (!isAuthNotRequired) {
+      const token = getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+
     return config;
   },
   (error) => {
