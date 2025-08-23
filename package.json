@@ -10,10 +10,13 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.873.0",
+    "@aws-sdk/s3-request-presigner": "^3.873.0",
     "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@quidone/react-native-wheel-picker": "^1.5.2",
+    "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.4.6",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.25",
@@ -29,15 +32,14 @@
     "react-dom": "^19.0.0",
     "react-native": "0.79.5",
     "react-native-calendars": "^1.1313.0",
+    "react-native-gesture-handler": "~2.24.0",
+    "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
     "styled-components": "^6.1.19",
-    "zustand": "^5.0.7",
-    "react-native-gesture-handler": "~2.24.0",
-    "react-native-reanimated": "~3.17.4",
-    "@react-native-async-storage/async-storage": "2.1.2"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
