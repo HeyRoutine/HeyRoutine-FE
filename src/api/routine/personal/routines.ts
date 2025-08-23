@@ -8,6 +8,9 @@ import {
   DeletePersonalRoutineListResponse,
   PersonalRoutineListResponse,
   PersonalRoutineListParams,
+  DonePersonalRoutineResponse,
+  DonePersonalRoutineParams,
+  DoneMyRoutineListResponse,
 } from '../../../types/api';
 
 // 개인루틴 리스트 생성 API
@@ -57,5 +60,34 @@ export const showMyRoutineList = async (
       size,
     },
   });
+  return response.data;
+};
+
+// 개인루틴 리스트 수행 API
+export const doneRoutineToMyRoutineList = async (
+  routineId: string,
+  params: DonePersonalRoutineParams,
+): Promise<ApiResponse<DonePersonalRoutineResponse>> => {
+  const { date } = params;
+
+  const response = await apiClient.post<
+    ApiResponse<DonePersonalRoutineResponse>
+  >(
+    `/api/v1/list/routine/complete/${routineId}`,
+    {},
+    {
+      params: { date },
+    },
+  );
+  return response.data;
+};
+
+// 루틴리스트 기록하기 API
+export const doneMyRoutineList = async (
+  myRoutineListId: string,
+): Promise<ApiResponse<DoneMyRoutineListResponse>> => {
+  const response = await apiClient.post<ApiResponse<DoneMyRoutineListResponse>>(
+    `/api/v1/list/complete/${myRoutineListId}`,
+  );
   return response.data;
 };

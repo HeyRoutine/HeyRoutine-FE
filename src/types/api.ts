@@ -401,3 +401,8 @@ export interface DonePersonalRoutineResponse {
 export interface DonePersonalRoutineParams {
   date: string; // 완료 날짜 (예: "2025-08-19")
 }
+
+// 개인루틴 리스트 완료 응답 타입
+export interface DoneMyRoutineListResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
