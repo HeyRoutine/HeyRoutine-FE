@@ -6,6 +6,11 @@ import {
   MyPointResponse,
   PostProductRequest,
   PostProductResponse,
+  ShopListParams,
+  ShopListResponse,
+  ShopCategoryListParams,
+  ShopCategoryListResponse,
+  GetProductDetailResponse,
 } from '../../types/api';
 
 // ===== 포인트샵 API 함수들 =====
@@ -35,6 +40,50 @@ export const postProduct = async (
   const response = await apiClient.post<ApiResponse<PostProductResponse>>(
     '/api/v1/shop',
     data,
+  );
+  return response.data;
+};
+
+// 물건 전체보기
+export const shopList = async (
+  params: ShopListParams = {},
+): Promise<ApiResponse<ShopListResponse>> => {
+  const { page = 0, size = 10 } = params;
+  const response = await apiClient.get<ApiResponse<ShopListResponse>>(
+    '/api/v1/shop/list',
+    {
+      params: {
+        page,
+        size,
+      },
+    },
+  );
+  return response.data;
+};
+
+// 물건 카테고리별 전체보기
+export const shopCategoryList = async (
+  params: ShopCategoryListParams,
+): Promise<ApiResponse<ShopCategoryListResponse>> => {
+  const { category, page = 0, size = 10 } = params;
+  const response = await apiClient.get<ApiResponse<ShopCategoryListResponse>>(
+    `/api/v1/shop/list/${category}`,
+    {
+      params: {
+        page,
+        size,
+      },
+    },
+  );
+  return response.data;
+};
+
+// 물건 상세보기
+export const getProductDetail = async (
+  productId: string,
+): Promise<ApiResponse<GetProductDetailResponse>> => {
+  const response = await apiClient.get<ApiResponse<GetProductDetailResponse>>(
+    `/api/v1/shop/${productId}`,
   );
   return response.data;
 };

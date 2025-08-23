@@ -183,6 +183,58 @@ export interface PostProductRequest {
 // 물건 등록하기 응답 타입
 export type PostProductResponse = EmptyResponse;
 
+// 상품 정보 타입
+export interface ProductInfo {
+  id: number;
+  productName: string;
+  brand: string;
+  price: number;
+  stock: number;
+  imageUrl: string;
+  category: string;
+}
+
+// 상품 목록 응답 타입
+export interface ProductListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: ProductInfo[];
+}
+
+// 물건 전체보기 요청 파라미터 타입
+export interface ShopListParams {
+  page?: number;
+  size?: number;
+}
+
+// 물건 전체보기 응답 타입
+export type ShopListResponse = ProductListResponse;
+
+// 물건 카테고리별 전체보기 요청 파라미터 타입
+export interface ShopCategoryListParams {
+  category: '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리';
+  page?: number;
+  size?: number;
+}
+
+// 물건 카테고리별 전체보기 응답 타입
+export type ShopCategoryListResponse = ProductListResponse;
+
+// 상품 상세 정보 타입
+export interface ProductDetailInfo {
+  brand: string;
+  productName: string;
+  price: number;
+  stock: number;
+  category: string;
+  imageUrl: string;
+}
+
+// 물건 상세보기 응답 타입
+export type GetProductDetailResponse = ProductDetailInfo;
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;

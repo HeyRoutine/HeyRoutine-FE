@@ -1,6 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { buyProduct, myPoint, postProduct } from '../../api/shop/shop';
-import { PostProductRequest } from '../../types/api';
+import {
+  buyProduct,
+  myPoint,
+  postProduct,
+  shopList,
+  shopCategoryList,
+  getProductDetail,
+} from '../../api/shop/shop';
+import {
+  PostProductRequest,
+  ShopListParams,
+  ShopCategoryListParams,
+} from '../../types/api';
 
 // ===== 포인트샵 React Query Hooks =====
 
@@ -11,6 +22,37 @@ export const useMyPoint = () => {
     queryFn: () => myPoint(),
     staleTime: 1 * 60 * 1000, // 1분간 fresh 상태 유지 (포인트는 자주 변경될 수 있음)
     gcTime: 5 * 60 * 1000, // 5분간 캐시 유지
+  });
+};
+
+// 물건 전체보기 훅
+export const useShopList = (params: ShopListParams = {}) => {
+  return useQuery({
+    queryKey: ['shopList', params],
+    queryFn: () => shopList(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 물건 카테고리별 전체보기 훅
+export const useShopCategoryList = (params: ShopCategoryListParams) => {
+  return useQuery({
+    queryKey: ['shopCategoryList', params],
+    queryFn: () => shopCategoryList(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 물건 상세보기 훅
+export const useProductDetail = (productId: string) => {
+  return useQuery({
+    queryKey: ['productDetail', productId],
+    queryFn: () => getProductDetail(productId),
+    staleTime: 10 * 60 * 1000, // 10분간 fresh 상태 유지
+    gcTime: 30 * 60 * 1000, // 30분간 캐시 유지
+    enabled: !!productId, // productId가 있을 때만 실행
   });
 };
 
