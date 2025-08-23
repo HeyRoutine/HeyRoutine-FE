@@ -217,13 +217,15 @@ const PersonalRoutineDetailScreen = ({
     navigation.navigate('ActiveRoutine', {
       routineName,
       tasks,
-      onComplete: () => {
+      onTaskComplete: (index: number) => {
         setRoutineItems((prev) =>
-          prev.map((it) => ({ ...it, isCompleted: true })),
+          prev.map((it, i) => (i === index ? { ...it, isCompleted: true } : it)),
         );
       },
     });
   };
+
+  // 전역 동기화 제거: 실행 화면에서 전달되는 콜백(onTaskComplete)로만 완료 상태 반영
 
   const handleMorePress = () => {
     setMoreSheetVisible(true);
@@ -310,6 +312,7 @@ const PersonalRoutineDetailScreen = ({
                 selectedEmoji={selectedEmoji}
                 currentText={currentText}
                 placeholder="루틴을 추가해주세요"
+                editable={isEditMode}
               />
             </AdderContainer>
           )}

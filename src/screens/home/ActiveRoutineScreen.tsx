@@ -4,6 +4,7 @@ import styled from 'styled-components/native';
 import { ScrollView } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
+import { useRoutineStore } from '../../store';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
@@ -17,12 +18,16 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [isResumeModalVisible, setResumeModalVisible] = useState(false);
   const [isSkipModalVisible, setSkipModalVisible] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const { markActiveRoutineTaskCompleted, resetActiveRoutineProgress } =
+    useRoutineStore();
 
   const incomingTasks = route?.params?.tasks as
     | Array<{ icon: string; title: string; duration: string }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
-  const onComplete = route?.params?.onComplete as (() => void) | undefined;
+  const onTaskComplete = route?.params?.onTaskComplete as
+    | ((index: number) => void)
+    | undefined;
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
@@ -85,6 +90,14 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   };
 
   const handleConfirmComplete = () => {
+    // 현재 태스크 완료를 전역에도 기록
+    try {
+      markActiveRoutineTaskCompleted(activeTaskIndex);
+    } catch {}
+    // 상세 화면 콜백도 유지
+    try {
+      onTaskComplete?.(activeTaskIndex);
+    } catch {}
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
@@ -109,8 +122,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       setProgress(0);
       setIsActive(true);
     } else {
-      // 마지막 태스크 완료 흐름으로 전환
-      setCompleteModalVisible(true);
+      // 마지막에서 스킵/넘어가기 시 즉시 복귀 (완료 처리 없음)
+      navigation.goBack();
     }
   };
 
@@ -122,6 +135,12 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const handleCloseSkipModal = () => setSkipModalVisible(false);
 
   const handleBack = () => navigation.goBack();
+  useEffect(() => {
+    // 화면 들어올 때 이전 진행상황 초기화는 유지하되,
+    // 상세 화면 표시엔 전역값을 사용하지 않게 변경(로컬 콜백만 사용)
+    resetActiveRoutineProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Container edges={['top', 'left', 'right']}>
@@ -184,16 +203,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
 
       {isCompleted && (
         <ConfirmButtonBar>
-          <CreateButton
-            onPress={() => {
-              if (onComplete) {
-                try {
-                  onComplete();
-                } catch {}
-              }
-              navigation.goBack();
-            }}
-          >
+          <CreateButton onPress={() => navigation.goBack()}>
             <CreateButtonText>확인</CreateButtonText>
           </CreateButton>
         </ConfirmButtonBar>

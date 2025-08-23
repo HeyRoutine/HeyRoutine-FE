@@ -18,6 +18,7 @@ interface RoutineState {
   isLoading: boolean;
   activeRoutineId: string | null;
   isEditMode: boolean; // 루틴 수정 모드 상태 추가
+  activeRoutineCompletedIndices: number[]; // 실행 중 완료된 세부 루틴 인덱스
 
   // 액션 (상태를 변경하는 함수들)
   setSelectedDate: (date: Date) => void;
@@ -26,6 +27,8 @@ interface RoutineState {
   setLoading: (loading: boolean) => void;
   setActiveRoutineId: (id: string | null) => void;
   setEditMode: (isEdit: boolean) => void; // 수정 모드 설정 액션 추가
+  markActiveRoutineTaskCompleted: (index: number) => void;
+  resetActiveRoutineProgress: () => void;
   resetRoutineState: () => void;
 }
 
@@ -38,6 +41,7 @@ export const useRoutineStore = create<RoutineState>((set) => ({
   isLoading: false,
   activeRoutineId: null,
   isEditMode: false, // 초기 수정 모드 상태
+  activeRoutineCompletedIndices: [],
 
   // 액션들
   setSelectedDate: (date) => set({ selectedDate: date }),
@@ -52,6 +56,15 @@ export const useRoutineStore = create<RoutineState>((set) => ({
 
   setEditMode: (isEdit) => set({ isEditMode: isEdit }),
 
+  markActiveRoutineTaskCompleted: (index) =>
+    set((state) => ({
+      activeRoutineCompletedIndices: Array.from(
+        new Set([...state.activeRoutineCompletedIndices, index]),
+      ),
+    })),
+
+  resetActiveRoutineProgress: () => set({ activeRoutineCompletedIndices: [] }),
+
   resetRoutineState: () =>
     set({
       selectedDate: new Date(),
@@ -60,6 +73,7 @@ export const useRoutineStore = create<RoutineState>((set) => ({
       isLoading: false,
       activeRoutineId: null,
       isEditMode: false, // 상태 초기화 시 수정 모드도 초기화
+      activeRoutineCompletedIndices: [],
     }),
 }));
 
@@ -76,6 +90,7 @@ if (!isWeb) {
       routineFilter: state.routineFilter,
       activeRoutineId: state.activeRoutineId,
       isEditMode: state.isEditMode, // 수정 모드도 파티셜라이즈
+      // activeRoutineCompletedIndices 는 세션성 데이터라 persist 제외
     }),
   });
 
