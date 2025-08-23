@@ -5,6 +5,8 @@ import {
   SignInResponse,
   SignUpRequest,
   SignUpResponse,
+  ReissueRequest,
+  ReissueResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -46,6 +48,17 @@ export const signUp = async (
 ): Promise<ApiResponse<SignUpResponse>> => {
   const response = await apiClient.post<ApiResponse<SignUpResponse>>(
     '/api/v1/user/sign-up',
+    data,
+  );
+  return response.data;
+};
+
+// 토큰 재발급
+export const reissue = async (
+  data: ReissueRequest,
+): Promise<ApiResponse<ReissueResponse>> => {
+  const response = await apiClient.post<ApiResponse<ReissueResponse>>(
+    '/api/v1/user/token/reissue',
     data,
   );
   return response.data;

@@ -187,6 +187,15 @@ export interface SignUpResponse {
   nickname: string;
 }
 
+// 토큰 재발급 요청 타입
+export interface ReissueRequest {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// 토큰 재발급 응답 타입 (로그인 응답과 동일)
+export type ReissueResponse = SignInResponse;
+
 // ===== 포인트샵 (Point Shop) 타입 =====
 
 // 포인트 정보 타입

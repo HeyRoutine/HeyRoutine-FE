@@ -4,8 +4,9 @@ import {
   checkNicknameDuplicate,
   signIn,
   signUp,
+  reissue,
 } from '../../api/user/user';
-import { SignInRequest, SignUpRequest } from '../../types/api';
+import { SignInRequest, SignUpRequest, ReissueRequest } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
 
@@ -69,6 +70,26 @@ export const useSignUp = () => {
 
       // TODO: 회원가입 성공 후 처리 로직 추가
       // 예: 자동 로그인, 환영 화면으로 이동 등
+    },
+  });
+};
+
+// 토큰 재발급 훅
+export const useReissue = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ReissueRequest) => reissue(data),
+    onSuccess: (data) => {
+      // 토큰 재발급 성공 시 새로운 토큰 저장 및 캐시 무효화
+      const { accessToken, refreshToken } = data.result;
+
+      // TODO: 새로운 토큰을 스토어에 저장하는 로직 추가
+      // useAuthStore.getState().setAccessToken(accessToken);
+      // useAuthStore.getState().setRefreshToken(refreshToken);
+
+      // 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 };
