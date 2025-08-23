@@ -9,6 +9,10 @@ import {
   UpdateGroupRoutineResponse,
   DeleteGroupRoutineResponse,
   JoinGroupRoutineResponse,
+  RoutineTemplateListResponse,
+  RoutineTemplateListParams,
+  EmojiListResponse,
+  EmojiListParams,
 } from '../../../types/api';
 
 // 단체루틴 생성 API
@@ -58,6 +62,44 @@ export const getGroupRoutines = async (
       params: {
         page,
         size,
+      },
+    },
+  );
+
+  return response.data;
+};
+
+// 루틴 템플릿 조회 API
+export const getRoutineTemplate = async (
+  params: RoutineTemplateListParams = {},
+): Promise<ApiResponse<RoutineTemplateListResponse>> => {
+  const { category, page = 0, size = 10 } = params;
+
+  const response = await apiClient.get<
+    ApiResponse<RoutineTemplateListResponse>
+  >('/api/v1/routines/templates', {
+    params: {
+      ...(category && { category }),
+      page,
+      size,
+    },
+  });
+
+  return response.data;
+};
+
+// 이모지 전체 조회 API
+export const getRoutineEmoji = async (
+  params: EmojiListParams = {},
+): Promise<ApiResponse<EmojiListResponse>> => {
+  const { category } = params;
+
+  const response = await apiClient.post<ApiResponse<EmojiListResponse>>(
+    '/api/v1/routines/emoji',
+    {},
+    {
+      params: {
+        ...(category && { category }),
       },
     },
   );

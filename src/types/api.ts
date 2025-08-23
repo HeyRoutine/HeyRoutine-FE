@@ -234,3 +234,43 @@ export interface CreateGroupGuestbookResponse {
 export interface DeleteGroupGuestbookResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
+
+// 루틴 템플릿 아이템 타입
+export interface RoutineTemplateItem {
+  templateId: number;
+  emojiId: number;
+  name: string;
+  content: string;
+}
+
+// 루틴 템플릿 조회 응답 타입
+export interface RoutineTemplateListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: RoutineTemplateItem[];
+}
+
+// 루틴 템플릿 조회 파라미터 타입
+export interface RoutineTemplateListParams {
+  category?: string; // 카테고리 필터링 값 (예: "음식")
+  page?: number; // 기본값: 0
+  size?: number; // 기본값: 10
+}
+
+// 이모지 아이템 타입
+export interface EmojiItem {
+  emojiId: number;
+  emojiUrl: string;
+}
+
+// 이모지 조회 응답 타입
+export interface EmojiListResponse {
+  items: EmojiItem[];
+}
+
+// 이모지 조회 파라미터 타입
+export interface EmojiListParams {
+  category?: string; // 카테고리 필터링 값 (예: "식사")
+}
