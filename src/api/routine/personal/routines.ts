@@ -6,6 +6,8 @@ import {
   UpdatePersonalRoutineListRequest,
   UpdatePersonalRoutineListResponse,
   DeletePersonalRoutineListResponse,
+  PersonalRoutineListResponse,
+  PersonalRoutineListParams,
 } from '../../../types/api';
 
 // 개인루틴 리스트 생성 API
@@ -36,5 +38,24 @@ export const deleteRoutineToMyRoutineList = async (
   const response = await apiClient.delete<
     ApiResponse<DeletePersonalRoutineListResponse>
   >(`/api/v1/my-routine/list/${myRoutineListId}`);
+  return response.data;
+};
+
+// 개인루틴 리스트 전체조회 API
+export const showMyRoutineList = async (
+  params: PersonalRoutineListParams = {},
+): Promise<ApiResponse<PersonalRoutineListResponse>> => {
+  const { day, date, page = 0, size = 10 } = params;
+
+  const response = await apiClient.get<
+    ApiResponse<PersonalRoutineListResponse>
+  >('/api/v1/my-routine/list', {
+    params: {
+      ...(day && { day }),
+      ...(date && { date }),
+      page,
+      size,
+    },
+  });
   return response.data;
 };

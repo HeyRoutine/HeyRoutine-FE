@@ -316,3 +316,42 @@ export interface UpdatePersonalRoutineListResponse {
 export interface DeletePersonalRoutineListResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
+
+// 개인루틴 리스트 아이템 타입
+export interface PersonalRoutineListItem {
+  id: number;
+  title: string;
+  startTime: string; // HH:mm:ss 형식
+  endTime: string; // HH:mm:ss 형식
+  routineType: RoutineType;
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 조회 응답 타입
+export interface PersonalRoutineListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: PersonalRoutineListItem[];
+}
+
+// 개인루틴 리스트 조회 파라미터 타입
+export interface PersonalRoutineListParams {
+  day?: string; // 조회 요일 (예: "월")
+  date?: string; // 조회 날짜 (예: "2025-08-19")
+  page?: number; // 기본값: 0
+  size?: number; // 기본값: 10
+}
+
+// 개인루틴 상세 생성 요청 타입
+export interface CreatePersonalRoutineDetailRequest {
+  routineName: string; // 루틴 명
+  emojiId: number; // 이모지 Id
+  time: number; // 루틴 시간
+}
+
+// 개인루틴 상세 생성 응답 타입
+export interface CreatePersonalRoutineDetailResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
