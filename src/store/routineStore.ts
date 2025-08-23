@@ -89,7 +89,7 @@ if (!isWeb) {
       selectedDate: state.selectedDate,
       routineFilter: state.routineFilter,
       activeRoutineId: state.activeRoutineId,
-      isEditMode: state.isEditMode, // 수정 모드도 파티셜라이즈
+      // isEditMode는 세션성 UI 상태이므로 persist 대상에서 제외
       // activeRoutineCompletedIndices 는 세션성 데이터라 persist 제외
     }),
   });
