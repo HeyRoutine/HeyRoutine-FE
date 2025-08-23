@@ -355,3 +355,49 @@ export interface CreatePersonalRoutineDetailRequest {
 export interface CreatePersonalRoutineDetailResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
+
+// 개인루틴 상세 아이템 타입
+export interface PersonalRoutineDetailItem {
+  routineId: number;
+  routineName: string;
+  emojiUrl: string;
+  time: number;
+  completed: boolean;
+}
+
+// 개인루틴 상세 조회 응답 타입
+export interface PersonalRoutineDetailListResponse {
+  items: PersonalRoutineDetailItem[];
+}
+
+// 개인루틴 상세 조회 파라미터 타입
+export interface PersonalRoutineDetailListParams {
+  date: string; // 조회 날짜 (예: "2025-08-19")
+}
+
+// 개인루틴 상세 수정 요청 타입 (생성과 동일)
+export interface UpdatePersonalRoutineDetailRequest {
+  routineName: string; // 루틴 명
+  emojiId: number; // 이모지 Id
+  time: number; // 루틴 시간
+}
+
+// 개인루틴 상세 수정 응답 타입
+export interface UpdatePersonalRoutineDetailResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 개인루틴 상세 삭제 응답 타입
+export interface DeletePersonalRoutineDetailResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 개인루틴 수행 응답 타입
+export interface DonePersonalRoutineResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 개인루틴 수행 파라미터 타입
+export interface DonePersonalRoutineParams {
+  date: string; // 완료 날짜 (예: "2025-08-19")
+}
