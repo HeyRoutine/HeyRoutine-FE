@@ -8,26 +8,27 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { useAuthStore } from '../../store';
+import { uploadImage } from '../../utils/s3';
 
 const ProfileImageScreen = ({ navigation }: any) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Zustand 스토어에서 프로필 이미지 설정 함수와 회원가입 데이터 가져오기
   const { setSignupProfileImage, signupData } = useAuthStore();
-  const { nickname } = signupData;
+  const { nickname, email } = signupData;
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      alert('갤러리 접근 권한이 필요합니다.');
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
@@ -35,10 +36,37 @@ const ProfileImageScreen = ({ navigation }: any) => {
     }
   };
 
-  const handleNext = () => {
-    // Zustand 스토어에 프로필 이미지 저장
-    setSignupProfileImage(imageUri);
-    navigation.navigate('TermsAgreeMent');
+  const handleNext = async () => {
+    if (!imageUri) {
+      // 이미지가 없으면 바로 다음으로
+      setSignupProfileImage(null);
+      navigation.navigate('TermsAgreeMent');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // S3에 이미지 업로드
+      const fileName = `profile_${Date.now()}.jpg`;
+      console.log('업로드 시작:', { email, fileName });
+
+      const imageUrl = await uploadImage(
+        email,
+        imageUri,
+        fileName,
+        'image/jpeg',
+      );
+      console.log('업로드 성공! 이미지 URL:', imageUrl);
+
+      // Zustand 스토어에 업로드된 이미지 URL 저장
+      setSignupProfileImage(imageUrl);
+
+      navigation.navigate('TermsAgreeMent');
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -79,10 +107,11 @@ const ProfileImageScreen = ({ navigation }: any) => {
 
       <ButtonWrapper>
         <CustomButton
-          text={imageUri ? '다음' : '건너뛰기'}
+          text={isUploading ? '업로드 중...' : imageUri ? '다음' : '건너뛰기'}
           onPress={handleNext}
           backgroundColor={theme.colors.primary}
           textColor={theme.colors.white}
+          disabled={isUploading}
         />
       </ButtonWrapper>
     </Container>
