@@ -10,17 +10,60 @@ import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { FormGroup, Label } from '../../components/domain/auth/authFormStyles';
+import { useSignIn } from '../../hooks/user/useUser';
+import { useAuthStore } from '../../store';
 
 const EmailLoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const { login, setAccessToken, setRefreshToken } = useAuthStore();
+
+  // 로그인 API hook
+  const { mutate: signIn, isPending: isSigningIn } = useSignIn();
 
   const isFormValid = email.length > 0 && password.length > 0;
 
   const handleLogin = () => {
     if (!isFormValid) return;
-    // TODO: 로그인 API 연동
-    Alert.alert('로그인 시도', `이메일: ${email}`);
+
+    // 에러 메시지 초기화
+    setErrorMessage('');
+
+    // 로그인 API 호출
+    signIn(
+      {
+        email: email,
+        password: password,
+      },
+      {
+        onSuccess: (data) => {
+          console.log('로그인 성공:', data);
+
+          // 토큰 저장
+          if (data.result?.accessToken) {
+            setAccessToken(data.result.accessToken);
+          }
+          if (data.result?.refreshToken) {
+            setRefreshToken(data.result.refreshToken);
+          }
+
+          // 로그인 상태 변경
+          login();
+        },
+        onError: (error: any) => {
+          console.error('로그인 실패:', error);
+
+          // 에러 메시지 설정
+          if (error?.response?.data?.message) {
+            setErrorMessage(error.response.data.message);
+          } else {
+            setErrorMessage('로그인에 실패했습니다. 다시 시도해주세요.');
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -33,6 +76,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
           <MainTitle>
             <HighlightText>헤이루틴</HighlightText>
           </MainTitle>
+          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
         </TitleWrapper>
 
         <FormContainer>
@@ -58,13 +102,19 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
         <ButtonWrapper>
           <CustomButton
-            text="로그인"
+            text={isSigningIn ? '로그인 중...' : '로그인'}
             onPress={handleLogin}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSigningIn}
             backgroundColor={
-              isFormValid ? theme.colors.primary : theme.colors.gray200
+              isFormValid && !isSigningIn
+                ? theme.colors.primary
+                : theme.colors.gray200
             }
-            textColor={isFormValid ? theme.colors.white : theme.colors.gray500}
+            textColor={
+              isFormValid && !isSigningIn
+                ? theme.colors.white
+                : theme.colors.gray500
+            }
           />
 
           <Footer>
@@ -145,4 +195,12 @@ const FooterLink = styled.Text`
 const Separator = styled.Text`
   margin: 0 12px;
   color: ${theme.colors.gray300};
+`;
+
+const ErrorMessage = styled.Text`
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.error};
+  margin-top: 8px;
+  text-align: center;
 `;
