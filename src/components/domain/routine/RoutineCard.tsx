@@ -24,14 +24,15 @@ const RoutineCard = ({
   return (
     <Container onPress={onPress}>
       <Header>
-        <CategoryText>
-          [{category}] {progress}%
-        </CategoryText>
-        {onMorePress && (
-          <MoreButton onPress={onMorePress}>
-            <MoreIcon>⋯</MoreIcon>
-          </MoreButton>
-        )}
+        <CategoryText>[{category}]</CategoryText>
+        <RightHeader>
+          <ProgressText>{progress}%</ProgressText>
+          {onMorePress && (
+            <MoreButton onPress={onMorePress}>
+              <MoreIcon>⋯</MoreIcon>
+            </MoreButton>
+          )}
+        </RightHeader>
       </Header>
       <Title>{title}</Title>
       <TimeText>{timeRange}</TimeText>
@@ -77,6 +78,18 @@ const MoreIcon = styled.Text`
   color: ${theme.colors.gray500};
 `;
 
+const RightHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const ProgressText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 12px;
+  color: ${theme.colors.primary};
+  margin-right: 8px;
+`;
+
 const Title = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
@@ -94,6 +107,8 @@ const TimeText = styled.Text`
 const DayContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-end;
 `;
 
 const DayBadge = styled.View<{ isSelected: boolean }>`

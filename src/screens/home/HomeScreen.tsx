@@ -25,19 +25,42 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   // Zustand 스토어에서 루틴 상태 가져오기
   const { selectedDate, setSelectedDate } = useRoutineStore();
 
-  // 현재 선택된 날짜의 일자 추출
-  const currentDay = selectedDate.getDate();
+  // 오늘 날짜 기준
+  const today = new Date();
 
-  // 요일과 날짜 데이터
-  const weekData = [
-    { day: '화', date: 29 },
-    { day: '수', date: 30 },
-    { day: '목', date: 31 },
-    { day: '금', date: 1 },
-    { day: '토', date: 2 },
-    { day: '일', date: 3 },
-    { day: '월', date: 4 },
-  ];
+  // 주 시작(월요일) 계산
+  const getStartOfWeekMonday = (date: Date) => {
+    const copied = new Date(date);
+    const day = copied.getDay(); // 0=일,1=월,...6=토
+    const diffToMonday = (day + 6) % 7; // 월요일까지 되돌아가기
+    copied.setHours(0, 0, 0, 0);
+    copied.setDate(copied.getDate() - diffToMonday);
+    return copied;
+  };
+
+  // 같은 날짜 비교 (연/월/일)
+  const isSameDate = (a: Date, b: Date) => {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
+  };
+
+  // 요일 문자열
+  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'] as const;
+
+  // 선택된 날짜가 속한 주(월~일) 데이터 생성
+  const startOfWeek = getStartOfWeekMonday(selectedDate);
+  const weekData = Array.from({ length: 7 }).map((_, idx) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + idx);
+    return {
+      day: dayLabels[d.getDay()],
+      date: d.getDate(),
+      fullDate: d,
+    };
+  });
 
   // 샘플 루틴 데이터
   const personalRoutines = [
@@ -144,10 +167,9 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     navigation.navigate('CreateRoutine');
   };
 
-  const handleDateSelect = (date: number) => {
-    // 현재 월의 해당 날짜로 Date 객체 생성
-    const newDate = new Date();
-    newDate.setDate(date);
+  const handleDateSelect = (date: Date) => {
+    const newDate = new Date(date);
+    newDate.setHours(0, 0, 0, 0);
     setSelectedDate(newDate);
   };
 
@@ -158,16 +180,18 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       <Content>
         {/* 날짜 선택기 */}
         <DateSelector>
-          <MonthText>2025년 7월</MonthText>
+          <MonthText>
+            {selectedDate.getFullYear()}년 {selectedDate.getMonth() + 1}월
+          </MonthText>
           <WeekContainer>
             {weekData.map((item) => (
-              <DayItem key={item.date}>
+              <DayItem key={item.fullDate.toISOString()}>
                 <DayText day={item.day}>{item.day}</DayText>
                 <DateButton
-                  isSelected={currentDay === item.date}
-                  onPress={() => handleDateSelect(item.date)}
+                  isSelected={isSameDate(item.fullDate, today)}
+                  onPress={() => handleDateSelect(item.fullDate)}
                 >
-                  <DateText isSelected={currentDay === item.date}>
+                  <DateText isSelected={isSameDate(item.fullDate, today)}>
                     {item.date}
                   </DateText>
                 </DateButton>
