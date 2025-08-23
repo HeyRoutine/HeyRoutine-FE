@@ -106,7 +106,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           selectedEmoji={item.emoji}
           currentText={item.text}
           placeholder={item.text}
-          isCompleted={false}
+          isCompleted={item.isCompleted}
         />
       </Swipeable>
 

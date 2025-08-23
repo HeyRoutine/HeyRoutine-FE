@@ -22,6 +22,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     | Array<{ icon: string; title: string; duration: string }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
+  const onComplete = route?.params?.onComplete as (() => void) | undefined;
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
@@ -79,13 +80,20 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const handleCloseResumeModal = () => setResumeModalVisible(false);
 
   const handleCompletePress = () => {
+    // 항상 완료 확인 모달을 노출
     setCompleteModalVisible(true);
   };
 
   const handleConfirmComplete = () => {
-    setCompleteModalVisible(false);
-    setIsActive(false);
-    setIsCompleted(true);
+    // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
+    if (activeTaskIndex < tasks.length - 1) {
+      setCompleteModalVisible(false);
+      goToNextTask();
+    } else {
+      setCompleteModalVisible(false);
+      setIsActive(false);
+      setIsCompleted(true);
+    }
   };
 
   const handleCloseCompleteModal = () => setCompleteModalVisible(false);
@@ -101,7 +109,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       setProgress(0);
       setIsActive(true);
     } else {
-      navigation.goBack();
+      // 마지막 태스크 완료 흐름으로 전환
+      setCompleteModalVisible(true);
     }
   };
 
@@ -169,8 +178,26 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
               <RoutineActionButton type="skip" onPress={handleSkipPress} />
             </ActionButtonsContainer>
           )}
+          {isCompleted && null}
         </ContentContainer>
       </ScrollContent>
+
+      {isCompleted && (
+        <ConfirmButtonBar>
+          <CreateButton
+            onPress={() => {
+              if (onComplete) {
+                try {
+                  onComplete();
+                } catch {}
+              }
+              navigation.goBack();
+            }}
+          >
+            <CreateButtonText>확인</CreateButtonText>
+          </CreateButton>
+        </ConfirmButtonBar>
+      )}
 
       {/* 일시정지 확인 모달 */}
       <BottomSheetDialog
@@ -453,6 +480,26 @@ const SkipButton = styled.TouchableOpacity`
 
 const SkipText = styled.Text`
   font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+// 하단 확인 버튼 바
+const ConfirmButtonBar = styled.View`
+  padding: 24px 16px;
+  background-color: ${theme.colors.white};
+`;
+
+const CreateButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CreateButtonText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.white};
 `;

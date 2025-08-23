@@ -44,13 +44,13 @@ const PersonalRoutineDetailScreen = ({
       emoji: '🍞',
       text: '식빵 굽기',
       time: '30분',
-      isCompleted: true,
+      isCompleted: false,
     },
     {
       emoji: '☕',
       text: '커피 마시기',
       time: '15분',
-      isCompleted: true,
+      isCompleted: false,
     },
   ]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -130,7 +130,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -140,7 +140,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -171,7 +171,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: routine.icon,
       text: routine.title,
       time: '30분', // 기본 시간 설정
-      isCompleted: true,
+      isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
 
@@ -214,7 +214,15 @@ const PersonalRoutineDetailScreen = ({
       title: item.text,
       duration: item.time,
     }));
-    navigation.navigate('ActiveRoutine', { routineName, tasks });
+    navigation.navigate('ActiveRoutine', {
+      routineName,
+      tasks,
+      onComplete: () => {
+        setRoutineItems((prev) =>
+          prev.map((it) => ({ ...it, isCompleted: true })),
+        );
+      },
+    });
   };
 
   const handleMorePress = () => {
