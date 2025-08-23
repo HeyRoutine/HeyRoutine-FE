@@ -16,6 +16,7 @@ const MOCK_ROUTINES = [
     title: '티끌모아 태산',
     timeRange: '오후 8:00 - 오후 9:00',
     selectedDays: ['월', '화', '수', '목', '금'],
+    completedDays: ['화', '수'],
   },
   {
     id: '2',
@@ -24,6 +25,7 @@ const MOCK_ROUTINES = [
     title: '운동 러버',
     timeRange: '오후 8:00 - 오후 9:00',
     selectedDays: ['월', '수', '금'],
+    completedDays: ['월', '금'],
   },
   {
     id: '3',
@@ -32,6 +34,7 @@ const MOCK_ROUTINES = [
     title: '아이고 종강이야',
     timeRange: '오전 7:00 - 오전 9:00',
     selectedDays: ['토', '일'],
+    completedDays: ['토'],
   },
   {
     id: '4',
@@ -40,6 +43,7 @@ const MOCK_ROUTINES = [
     title: '넌 독서를 하게 될거시야',
     timeRange: '오전 7:00 - 오전 9:00',
     selectedDays: ['월', '화', '수', '목', '금', '토', '일'],
+    completedDays: ['월', '화', '수', '목'],
   },
 ];
 
@@ -53,10 +57,10 @@ const GroupBoardScreen = ({ navigation }: any) => {
       title={item.title}
       timeRange={item.timeRange}
       selectedDays={item.selectedDays}
+      completedDays={item.completedDays}
       onPress={() =>
         navigation.navigate('GroupRoutineDetail', { routineId: item.id })
       }
-      onMorePress={() => {}}
     />
   );
 

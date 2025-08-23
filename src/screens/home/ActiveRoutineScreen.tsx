@@ -8,7 +8,7 @@ import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
-const ActiveRoutineScreen = ({ navigation }: any) => {
+const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -18,14 +18,19 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
   const [isSkipModalVisible, setSkipModalVisible] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const tasks = useMemo(
-    () => [
+  const incomingTasks = route?.params?.tasks as
+    | Array<{ icon: string; title: string; duration: string }>
+    | undefined;
+  const routineName = route?.params?.routineName as string | undefined;
+
+  const tasks = useMemo(() => {
+    if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
+    return [
       { icon: '🍞', title: '식빵 굽기', duration: '10분' },
       { icon: '☕', title: '커피 내리기', duration: '5분' },
       { icon: '🧼', title: '샤워하기', duration: '15분' },
-    ],
-    [],
-  );
+    ];
+  }, [incomingTasks]);
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
 
   useEffect(() => {
@@ -118,7 +123,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
       >
         <ContentContainer>
           <Title>{tasks[activeTaskIndex]?.title || '루틴'}</Title>
-          <Subtitle>병병이의 아침루틴</Subtitle>
+          <Subtitle>{routineName || '루틴'}</Subtitle>
 
           <TimerContainer>
             {isCompleted ? (
