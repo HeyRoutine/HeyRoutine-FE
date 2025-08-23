@@ -2,7 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   checkEmailDuplicate,
   checkNicknameDuplicate,
+  signIn,
+  signUp,
 } from '../../api/user/user';
+import { SignInRequest, SignUpRequest } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
 
@@ -31,6 +34,42 @@ export const useCheckNicknameDuplicate = (
     enabled: enabled && nickname.length > 0, // 닉네임이 있을 때만 실행
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 로그인 훅
+export const useSignIn = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SignInRequest) => signIn(data),
+    onSuccess: (data) => {
+      // 로그인 성공 시 토큰 저장 및 캐시 무효화
+      const { accessToken, refreshToken } = data.result;
+
+      // TODO: 토큰을 스토어에 저장하는 로직 추가
+      // useAuthStore.getState().setAccessToken(accessToken);
+      // useAuthStore.getState().setRefreshToken(refreshToken);
+
+      // 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
+// 회원가입 훅
+export const useSignUp = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SignUpRequest) => signUp(data),
+    onSuccess: (data) => {
+      // 회원가입 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 회원가입 성공 후 처리 로직 추가
+      // 예: 자동 로그인, 환영 화면으로 이동 등
+    },
   });
 };
 

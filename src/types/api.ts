@@ -154,6 +154,39 @@ export interface EmptyResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
 
+// ===== 유저 (User) 타입 =====
+
+// 로그인 요청 타입
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
+
+// 로그인 응답 타입
+export interface SignInResponse {
+  grantType: string;
+  accessToken: string;
+  refreshToken: string;
+  refreshTokenExpirationTime: number;
+  role: string[];
+}
+
+// 회원가입 요청 타입
+export interface SignUpRequest {
+  email: string;
+  password: string;
+  nickname: string;
+  profileImage: string;
+  roles: string[];
+}
+
+// 회원가입 응답 타입
+export interface SignUpResponse {
+  id: string;
+  username: string;
+  nickname: string;
+}
+
 // ===== 포인트샵 (Point Shop) 타입 =====
 
 // 포인트 정보 타입

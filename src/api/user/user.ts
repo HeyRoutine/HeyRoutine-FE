@@ -1,5 +1,11 @@
 import apiClient from '../client';
-import { ApiResponse } from '../../types/api';
+import {
+  ApiResponse,
+  SignInRequest,
+  SignInResponse,
+  SignUpRequest,
+  SignUpResponse,
+} from '../../types/api';
 
 // ===== 유저 API 함수들 =====
 
@@ -19,6 +25,28 @@ export const checkNicknameDuplicate = async (
 ): Promise<ApiResponse<string>> => {
   const response = await apiClient.post<ApiResponse<string>>(
     `/api/v1/user/nickname-duplicate-check?nickname=${nickname}`,
+  );
+  return response.data;
+};
+
+// 로그인
+export const signIn = async (
+  data: SignInRequest,
+): Promise<ApiResponse<SignInResponse>> => {
+  const response = await apiClient.post<ApiResponse<SignInResponse>>(
+    '/api/v1/user/sign-in',
+    data,
+  );
+  return response.data;
+};
+
+// 회원가입
+export const signUp = async (
+  data: SignUpRequest,
+): Promise<ApiResponse<SignUpResponse>> => {
+  const response = await apiClient.post<ApiResponse<SignUpResponse>>(
+    '/api/v1/user/sign-up',
+    data,
   );
   return response.data;
 };
