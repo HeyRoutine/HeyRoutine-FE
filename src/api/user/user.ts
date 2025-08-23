@@ -7,6 +7,12 @@ import {
   SignUpResponse,
   ReissueRequest,
   ReissueResponse,
+  MyPageResetPasswordRequest,
+  MyPageResetPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  ResetNicknameRequest,
+  ResetNicknameResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -60,6 +66,37 @@ export const reissue = async (
   const response = await apiClient.post<ApiResponse<ReissueResponse>>(
     '/api/v1/user/token/reissue',
     data,
+  );
+  return response.data;
+};
+
+// 마이페이지 비밀번호 재설정
+export const mypageResetPassword = async (
+  data: MyPageResetPasswordRequest,
+): Promise<ApiResponse<MyPageResetPasswordResponse>> => {
+  const response = await apiClient.patch<
+    ApiResponse<MyPageResetPasswordResponse>
+  >(`/api/v1/user/mypage-password?password=${data.password}`);
+  return response.data;
+};
+
+// 비밀번호 찾기 후 재설정
+export const resetPassword = async (
+  data: ResetPasswordRequest,
+): Promise<ApiResponse<ResetPasswordResponse>> => {
+  const response = await apiClient.patch<ApiResponse<ResetPasswordResponse>>(
+    '/api/v1/user/password',
+    data,
+  );
+  return response.data;
+};
+
+// 닉네임 재설정
+export const resetNickname = async (
+  data: ResetNicknameRequest,
+): Promise<ApiResponse<ResetNicknameResponse>> => {
+  const response = await apiClient.patch<ApiResponse<ResetNicknameResponse>>(
+    `/api/v1/user/mypage-nickname?nickname=${data.nickname}`,
   );
   return response.data;
 };

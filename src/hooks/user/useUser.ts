@@ -5,8 +5,18 @@ import {
   signIn,
   signUp,
   reissue,
+  mypageResetPassword,
+  resetPassword,
+  resetNickname,
 } from '../../api/user/user';
-import { SignInRequest, SignUpRequest, ReissueRequest } from '../../types/api';
+import {
+  SignInRequest,
+  SignUpRequest,
+  ReissueRequest,
+  MyPageResetPasswordRequest,
+  ResetPasswordRequest,
+  ResetNicknameRequest,
+} from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
 
@@ -90,6 +100,54 @@ export const useReissue = () => {
 
       // 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
+// 마이페이지 비밀번호 재설정 훅
+export const useMyPageResetPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MyPageResetPasswordRequest) => mypageResetPassword(data),
+    onSuccess: (data) => {
+      // 비밀번호 재설정 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 비밀번호 재설정 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 마이페이지로 이동 등
+    },
+  });
+};
+
+// 비밀번호 찾기 후 재설정 훅
+export const useResetPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ResetPasswordRequest) => resetPassword(data),
+    onSuccess: (data) => {
+      // 비밀번호 재설정 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 비밀번호 재설정 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 로그인 화면으로 이동 등
+    },
+  });
+};
+
+// 닉네임 재설정 훅
+export const useResetNickname = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ResetNicknameRequest) => resetNickname(data),
+    onSuccess: (data) => {
+      // 닉네임 재설정 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 닉네임 재설정 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 마이페이지로 이동 등
     },
   });
 };
