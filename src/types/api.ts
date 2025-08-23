@@ -156,7 +156,32 @@ export interface EmptyResponse {
 
 // ===== 포인트샵 (Point Shop) 타입 =====
 
-// TODO: 포인트샵 관련 타입들 구현 예정
+// 포인트 정보 타입
+export interface PointInfo {
+  point: number;
+}
+
+// 물건 결제하기 요청 타입 (요청 데이터 없음 - Path Variable만 사용)
+export type BuyProductRequest = EmptyResponse;
+
+// 물건 결제하기 응답 타입
+export type BuyProductResponse = EmptyResponse;
+
+// 내 포인트 조회 응답 타입
+export type MyPointResponse = PointInfo;
+
+// 물건 등록하기 요청 타입
+export interface PostProductRequest {
+  brand: string;
+  productName: string;
+  price: number;
+  stock: number;
+  pointShopCategory: '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리';
+  imageUrl: string;
+}
+
+// 물건 등록하기 응답 타입
+export type PostProductResponse = EmptyResponse;
 
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
