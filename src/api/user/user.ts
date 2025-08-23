@@ -21,10 +21,23 @@ import {
 export const checkEmailDuplicate = async (
   email: string,
 ): Promise<ApiResponse<string>> => {
-  const response = await apiClient.post<ApiResponse<string>>(
-    `/api/v1/user/email-duplicate-check?email=${email}`,
-  );
-  return response.data;
+  // 이메일 URL 인코딩
+  const encodedEmail = encodeURIComponent(email);
+  const url = `/api/v1/user/email-duplicate-check?email=${encodedEmail}`;
+
+  try {
+    const response = await apiClient.post<ApiResponse<string>>(url);
+    return response.data;
+  } catch (error: any) {
+    // 400 에러이면서 isSuccess가 false인 경우는 정상 응답으로 처리
+    if (
+      error?.response?.status === 400 &&
+      error?.response?.data?.isSuccess === false
+    ) {
+      return error.response.data;
+    }
+    throw error;
+  }
 };
 
 // 닉네임 중복확인

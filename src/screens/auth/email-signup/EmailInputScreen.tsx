@@ -8,13 +8,23 @@ import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
 import { useAuthStore } from '../../../store';
 import { validateEmail } from '../../../utils/validation';
+import { useCheckEmailDuplicate } from '../../../hooks/user/useUser';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [shouldCheckDuplicate, setShouldCheckDuplicate] = useState(false);
 
   // Zustand 스토어에서 이메일 설정 함수 가져오기
   const { setSignupEmail } = useAuthStore();
+
+  // 이메일 중복 확인 API hook
+  const {
+    data: duplicateCheckData,
+    isLoading: isCheckingDuplicate,
+    error: duplicateCheckError,
+    refetch: refetchDuplicateCheck,
+  } = useCheckEmailDuplicate(email, shouldCheckDuplicate);
 
   // 이메일 형식 유효성 검사
   const isEmailValid = validateEmail(email);
@@ -27,8 +37,47 @@ const EmailInputScreen = ({ navigation }: any) => {
     }
   }, [email, isEmailValid]);
 
+  // 이메일 중복 확인 결과 처리
+  useEffect(() => {
+    if (shouldCheckDuplicate && !isCheckingDuplicate) {
+      if (duplicateCheckError) {
+        // API 에러 처리
+        setErrorMessage('이메일 중복 확인 중 오류가 발생했습니다.');
+        setShouldCheckDuplicate(false);
+      } else if (duplicateCheckData) {
+        if (duplicateCheckData.isSuccess) {
+          // 중복 확인 성공 - 사용 가능한 이메일
+          setErrorMessage('');
+          setShouldCheckDuplicate(false);
+          // 자동으로 다음 화면으로 이동
+          handleEmailVerified();
+        } else {
+          // 중복 확인 실패 - 이미 사용 중인 이메일
+          setErrorMessage(
+            duplicateCheckData.message || '이미 사용 중인 이메일입니다.',
+          );
+          setShouldCheckDuplicate(false);
+        }
+      }
+    }
+  }, [
+    shouldCheckDuplicate,
+    isCheckingDuplicate,
+    duplicateCheckData,
+    duplicateCheckError,
+  ]);
+
   const handleNext = () => {
     if (isEmailValid) {
+      // 이메일 중복 확인 실행
+      setShouldCheckDuplicate(true);
+      refetchDuplicateCheck();
+    }
+  };
+
+  // 중복 확인이 성공했을 때만 다음 화면으로 이동
+  const handleEmailVerified = () => {
+    if (isEmailValid && !errorMessage && !isCheckingDuplicate) {
       // Zustand 스토어에 이메일 저장
       setSignupEmail(email);
       navigation.navigate('EmailVerification');
@@ -62,13 +111,19 @@ const EmailInputScreen = ({ navigation }: any) => {
 
       <ButtonWrapper>
         <CustomButton
-          text="다음"
+          text={isCheckingDuplicate ? '확인 중...' : '다음'}
           onPress={handleNext}
-          disabled={!isEmailValid}
+          disabled={!isEmailValid || isCheckingDuplicate}
           backgroundColor={
-            isEmailValid ? theme.colors.primary : theme.colors.gray200
+            isEmailValid && !isCheckingDuplicate
+              ? theme.colors.primary
+              : theme.colors.gray200
           }
-          textColor={isEmailValid ? theme.colors.white : theme.colors.gray500}
+          textColor={
+            isEmailValid && !isCheckingDuplicate
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>
