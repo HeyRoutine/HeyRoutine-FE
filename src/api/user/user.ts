@@ -25,19 +25,8 @@ export const checkEmailDuplicate = async (
   const encodedEmail = encodeURIComponent(email);
   const url = `/api/v1/user/email-duplicate-check?email=${encodedEmail}`;
 
-  try {
-    const response = await apiClient.post<ApiResponse<string>>(url);
-    return response.data;
-  } catch (error: any) {
-    // 400 에러이면서 isSuccess가 false인 경우는 정상 응답으로 처리
-    if (
-      error?.response?.status === 400 &&
-      error?.response?.data?.isSuccess === false
-    ) {
-      return error.response.data;
-    }
-    throw error;
-  }
+  const response = await apiClient.post<ApiResponse<string>>(url);
+  return response.data;
 };
 
 // 닉네임 중복확인

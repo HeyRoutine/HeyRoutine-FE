@@ -45,19 +45,11 @@ const EmailInputScreen = ({ navigation }: any) => {
         setErrorMessage('이메일 중복 확인 중 오류가 발생했습니다.');
         setShouldCheckDuplicate(false);
       } else if (duplicateCheckData) {
-        if (duplicateCheckData.isSuccess) {
-          // 중복 확인 성공 - 사용 가능한 이메일
-          setErrorMessage('');
-          setShouldCheckDuplicate(false);
-          // 자동으로 다음 화면으로 이동
-          handleEmailVerified();
-        } else {
-          // 중복 확인 실패 - 이미 사용 중인 이메일
-          setErrorMessage(
-            duplicateCheckData.message || '이미 사용 중인 이메일입니다.',
-          );
-          setShouldCheckDuplicate(false);
-        }
+        // 중복 확인 성공 - 사용 가능한 이메일
+        setErrorMessage('');
+        setShouldCheckDuplicate(false);
+        // 자동으로 다음 화면으로 이동
+        handleEmailVerified();
       }
     }
   }, [
