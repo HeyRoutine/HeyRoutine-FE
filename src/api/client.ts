@@ -3,7 +3,7 @@ import { ApiResponse, ApiError } from '../types/api';
 import { useAuthStore } from '../store';
 
 // API 기본 URL (환경에 따라 변경 필요)
-const API_BASE_URL = 'https://your-api-domain.com';
+const API_BASE_URL = 'http://13.124.86.72:8080'; // 실제 백엔드 서버 URL
 
 // axios 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
