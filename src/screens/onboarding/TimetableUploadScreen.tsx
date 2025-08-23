@@ -4,8 +4,9 @@ import styled from 'styled-components/native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
-import Header from '../../components/common/Header';
+
 import CustomButton from '../../components/common/CustomButton';
+import { useOnboardingStore } from '../../store';
 
 interface TimetableUploadScreenProps {
   navigation: any;
@@ -13,6 +14,7 @@ interface TimetableUploadScreenProps {
 
 const TimetableUploadScreen = ({ navigation }: TimetableUploadScreenProps) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const { completeOnboarding } = useOnboardingStore();
 
   const handlePhotoUpload = () => {
     // 사진으로 불러오기 로직
@@ -23,17 +25,14 @@ const TimetableUploadScreen = ({ navigation }: TimetableUploadScreenProps) => {
   };
 
   const handleCancel = () => {
-    // 취소 시 메인 화면으로 이동
-    navigation.navigate('OnboardingLoading', {
-      nextScreen: null,
-    });
+    // 건너뛰기 시 온보딩 완료하고 바로 홈 화면으로 이동
+    completeOnboarding();
   };
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      // 권한 거부도 실패 케이스로 처리
-      handleCancel();
+      // 권한 거부 시 현재 화면에 머물기
       return;
     }
 
@@ -48,15 +47,12 @@ const TimetableUploadScreen = ({ navigation }: TimetableUploadScreenProps) => {
       const uri = result.assets[0].uri;
       setImageUri(uri);
       handlePhotoUpload();
-    } else {
-      handleCancel();
     }
+    // 사진 선택 취소 시에는 아무것도 하지 않음 (현재 화면에 머물기)
   };
 
   return (
     <Container>
-      <Header onBackPress={() => navigation.goBack()} />
-
       <Content>
         <Title>시간표 이미지를{'\n'}업로드해주세요.</Title>
         <SubTitle>
@@ -111,6 +107,7 @@ const Container = styled(SafeAreaView)`
 const Content = styled.View`
   flex: 1;
   padding: 24px;
+  padding-top: 56px;
 `;
 
 const Title = styled.Text`

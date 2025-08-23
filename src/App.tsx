@@ -67,7 +67,7 @@ export default function App() {
   }, [fontsLoaded, isLoggedIn]);
 
   // 온보딩 표시 여부 결정
-  const shouldShowOnboarding = !onboardingData.isCompleted && !isLoggedIn;
+  const shouldShowOnboarding = !onboardingData.isCompleted && isLoggedIn;
 
   // 4. 로그인 상태에 따라 다른 화면 렌더링
   return (

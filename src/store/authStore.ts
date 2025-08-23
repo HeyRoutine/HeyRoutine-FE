@@ -23,6 +23,7 @@ interface AuthState {
   setAccessToken: (token: string) => void;
   setRefreshToken: (token: string) => void;
   setLoggedIn: (loggedIn: boolean) => void;
+  login: () => void;
   logout: () => void;
 
   // Signup related actions
@@ -39,7 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // 초기 상태
   accessToken: null,
   refreshToken: null,
-  isLoggedIn: true,
+  isLoggedIn: false,
   signupData: {
     email: '',
     password: '',
@@ -53,6 +54,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setRefreshToken: (token) => set({ refreshToken: token }),
 
   setLoggedIn: (loggedIn) => set({ isLoggedIn: loggedIn }),
+
+  login: () => {
+    set({
+      isLoggedIn: true,
+    });
+  },
 
   logout: () => {
     set({
