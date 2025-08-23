@@ -4,7 +4,6 @@ import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import YesNoButton from '../../components/onboarding/YesNoButton';
-import Header from '../../components/common/Header';
 
 interface AiConsentScreenProps {
   navigation: any;
@@ -34,8 +33,6 @@ const AiConsentScreen = ({ navigation }: AiConsentScreenProps) => {
 
   return (
     <Container>
-      <Header onBackPress={() => navigation.goBack()} />
-
       <Body>
         <TopArea>
           <Content>
@@ -88,7 +85,7 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   padding: 24px;
-  padding-top: 16px;
+  padding-top: 56px;
 `;
 
 const Body = styled.View`

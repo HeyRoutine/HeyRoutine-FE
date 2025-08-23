@@ -9,6 +9,8 @@ interface RoutineCardProps {
   timeRange: string;
   selectedDays: string[];
   completedDays: string[];
+  isSelected?: boolean;
+  showProgress?: boolean;
   onPress: () => void;
   onMorePress?: () => void;
 }
@@ -20,17 +22,19 @@ const RoutineCard = ({
   timeRange,
   selectedDays,
   completedDays,
+  isSelected = false,
+  showProgress = true,
   onPress,
   onMorePress,
 }: RoutineCardProps) => {
   const isDayCompleted = (day: string) => completedDays.includes(day);
 
   return (
-    <Container onPress={onPress}>
+    <Container onPress={onPress} isSelected={isSelected}>
       <Header>
         <CategoryText>[{category}]</CategoryText>
         <RightHeader>
-          <ProgressText>{progress}%</ProgressText>
+          {showProgress && <ProgressText>{progress}%</ProgressText>}
           {onMorePress && (
             <MoreButton onPress={onMorePress}>
               <MoreIcon>⋯</MoreIcon>
@@ -56,11 +60,13 @@ const RoutineCard = ({
 
 export default RoutineCard;
 
-const Container = styled.TouchableOpacity`
+const Container = styled.TouchableOpacity<{ isSelected: boolean }>`
   background-color: #f7f8fa;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
+  border: 2px solid
+    ${({ isSelected }) => (isSelected ? theme.colors.primary : 'transparent')};
 `;
 
 const Header = styled.View`

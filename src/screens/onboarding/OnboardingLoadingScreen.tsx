@@ -95,14 +95,6 @@ const OnboardingLoadingScreen = ({
     };
   }, [navigation, nextScreen, setLoggedIn, isUpload, isAiAnalysis]);
 
-  const handleSkip = () => {
-    if (nextScreen) {
-      navigation.navigate(nextScreen);
-    } else {
-      setLoggedIn(true);
-    }
-  };
-
   const getTitle = () => {
     if (isRoutineRegistration) return '루틴 등록중...';
     if (isRoutineRecommendation) return '루틴 추천중...';
@@ -116,6 +108,7 @@ const OnboardingLoadingScreen = ({
       return 'AI가 당신에게 맞는 루틴을 추천하고 있어요';
     if (isAiAnalysis)
       return 'AI가 당신의 시간표를 분석하여 맞춤 루틴을 추천하고 있어요';
+    if (isUpload) return '사진을 통해 시간표를 불러오고 있어요';
     return '헤이영 캠퍼스에서 시간표를 불러오고 있어요';
   };
 
@@ -132,14 +125,8 @@ const OnboardingLoadingScreen = ({
         </TextSection>
       </Content>
 
-      <ButtonWrapper>
-        <CustomButton
-          text="건너뛰기"
-          onPress={handleSkip}
-          backgroundColor={theme.colors.gray200}
-          textColor={theme.colors.gray600}
-        />
-      </ButtonWrapper>
+      {/* 버튼 공간 유지 (버튼은 숨김) */}
+      <ButtonWrapper />
     </Container>
   );
 };
@@ -186,4 +173,5 @@ const Description = styled.Text`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+  height: 80px; /* 버튼 높이만큼 공간 유지 */
 `;

@@ -7,6 +7,7 @@ import CustomInput from '../../../components/common/CustomInput';
 import CustomButton from '../../../components/common/CustomButton';
 import { theme } from '../../../styles/theme';
 import { useAuthStore } from '../../../store';
+import { validateEmail } from '../../../utils/validation';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ const EmailInputScreen = ({ navigation }: any) => {
   const { setSignupEmail } = useAuthStore();
 
   // 이메일 형식 유효성 검사
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  const isEmailValid = validateEmail(email);
 
   useEffect(() => {
     if (email.length > 0 && !isEmailValid) {

@@ -16,7 +16,7 @@ const YesNoButton = ({
   return (
     <ButtonContainer onPress={onPress} isSelected={isSelected}>
       <IconText type={type}>{type === 'yes' ? 'O' : 'X'}</IconText>
-      <ButtonText type={type}>
+      <ButtonText type={type} isSelected={isSelected}>
         {type === 'yes' ? '좋아요' : '괜찮아요'}
       </ButtonText>
     </ButtonContainer>
@@ -51,9 +51,10 @@ const IconText = styled.Text<{ type: 'yes' | 'no' }>`
   margin-bottom: 16px;
 `;
 
-const ButtonText = styled.Text<{ type: 'yes' | 'no' }>`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+const ButtonText = styled.Text<{ type: 'yes' | 'no'; isSelected: boolean }>`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 24px;
+  color: ${({ isSelected }) =>
+    isSelected ? theme.colors.white : theme.colors.gray700};
   text-align: center;
 `;

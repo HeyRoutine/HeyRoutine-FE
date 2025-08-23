@@ -32,7 +32,19 @@ const ResultScreen = ({ navigation, route }: any) => {
     if (onSuccess) {
       onSuccess();
     }
-    navigation.navigate(nextScreen);
+
+    // 루틴 등록 완료인 경우 홈으로 이동
+    if (title === '루틴 등록 완료!') {
+      // 온보딩 완료 처리
+      const { completeOnboarding } =
+        require('../../store').useOnboardingStore.getState();
+      completeOnboarding();
+      // 로그인 상태로 변경하여 홈 화면으로 이동
+      const { setLoggedIn } = require('../../store').useAuthStore.getState();
+      setLoggedIn(true);
+    } else if (nextScreen) {
+      navigation.navigate(nextScreen);
+    }
   };
 
   const renderIcon = () => {

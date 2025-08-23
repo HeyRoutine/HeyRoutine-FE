@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
-import Header from '../../components/common/Header';
+
 import RoutineCard from '../../components/domain/routine/RoutineCard';
 
 interface AiRecommendationScreenProps {
@@ -13,11 +13,21 @@ interface AiRecommendationScreenProps {
 const AiRecommendationScreen = ({
   navigation,
 }: AiRecommendationScreenProps) => {
+  const [selectedRoutines, setSelectedRoutines] = useState<string[]>([]);
+
   const handleSkip = () => {
     navigation.navigate('OnboardingLoading', {
       nextScreen: 'Result',
       isRoutineRegistration: true,
     });
+  };
+
+  const handleRoutineSelect = (routineId: string) => {
+    setSelectedRoutines((prev) =>
+      prev.includes(routineId)
+        ? prev.filter((id) => id !== routineId)
+        : [...prev, routineId],
+    );
   };
 
   const handleRoutinePress = (routineId: string) => {
@@ -40,6 +50,7 @@ const AiRecommendationScreen = ({
       timeRange: '오전 8:00 - 오전 9:00',
       selectedDays: ['월', '화', '수', '목', '금'],
       totalItems: 5,
+      completedDays: [],
     },
     {
       id: '2',
@@ -49,6 +60,7 @@ const AiRecommendationScreen = ({
       timeRange: '오전 8:00 - 오전 9:00',
       selectedDays: ['월', '화', '수', '목', '금'],
       totalItems: 5,
+      completedDays: [],
     },
     {
       id: '3',
@@ -58,19 +70,17 @@ const AiRecommendationScreen = ({
       timeRange: '오전 8:00 - 오전 9:00',
       selectedDays: ['월', '화', '수', '목', '금'],
       totalItems: 5,
+      completedDays: [],
     },
   ];
 
   return (
     <Container>
-      <Header onBackPress={() => navigation.goBack()} />
-
       <Content>
-        <Title>루틴 추천</Title>
-        <Description>
+        <Title>
           <HighlightedText>빵빵이님</HighlightedText>의 시간표를 참고하여{'\n'}
           AI가 루틴을 만들었어요.
-        </Description>
+        </Title>
 
         <RoutineList>
           {sampleRoutines.map((routine) => (
@@ -81,7 +91,10 @@ const AiRecommendationScreen = ({
               title={routine.title}
               timeRange={routine.timeRange}
               selectedDays={routine.selectedDays}
-              onPress={() => handleRoutinePress(routine.id)}
+              completedDays={routine.completedDays}
+              isSelected={selectedRoutines.includes(routine.id)}
+              showProgress={false}
+              onPress={() => handleRoutineSelect(routine.id)}
               onMorePress={() => handleMorePress(routine.id)}
             />
           ))}
@@ -90,10 +103,18 @@ const AiRecommendationScreen = ({
 
       <ButtonWrapper>
         <CustomButton
-          text="건너뛰기"
-          onPress={handleSkip}
-          backgroundColor={theme.colors.gray300}
-          textColor={theme.colors.gray800}
+          text={selectedRoutines.length > 0 ? '선택 완료' : '건너뛰기'}
+          onPress={selectedRoutines.length > 0 ? handleSkip : handleSkip}
+          backgroundColor={
+            selectedRoutines.length > 0
+              ? theme.colors.primary
+              : theme.colors.gray300
+          }
+          textColor={
+            selectedRoutines.length > 0
+              ? theme.colors.white
+              : theme.colors.gray800
+          }
         />
       </ButtonWrapper>
     </Container>
@@ -110,23 +131,16 @@ const Container = styled(SafeAreaView)`
 const Content = styled.View`
   flex: 1;
   padding: 24px;
+  padding-top: 56px;
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
   font-size: 24px;
+  font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray800};
-  margin-bottom: 16px;
-  text-align: center;
-`;
-
-const Description = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  line-height: 24px;
-  margin-bottom: 32px;
+  line-height: 34px;
+  margin-top: 16px;
+  margin-bottom: 12px;
 `;
 
 const HighlightedText = styled.Text`

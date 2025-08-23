@@ -7,6 +7,7 @@ import { theme } from '../../styles/theme';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { useUserStore } from '../../store';
+import { validateNickname } from '../../utils/validation';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -29,7 +30,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     }
   }, [userInfo?.nickname]);
 
-  const validateNickname = (text: string) => {
+  const validateNicknameInput = (text: string) => {
     // 빈 문자열 체크
     if (text.length === 0) {
       setValidationMessage('');
@@ -44,9 +45,8 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       return;
     }
 
-    // 한글, 영어, 숫자만 허용하는 정규식
-    const nicknameRegex = /^[가-힣a-zA-Z0-9]+$/;
-    if (!nicknameRegex.test(text)) {
+    // 한글, 영어, 숫자만 허용하는 정규식 (유틸리티 함수 사용)
+    if (!validateNickname(text)) {
       setValidationMessage('닉네임은 한글, 영어, 숫자만 사용 가능합니다.');
       setIsValidNickname(false);
       return;
@@ -66,7 +66,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
 
   const handleNicknameChange = (text: string) => {
     setNickname(text);
-    validateNickname(text);
+    validateNicknameInput(text);
   };
 
   const handleComplete = () => {
