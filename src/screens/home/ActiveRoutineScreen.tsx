@@ -8,7 +8,7 @@ import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
-const ActiveRoutineScreen = ({ navigation }: any) => {
+const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -18,14 +18,20 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
   const [isSkipModalVisible, setSkipModalVisible] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const tasks = useMemo(
-    () => [
+  const incomingTasks = route?.params?.tasks as
+    | Array<{ icon: string; title: string; duration: string }>
+    | undefined;
+  const routineName = route?.params?.routineName as string | undefined;
+  const onComplete = route?.params?.onComplete as (() => void) | undefined;
+
+  const tasks = useMemo(() => {
+    if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
+    return [
       { icon: '🍞', title: '식빵 굽기', duration: '10분' },
       { icon: '☕', title: '커피 내리기', duration: '5분' },
       { icon: '🧼', title: '샤워하기', duration: '15분' },
-    ],
-    [],
-  );
+    ];
+  }, [incomingTasks]);
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
 
   useEffect(() => {
@@ -74,13 +80,20 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
   const handleCloseResumeModal = () => setResumeModalVisible(false);
 
   const handleCompletePress = () => {
+    // 항상 완료 확인 모달을 노출
     setCompleteModalVisible(true);
   };
 
   const handleConfirmComplete = () => {
-    setCompleteModalVisible(false);
-    setIsActive(false);
-    setIsCompleted(true);
+    // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
+    if (activeTaskIndex < tasks.length - 1) {
+      setCompleteModalVisible(false);
+      goToNextTask();
+    } else {
+      setCompleteModalVisible(false);
+      setIsActive(false);
+      setIsCompleted(true);
+    }
   };
 
   const handleCloseCompleteModal = () => setCompleteModalVisible(false);
@@ -96,7 +109,8 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
       setProgress(0);
       setIsActive(true);
     } else {
-      navigation.goBack();
+      // 마지막 태스크 완료 흐름으로 전환
+      setCompleteModalVisible(true);
     }
   };
 
@@ -118,7 +132,7 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
       >
         <ContentContainer>
           <Title>{tasks[activeTaskIndex]?.title || '루틴'}</Title>
-          <Subtitle>병병이의 아침루틴</Subtitle>
+          <Subtitle>{routineName || '루틴'}</Subtitle>
 
           <TimerContainer>
             {isCompleted ? (
@@ -164,8 +178,26 @@ const ActiveRoutineScreen = ({ navigation }: any) => {
               <RoutineActionButton type="skip" onPress={handleSkipPress} />
             </ActionButtonsContainer>
           )}
+          {isCompleted && null}
         </ContentContainer>
       </ScrollContent>
+
+      {isCompleted && (
+        <ConfirmButtonBar>
+          <CreateButton
+            onPress={() => {
+              if (onComplete) {
+                try {
+                  onComplete();
+                } catch {}
+              }
+              navigation.goBack();
+            }}
+          >
+            <CreateButtonText>확인</CreateButtonText>
+          </CreateButton>
+        </ConfirmButtonBar>
+      )}
 
       {/* 일시정지 확인 모달 */}
       <BottomSheetDialog
@@ -448,6 +480,26 @@ const SkipButton = styled.TouchableOpacity`
 
 const SkipText = styled.Text`
   font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+// 하단 확인 버튼 바
+const ConfirmButtonBar = styled.View`
+  padding: 24px 16px;
+  background-color: ${theme.colors.white};
+`;
+
+const CreateButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CreateButtonText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.white};
 `;

@@ -3,6 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import CustomButton from '../../components/common/CustomButton';
 import {
   DayButton,
   RoutineItemAdder,
@@ -42,13 +44,13 @@ const PersonalRoutineDetailScreen = ({
       emoji: '🍞',
       text: '식빵 굽기',
       time: '30분',
-      isCompleted: true,
+      isCompleted: false,
     },
     {
       emoji: '☕',
       text: '커피 마시기',
       time: '15분',
-      isCompleted: true,
+      isCompleted: false,
     },
   ]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -56,6 +58,7 @@ const PersonalRoutineDetailScreen = ({
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [currentText, setCurrentText] = useState<string>('');
+  const [moreSheetVisible, setMoreSheetVisible] = useState(false);
 
   // 수정 중인 아이템 인덱스 (null이면 새로 추가하는 중)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -127,7 +130,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -137,7 +140,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -168,7 +171,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: routine.icon,
       text: routine.title,
       time: '30분', // 기본 시간 설정
-      isCompleted: true,
+      isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
 
@@ -204,34 +207,60 @@ const PersonalRoutineDetailScreen = ({
     });
   };
 
+  const handleStartRoutine = () => {
+    const routineName = routineData?.name;
+    const tasks = routineItems.map((item) => ({
+      icon: item.emoji,
+      title: item.text,
+      duration: item.time,
+    }));
+    navigation.navigate('ActiveRoutine', {
+      routineName,
+      tasks,
+      onComplete: () => {
+        setRoutineItems((prev) =>
+          prev.map((it) => ({ ...it, isCompleted: true })),
+        );
+      },
+    });
+  };
+
   const handleMorePress = () => {
-    Alert.alert('루틴 관리', '어떤 작업을 하시겠습니까?', [
-      {
-        text: '루틴 수정',
-        onPress: () => navigation.navigate('EditRoutine'),
-      },
-      {
-        text: '루틴 상세 수정',
-        onPress: () => setEditMode(true),
-      },
+    setMoreSheetVisible(true);
+  };
+
+  const closeMoreSheet = () => setMoreSheetVisible(false);
+
+  const handleEditRoutine = () => {
+    closeMoreSheet();
+    const data = {
+      name: routineData?.name || '빵빵이의 점심루틴',
+      category: routineData?.category,
+      days: selectedDays,
+      startTime: routineData?.startTime || '오후 7:00',
+      endTime: routineData?.endTime || '오후 10:00',
+      startDate: routineData?.startDate,
+    };
+    navigation.navigate('EditRoutine', { routineData: data });
+  };
+
+  const handleEditRoutineDetail = () => {
+    closeMoreSheet();
+    setEditMode(true);
+  };
+
+  const handleDeleteRoutine = () => {
+    closeMoreSheet();
+    Alert.alert('루틴 삭제', '이 루틴을 삭제하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
       {
         text: '삭제',
         style: 'destructive',
         onPress: () => {
-          Alert.alert('루틴 삭제', '이 루틴을 삭제하시겠습니까?', [
-            { text: '취소', style: 'cancel' },
-            {
-              text: '삭제',
-              style: 'destructive',
-              onPress: () => {
-                // 루틴 삭제 로직
-                navigation.goBack();
-              },
-            },
-          ]);
+          // 루틴 삭제 로직
+          navigation.goBack();
         },
       },
-      { text: '취소', style: 'cancel' },
     ]);
   };
 
@@ -308,9 +337,9 @@ const PersonalRoutineDetailScreen = ({
           ))}
         </RoutineCard>
 
-        {/* 루틴 생성 버튼 */}
-        <CreateButton onPress={handleSave}>
-          <CreateButtonText>루틴 생성</CreateButtonText>
+        {/* 루틴 실행 버튼 */}
+        <CreateButton onPress={handleStartRoutine}>
+          <CreateButtonText>루틴 실행하기</CreateButtonText>
         </CreateButton>
       </Content>
 
@@ -338,6 +367,40 @@ const PersonalRoutineDetailScreen = ({
         selectedEmoji={selectedEmoji}
         currentText={currentText}
       />
+
+      {/* 더보기 바텀시트 */}
+      <BottomSheetDialog
+        visible={moreSheetVisible}
+        onRequestClose={closeMoreSheet}
+      >
+        <SheetTitle>루틴 관리</SheetTitle>
+        <SheetActions>
+          <CustomButton
+            text="루틴 수정"
+            onPress={handleEditRoutine}
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.primary}
+            borderColor="#8B5CF6"
+            borderWidth={1}
+          />
+          <CustomButton
+            text="상세 루틴 수정"
+            onPress={handleEditRoutineDetail}
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.gray800}
+            borderColor={theme.colors.gray300}
+            borderWidth={1}
+          />
+          <CustomButton
+            text="삭제"
+            onPress={handleDeleteRoutine}
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.gray800}
+            borderColor={theme.colors.gray300}
+            borderWidth={1}
+          />
+        </SheetActions>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -403,4 +466,16 @@ const TitleContainer = styled.View`
 
 const MoreButton = styled.TouchableOpacity`
   padding: 4px;
+`;
+
+const SheetTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+  margin-bottom: 24px;
+`;
+
+const SheetActions = styled.View`
+  gap: 12px;
 `;

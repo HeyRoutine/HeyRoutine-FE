@@ -43,7 +43,9 @@ const RoutineItemAdder = ({
   return (
     <Container>
       <PlusSection onPress={onPlusPress}>
-        {selectedEmoji ? (
+        {isCompleted ? (
+          <Ionicons name="checkmark" size={24} color={theme.colors.primary} />
+        ) : selectedEmoji ? (
           <EmojiText>{selectedEmoji}</EmojiText>
         ) : (
           <Ionicons name="add" size={28} color={theme.colors.gray400} />
@@ -131,6 +133,7 @@ const CompletedText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 13px;
   color: ${theme.colors.gray800};
+  text-decoration-line: line-through;
 `;
 
 const TimeSection = styled.TouchableOpacity`
