@@ -154,6 +154,10 @@ export interface EmptyResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
 
+// ===== 포인트샵 (Point Shop) 타입 =====
+
+// TODO: 포인트샵 관련 타입들 구현 예정
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
