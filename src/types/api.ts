@@ -274,3 +274,45 @@ export interface EmojiListResponse {
 export interface EmojiListParams {
   category?: string; // 카테고리 필터링 값 (예: "식사")
 }
+
+// ===== 개인루틴 관련 타입 =====
+
+// 개인루틴 리스트 생성 요청 타입
+export interface CreatePersonalRoutineListRequest {
+  title: string;
+  startDate: string; // yyyy-MM-dd 형식
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 생성 응답 타입
+export interface CreatePersonalRoutineListResponse {
+  id: number;
+  title: string;
+  startTime: string; // HH:mm:ss 형식
+  endTime: string; // HH:mm:ss 형식
+  routineType: RoutineType;
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 수정 요청 타입 (생성과 동일)
+export interface UpdatePersonalRoutineListRequest {
+  title: string;
+  startDate: string; // yyyy-MM-dd 형식
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 수정 응답 타입
+export interface UpdatePersonalRoutineListResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// 개인루틴 리스트 삭제 응답 타입
+export interface DeletePersonalRoutineListResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
