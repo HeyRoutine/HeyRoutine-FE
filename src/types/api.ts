@@ -97,39 +97,25 @@ export interface UpdateGroupRoutineRequest {
 }
 
 // 단체루틴 생성 응답 타입
-export interface CreateGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 상세 생성 응답 타입
-export interface CreateGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 상세 수정 응답 타입
-export interface UpdateGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 상세 삭제 응답 타입
-export interface DeleteGroupRoutineDetailResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeleteGroupRoutineDetailResponse = EmptyResponse;
 
 // 단체루틴 수정 응답 타입
-export interface UpdateGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 삭제 응답 타입
-export interface DeleteGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type DeleteGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 가입 응답 타입
-export interface JoinGroupRoutineResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type JoinGroupRoutineResponse = EmptyResponse;
 
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
@@ -163,6 +149,92 @@ export interface ApiError {
   message: string;
 }
 
+// 공통 응답 타입 (성공 시 별도 데이터 없음)
+export interface EmptyResponse {
+  // 성공 시 별도 데이터 없음 (메시지만 반환)
+}
+
+// ===== 포인트샵 (Point Shop) 타입 =====
+
+// 포인트 정보 타입
+export interface PointInfo {
+  point: number;
+}
+
+// 물건 결제하기 요청 타입 (요청 데이터 없음 - Path Variable만 사용)
+export type BuyProductRequest = EmptyResponse;
+
+// 물건 결제하기 응답 타입
+export type BuyProductResponse = EmptyResponse;
+
+// 내 포인트 조회 응답 타입
+export type MyPointResponse = PointInfo;
+
+// 물건 등록하기 요청 타입
+export interface PostProductRequest {
+  brand: string;
+  productName: string;
+  price: number;
+  stock: number;
+  pointShopCategory: '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리';
+  imageUrl: string;
+}
+
+// 물건 등록하기 응답 타입
+export type PostProductResponse = EmptyResponse;
+
+// 상품 정보 타입
+export interface ProductInfo {
+  id: number;
+  productName: string;
+  brand: string;
+  price: number;
+  stock: number;
+  imageUrl: string;
+  category: string;
+}
+
+// 상품 목록 응답 타입
+export interface ProductListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: ProductInfo[];
+}
+
+// 물건 전체보기 요청 파라미터 타입
+export interface ShopListParams {
+  page?: number;
+  size?: number;
+}
+
+// 물건 전체보기 응답 타입
+export type ShopListResponse = ProductListResponse;
+
+// 물건 카테고리별 전체보기 요청 파라미터 타입
+export interface ShopCategoryListParams {
+  category: '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리';
+  page?: number;
+  size?: number;
+}
+
+// 물건 카테고리별 전체보기 응답 타입
+export type ShopCategoryListResponse = ProductListResponse;
+
+// 상품 상세 정보 타입
+export interface ProductDetailInfo {
+  brand: string;
+  productName: string;
+  price: number;
+  stock: number;
+  category: string;
+  imageUrl: string;
+}
+
+// 물건 상세보기 응답 타입
+export type GetProductDetailResponse = ProductDetailInfo;
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
@@ -190,9 +262,7 @@ export interface UpdateGroupRoutineStatusRequest {
 }
 
 // 단체루틴 상세루틴 성공/실패 응답 타입
-export interface UpdateGroupRoutineStatusResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type UpdateGroupRoutineStatusResponse = EmptyResponse;
 
 // 방명록 아이템 타입
 export interface GuestbookItem {
@@ -226,11 +296,165 @@ export interface CreateGroupGuestbookRequest {
 }
 
 // 방명록 작성 응답 타입
-export interface CreateGroupGuestbookResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
-}
+export type CreateGroupGuestbookResponse = EmptyResponse;
 
 // 방명록 삭제 응답 타입
-export interface DeleteGroupGuestbookResponse {
-  // 성공 시 별도 데이터 없음 (메시지만 반환)
+export type DeleteGroupGuestbookResponse = EmptyResponse;
+
+// 루틴 템플릿 아이템 타입
+export interface RoutineTemplateItem {
+  templateId: number;
+  emojiId: number;
+  name: string;
+  content: string;
 }
+
+// 루틴 템플릿 조회 응답 타입
+export interface RoutineTemplateListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: RoutineTemplateItem[];
+}
+
+// 루틴 템플릿 조회 파라미터 타입
+export interface RoutineTemplateListParams {
+  category?: string; // 카테고리 필터링 값 (예: "음식")
+  page?: number; // 기본값: 0
+  size?: number; // 기본값: 10
+}
+
+// 이모지 아이템 타입
+export interface EmojiItem {
+  emojiId: number;
+  emojiUrl: string;
+}
+
+// 이모지 조회 응답 타입
+export interface EmojiListResponse {
+  items: EmojiItem[];
+}
+
+// 이모지 조회 파라미터 타입
+export interface EmojiListParams {
+  category?: string; // 카테고리 필터링 값 (예: "식사")
+}
+
+// ===== 개인루틴 관련 타입 =====
+
+// 개인루틴 리스트 생성 요청 타입
+export interface CreatePersonalRoutineListRequest {
+  title: string;
+  startDate: string; // yyyy-MM-dd 형식
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 생성 응답 타입
+export interface CreatePersonalRoutineListResponse {
+  id: number;
+  title: string;
+  startTime: string; // HH:mm:ss 형식
+  endTime: string; // HH:mm:ss 형식
+  routineType: RoutineType;
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 수정 요청 타입 (생성과 동일)
+export interface UpdatePersonalRoutineListRequest {
+  title: string;
+  startDate: string; // yyyy-MM-dd 형식
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 수정 응답 타입
+export type UpdatePersonalRoutineListResponse = EmptyResponse;
+
+// 개인루틴 리스트 삭제 응답 타입
+export type DeletePersonalRoutineListResponse = EmptyResponse;
+
+// 개인루틴 리스트 아이템 타입
+export interface PersonalRoutineListItem {
+  id: number;
+  title: string;
+  startTime: string; // HH:mm:ss 형식
+  endTime: string; // HH:mm:ss 형식
+  routineType: RoutineType;
+  dayTypes: string[]; // ['월', '화', '수'] 형식
+}
+
+// 개인루틴 리스트 조회 응답 타입
+export interface PersonalRoutineListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: PersonalRoutineListItem[];
+}
+
+// 개인루틴 리스트 조회 파라미터 타입
+export interface PersonalRoutineListParams {
+  day?: string; // 조회 요일 (예: "월")
+  date?: string; // 조회 날짜 (예: "2025-08-19")
+  page?: number; // 기본값: 0
+  size?: number; // 기본값: 10
+}
+
+// 개인루틴 상세 생성 요청 타입
+export interface CreatePersonalRoutineDetailRequest {
+  routineName: string; // 루틴 명
+  emojiId: number; // 이모지 Id
+  time: number; // 루틴 시간
+}
+
+// 개인루틴 상세 생성 응답 타입
+export type CreatePersonalRoutineDetailResponse = EmptyResponse;
+
+// 개인루틴 상세 아이템 타입
+export interface PersonalRoutineDetailItem {
+  routineId: number;
+  routineName: string;
+  emojiUrl: string;
+  time: number;
+  completed: boolean;
+}
+
+// 개인루틴 상세 조회 응답 타입
+export interface PersonalRoutineDetailListResponse {
+  items: PersonalRoutineDetailItem[];
+}
+
+// 개인루틴 상세 조회 파라미터 타입
+export interface PersonalRoutineDetailListParams {
+  date: string; // 조회 날짜 (예: "2025-08-19")
+}
+
+// 개인루틴 상세 수정 요청 타입 (생성과 동일)
+export interface UpdatePersonalRoutineDetailRequest {
+  routineName: string; // 루틴 명
+  emojiId: number; // 이모지 Id
+  time: number; // 루틴 시간
+}
+
+// 개인루틴 상세 수정 응답 타입
+export type UpdatePersonalRoutineDetailResponse = EmptyResponse;
+
+// 개인루틴 상세 삭제 응답 타입
+export type DeletePersonalRoutineDetailResponse = EmptyResponse;
+
+// 개인루틴 수행 응답 타입
+export type DonePersonalRoutineResponse = EmptyResponse;
+
+// 개인루틴 수행 파라미터 타입
+export interface DonePersonalRoutineParams {
+  date: string; // 완료 날짜 (예: "2025-08-19")
+}
+
+// 개인루틴 리스트 완료 응답 타입
+export type DoneMyRoutineListResponse = EmptyResponse;

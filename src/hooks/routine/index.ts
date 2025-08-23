@@ -1,6 +1,6 @@
 // 루틴 관련 hooks (대구분)
 // 공통 hooks (personal/group 상관없이 사용)
-// export * from './common';
+export * from './common';
 
 // 개별 hooks
 export * from './group'; // 그룹 루틴 전용
