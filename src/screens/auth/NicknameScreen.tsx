@@ -8,6 +8,7 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useAuthStore } from '../../store';
+import { validateNickname } from '../../utils/validation';
 
 const NicknameScreen = ({ navigation }: any) => {
   const [nickname, setNickname] = useState('');
@@ -19,8 +20,7 @@ const NicknameScreen = ({ navigation }: any) => {
 
   // 닉네임 유효성 검사 (한글, 영어, 숫자만 허용, 2~10자)
   useEffect(() => {
-    const nicknameRegex = /^[가-힣a-zA-Z0-9]{2,10}$/;
-    const isValid = nicknameRegex.test(nickname);
+    const isValid = validateNickname(nickname);
     setIsNicknameValid(isValid);
 
     // 에러 메시지 처리

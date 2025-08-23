@@ -80,10 +80,10 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       onPress: handleAccountAction,
     },
     {
-      id: 'email',
+      id: 'password',
       type: 'item',
-      title: '이메일 설정',
-      onPress: () => navigation.navigate('EmailSetting'),
+      title: '비밀번호 설정',
+      onPress: () => navigation.navigate('PasswordSetting'),
     },
     {
       id: 'nickname',

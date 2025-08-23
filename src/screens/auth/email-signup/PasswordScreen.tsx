@@ -11,6 +11,7 @@ import {
   Label,
 } from '../../../components/domain/auth/authFormStyles';
 import { useAuthStore } from '../../../store';
+import { validatePassword } from '../../../utils/validation';
 
 const PasswordScreen = ({ navigation }: any) => {
   const [password, setPassword] = useState('');
@@ -25,8 +26,7 @@ const PasswordScreen = ({ navigation }: any) => {
 
   // 비밀번호 유효성 검사를 위한 useEffect
   useEffect(() => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
-    const isValid = passwordRegex.test(password);
+    const isValid = validatePassword(password);
     setIsPasswordValid(isValid);
 
     const isMatch = password === passwordConfirm;
