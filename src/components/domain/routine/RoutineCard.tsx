@@ -8,6 +8,7 @@ interface RoutineCardProps {
   title: string;
   timeRange: string;
   selectedDays: string[];
+  completedDays: string[];
   onPress: () => void;
   onMorePress?: () => void;
 }
@@ -18,9 +19,12 @@ const RoutineCard = ({
   title,
   timeRange,
   selectedDays,
+  completedDays,
   onPress,
   onMorePress,
 }: RoutineCardProps) => {
+  const isDayCompleted = (day: string) => completedDays.includes(day);
+
   return (
     <Container onPress={onPress}>
       <Header>
@@ -37,11 +41,14 @@ const RoutineCard = ({
       <Title>{title}</Title>
       <TimeText>{timeRange}</TimeText>
       <DayContainer>
-        {selectedDays.map((day) => (
-          <DayBadge key={day} isSelected={true}>
-            <DayText isSelected={true}>{day}</DayText>
-          </DayBadge>
-        ))}
+        {selectedDays.map((day) => {
+          const done = isDayCompleted(day);
+          return (
+            <DayBadge key={day} isSelected={done}>
+              <DayText isSelected={done}>{day}</DayText>
+            </DayBadge>
+          );
+        })}
       </DayContainer>
     </Container>
   );

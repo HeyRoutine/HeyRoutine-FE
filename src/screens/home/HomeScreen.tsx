@@ -62,8 +62,19 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     };
   });
 
+  // 샘플 루틴 데이터 타입
+  type RoutineListItem = {
+    id: string;
+    category: string;
+    progress: number;
+    title: string;
+    timeRange: string;
+    selectedDays: string[];
+    completedDays: string[];
+  };
+
   // 샘플 루틴 데이터
-  const personalRoutines = [
+  const personalRoutines: RoutineListItem[] = [
     {
       id: '1',
       category: '생활',
@@ -71,6 +82,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '빵빵이의 아침 루틴',
       timeRange: '오전 8:00 ~ 오전 9:00',
       selectedDays: ['월', '화'],
+      completedDays: ['월', '화'],
     },
     {
       id: '2',
@@ -79,6 +91,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '빵빵이의 아침 루틴',
       timeRange: '오전 8:00 ~ 오전 9:00',
       selectedDays: ['월', '화'],
+      completedDays: ['월'],
     },
     {
       id: '3',
@@ -87,6 +100,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '저녁 운동 루틴',
       timeRange: '오후 7:00 ~ 오후 8:00',
       selectedDays: ['화', '목', '금'],
+      completedDays: ['화', '목', '금'],
     },
     {
       id: '4',
@@ -94,11 +108,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       progress: 45,
       title: '독서 시간',
       timeRange: '오후 9:00 ~ 오후 10:00',
-      selectedDays: ['월', '수', '토'],
+      selectedDays: ['월', '수', '토', '일'],
+      completedDays: ['월', '수', '토'],
     },
   ];
 
-  const groupRoutines = [
+  const groupRoutines: RoutineListItem[] = [
     {
       id: '5',
       category: '생활',
@@ -106,6 +121,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '저축 그룹 루틴',
       timeRange: '오후 8:00 ~ 오후 9:00',
       selectedDays: ['화'],
+      completedDays: ['화'],
     },
     {
       id: '6',
@@ -114,6 +130,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '저축 그룹 루틴',
       timeRange: '오후 8:00 ~ 오후 9:00',
       selectedDays: ['화'],
+      completedDays: ['화'],
     },
     {
       id: '7',
@@ -122,6 +139,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '그룹 헬스 루틴',
       timeRange: '오후 6:00 ~ 오후 7:00',
       selectedDays: ['월', '수', '금'],
+      completedDays: ['수', '금'],
     },
     {
       id: '8',
@@ -130,6 +148,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       title: '스터디 그룹',
       timeRange: '오후 10:00 ~ 오후 11:00',
       selectedDays: ['화', '목'],
+      completedDays: ['화', '목'],
     },
   ];
 
@@ -223,6 +242,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
               title={routine.title}
               timeRange={routine.timeRange}
               selectedDays={routine.selectedDays}
+              completedDays={routine.completedDays}
               onPress={() => handleRoutinePress(routine.id)}
             />
           ))}
