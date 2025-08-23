@@ -1,22 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useAuthStore, useOnboardingStore } from '../../store';
+import { useSignUp } from '../../hooks/user/useUser';
 
 // 유저 닉네임을 props로 받는다고 가정
 const WelcomeScreen = ({ navigation, route }: any) => {
   const nickname = route.params?.nickname || '냥냥이';
-  const { login } = useAuthStore();
+  const { login, signupData } = useAuthStore();
   const { resetOnboarding } = useOnboardingStore();
 
+  // 회원가입 API hook
+  const { mutate: signUp, isPending: isSigningUp } = useSignUp();
+
   const handleStart = () => {
-    // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
-    resetOnboarding();
-    // Zustand를 통해 로그인 상태 변경
-    login();
+    // 회원가입 API 호출
+    signUp(
+      {
+        email: signupData.email,
+        password: signupData.password,
+        nickname: nickname,
+        profileImage: signupData.profileImage || '', // 기본 프로필 이미지
+        roles: ['USER'], // 기본 역할
+      },
+      {
+        onSuccess: (data) => {
+          console.log('회원가입 성공:', data);
+          // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
+          resetOnboarding();
+          // Zustand를 통해 로그인 상태 변경
+          login();
+        },
+        onError: (error) => {
+          console.error('회원가입 실패:', error);
+          // TODO: 에러 처리 (토스트 메시지 등)
+        },
+      },
+    );
   };
 
   return (
@@ -40,10 +63,13 @@ const WelcomeScreen = ({ navigation, route }: any) => {
 
       <ButtonWrapper>
         <CustomButton
-          text="시작하기"
+          text={isSigningUp ? '가입 중...' : '시작하기'}
           onPress={handleStart}
-          backgroundColor={theme.colors.primary}
-          textColor={theme.colors.white}
+          disabled={isSigningUp}
+          backgroundColor={
+            isSigningUp ? theme.colors.gray200 : theme.colors.primary
+          }
+          textColor={isSigningUp ? theme.colors.gray500 : theme.colors.white}
         />
       </ButtonWrapper>
     </Container>
