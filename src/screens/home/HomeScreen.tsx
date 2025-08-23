@@ -177,7 +177,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         </DateSelector>
 
         {/* 그룹 루틴 카드 */}
-        <GroupRoutineCard onPress={handleGroupBannerPress} />
+        <GroupRoutineCard
+          onPress={handleGroupBannerPress}
+          iconSource={require('../../assets/images/people.png')}
+        />
 
         {/* 탭 선택 */}
         <TabNavigation
