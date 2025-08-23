@@ -6,6 +6,7 @@ export { default as apiClient } from './client';
 export * from './user';
 // export * from './onboarding';
 export * from './routine'; // 루틴 (personal + group)
-export * from './shop'; // 포인트샵
+export * from './shop';
+export * from './user'; // 포인트샵
 export * from './finance'; // 금융
 export * from './analysis'; // 분석
