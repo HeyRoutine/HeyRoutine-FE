@@ -154,6 +154,74 @@ export interface EmptyResponse {
   // 성공 시 별도 데이터 없음 (메시지만 반환)
 }
 
+// ===== 유저 (User) 타입 =====
+
+// 로그인 요청 타입
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
+
+// 로그인 응답 타입
+export interface SignInResponse {
+  grantType: string;
+  accessToken: string;
+  refreshToken: string;
+  refreshTokenExpirationTime: number;
+  role: string[];
+}
+
+// 회원가입 요청 타입
+export interface SignUpRequest {
+  email: string;
+  password: string;
+  nickname: string;
+  profileImage: string;
+  roles: string[];
+}
+
+// 회원가입 응답 타입
+export interface SignUpResponse {
+  id: string;
+  username: string;
+  nickname: string;
+}
+
+// 토큰 재발급 요청 타입
+export interface ReissueRequest {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// 토큰 재발급 응답 타입 (로그인 응답과 동일)
+export type ReissueResponse = SignInResponse;
+
+// 마이페이지 비밀번호 재설정 요청 타입 (Query String 사용)
+export interface MyPageResetPasswordRequest {
+  password: string; // 새로운 비밀번호
+}
+
+// 마이페이지 비밀번호 재설정 응답 타입
+export type MyPageResetPasswordResponse = string; // "비밀번호가 변경되었습니다"
+
+// 비밀번호 찾기 후 재설정 요청 타입
+export interface ResetPasswordRequest {
+  email: string;
+  password: string;
+  uuid: string;
+}
+
+// 비밀번호 찾기 후 재설정 응답 타입
+export type ResetPasswordResponse = string; // "비밀번호가 변경되었습니다"
+
+// 닉네임 재설정 요청 타입 (Query String 사용)
+export interface ResetNicknameRequest {
+  nickname: string; // 새로운 닉네임
+}
+
+// 닉네임 재설정 응답 타입
+export type ResetNicknameResponse = string; // "닉네임이 변경되었습니다"
+
 // ===== 포인트샵 (Point Shop) 타입 =====
 
 // 포인트 정보 타입

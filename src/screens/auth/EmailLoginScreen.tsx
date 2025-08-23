@@ -56,7 +56,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
           </FormGroup>
         </FormContainer>
 
-        <BottomActions>
+        <ButtonWrapper>
           <CustomButton
             text="로그인"
             onPress={handleLogin}
@@ -80,7 +80,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
               비밀번호 찾기
             </FooterLink>
           </Footer>
-        </BottomActions>
+        </ButtonWrapper>
       </ContentWrapper>
     </Container>
   );
@@ -96,7 +96,6 @@ const Container = styled(SafeAreaView)`
 const ContentWrapper = styled.ScrollView.attrs({
   contentContainerStyle: {
     padding: 24,
-    flexGrow: 1,
   },
   keyboardShouldPersistTaps: 'handled',
 })``;
@@ -127,8 +126,8 @@ const FormContainer = styled.View`
   width: 100%;
 `;
 
-const BottomActions = styled.View`
-  margin-top: auto;
+const ButtonWrapper = styled.View`
+  /* padding: 0; */
 `;
 
 const Footer = styled.View`

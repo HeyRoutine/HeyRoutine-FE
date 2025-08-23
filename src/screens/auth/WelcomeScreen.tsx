@@ -4,14 +4,17 @@ import styled from 'styled-components/native';
 
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import { useAuthStore } from '../../store';
+import { useAuthStore, useOnboardingStore } from '../../store';
 
 // 유저 닉네임을 props로 받는다고 가정
 const WelcomeScreen = ({ navigation, route }: any) => {
   const nickname = route.params?.nickname || '냥냥이';
   const { login } = useAuthStore();
+  const { resetOnboarding } = useOnboardingStore();
 
   const handleStart = () => {
+    // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
+    resetOnboarding();
     // Zustand를 통해 로그인 상태 변경
     login();
   };
