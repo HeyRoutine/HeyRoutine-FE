@@ -87,22 +87,24 @@ export default function App() {
                 />
               </NavigationContainer>
             ) : showCelebration ? (
-              <ResultScreen
-                navigation={{
-                  navigate: () => setShowCelebration(false),
-                }}
-                route={{
-                  params: {
-                    type: 'celebration',
-                    title: '냥멍이님',
-                    description:
-                      '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
-                    points: 100,
-                    lottieSource: require('./assets/images/animation/confetti.json'),
-                    onComplete: () => setShowCelebration(false),
-                  },
-                }}
-              />
+              <NavigationContainer>
+                <ResultScreen
+                  navigation={{
+                    navigate: () => setShowCelebration(false),
+                  }}
+                  route={{
+                    params: {
+                      type: 'celebration',
+                      title: '냥멍이님',
+                      description:
+                        '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
+                      points: 100,
+                      lottieSource: require('./assets/images/animation/confetti.json'),
+                      onComplete: () => setShowCelebration(false),
+                    },
+                  }}
+                />
+              </NavigationContainer>
             ) : (
               <NavigationContainer>
                 {isLoggedIn ? <MainNavigator /> : <AuthNavigator />}

@@ -56,6 +56,7 @@ const MainNavigator = () => {
             'ActiveRoutine',
             'PersonalRoutineDetail',
             'EditRoutine',
+            'Loading',
           ];
 
           return {
@@ -82,6 +83,7 @@ const MainNavigator = () => {
             'ActiveRoutine',
             'PersonalRoutineDetail',
             'EditRoutine',
+            'Loading',
           ];
 
           return {

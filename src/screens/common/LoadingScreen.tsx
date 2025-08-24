@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { BackHandler } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import StatusCard from '../../components/common/StatusCard';
-import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
 interface LoadingScreenProps {
   navigation: any;
@@ -23,7 +20,6 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
   } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
     // 실시간 프로그레스 업데이트 (100ms마다)
@@ -54,7 +50,7 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       setCurrentStep(statusItems.length - 1);
       // 100% 완료 후 1초 더 기다린 후 완료
       setTimeout(() => {
-        if (nextScreen) {
+        if (nextScreen && navigation && navigation.navigate) {
           navigation.navigate(nextScreen);
         }
       }, 1000);
@@ -67,46 +63,9 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
     };
   }, [statusItems.length, nextScreen, navigation]);
 
-  // 하드웨어 뒤로가기 버튼 처리 및 탭 바 숨기기
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        setShowExitModal(true);
-        return true; // 기본 뒤로가기 동작 방지
-      };
-
-      const subscription = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-
-      // 탭 바 숨기기
-      navigation.getParent()?.setOptions({
-        tabBarStyle: { display: 'none' },
-      });
-
-      return () => {
-        subscription.remove();
-        // 탭 바 다시 보이기
-        navigation.getParent()?.setOptions({
-          tabBarStyle: { display: 'flex' },
-        });
-      };
-    }, [navigation]),
-  );
-
   const getStatusForItem = (index: number) => {
     if (index <= currentStep) return 'completed';
     return 'pending';
-  };
-
-  const handleConfirmExit = () => {
-    setShowExitModal(false);
-    navigation.goBack();
-  };
-
-  const handleCancelExit = () => {
-    setShowExitModal(false);
   };
 
   return (
@@ -136,25 +95,6 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
         source={require('../../assets/images/character_sol.png')}
         resizeMode="contain"
       />
-
-      {/* 뒤로가기 확인 모달 */}
-      <BottomSheetDialog
-        visible={showExitModal}
-        onRequestClose={handleCancelExit}
-      >
-        <ModalTitle>정말로 나가시겠습니까?</ModalTitle>
-        <ModalMessage>
-          로딩이 완료되기 전에 나가면 추천 결과를 받을 수 없습니다.
-        </ModalMessage>
-        <ModalButtonsContainer>
-          <ModalButton onPress={handleCancelExit}>
-            <ModalButtonText>취소</ModalButtonText>
-          </ModalButton>
-          <ModalButton onPress={handleConfirmExit} variant="primary">
-            <ModalButtonText variant="primary">나가기</ModalButtonText>
-          </ModalButton>
-        </ModalButtonsContainer>
-      </BottomSheetDialog>
     </Container>
   );
 };
@@ -212,44 +152,4 @@ const CharacterImage = styled.Image`
   height: 336px;
   opacity: 0.2;
   z-index: 1;
-`;
-
-// 모달 관련 스타일
-const ModalTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 24px;
-  color: ${theme.colors.gray900};
-  text-align: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
-`;
-
-const ModalMessage = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  margin-bottom: 36px;
-`;
-
-const ModalButtonsContainer = styled.View`
-  flex-direction: row;
-  gap: 12px;
-`;
-
-const ModalButton = styled.TouchableOpacity<{ variant?: 'primary' }>`
-  flex: 1;
-  padding: 16px 12px;
-  border-radius: 12px;
-  align-items: center;
-  justify-content: center;
-  background-color: ${(p) =>
-    p.variant === 'primary' ? theme.colors.primary : theme.colors.gray200};
-`;
-
-const ModalButtonText = styled.Text<{ variant?: 'primary' }>`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 16px;
-  color: ${(p) =>
-    p.variant === 'primary' ? theme.colors.white : theme.colors.gray600};
 `;

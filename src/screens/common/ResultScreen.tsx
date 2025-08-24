@@ -1,5 +1,7 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import styled from 'styled-components/native';
 import LottieView from 'lottie-react-native';
 
@@ -27,6 +29,23 @@ const ResultScreen = ({ navigation, route }: any) => {
     nextScreen = 'MyPage',
     onSuccess,
   } = route.params || {};
+
+  // 뒤로가기 버튼 차단
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // 뒤로가기 버튼을 완전히 차단
+        return true; // 이벤트 소비하여 뒤로가기 동작 방지
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, []),
+  );
 
   const handleComplete = () => {
     if (onSuccess) {
