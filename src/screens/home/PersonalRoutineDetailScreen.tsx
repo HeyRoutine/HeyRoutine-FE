@@ -25,8 +25,6 @@ interface PersonalRoutineDetailScreenProps {
   route: {
     params?: {
       routineData?: any;
-      completedRoutine?: boolean;
-      completedTasks?: Array<{ icon: string; title: string; duration: string }>;
     };
   };
 }
@@ -81,23 +79,7 @@ const PersonalRoutineDetailScreen = ({
     setEditMode(false);
   }, [setEditMode]);
 
-  // 루틴 완료 후 돌아왔을 때 완료 상태 업데이트
-  useEffect(() => {
-    if (route?.params?.completedRoutine && route?.params?.completedTasks) {
-      const completedTasks = route.params.completedTasks;
-      setRoutineItems((prev) =>
-        prev.map((item) => {
-          const completedTask = completedTasks.find(
-            (task: any) => task.title === item.text,
-          );
-          return {
-            ...item,
-            isCompleted: completedTask ? true : item.isCompleted,
-          };
-        }),
-      );
-    }
-  }, [route?.params?.completedRoutine, route?.params?.completedTasks]);
+  // 완료 상태 관련 로직은 API 연동 시 구현 예정
 
   // 폰의 뒤로가기 버튼 처리
   useFocusEffect(
@@ -267,7 +249,13 @@ const PersonalRoutineDetailScreen = ({
     if (isEditMode) {
       // 편집 모드일 때는 수정 완료 처리
       setEditMode(false);
-      // 여기에 수정된 데이터를 저장하는 로직을 추가할 수 있습니다
+      // ResultScreen으로 이동
+      navigation.navigate('Result', {
+        type: 'success',
+        title: '루틴 상세 수정 완료',
+        description: '루틴 상세가 성공적으로 수정되었습니다.',
+        nextScreen: 'PersonalRoutineDetail',
+      });
       return;
     }
 

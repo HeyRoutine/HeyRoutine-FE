@@ -46,12 +46,17 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         days: selectedDays,
         startTime,
         endTime,
+        startDate: selectedStartDate,
       },
     });
   };
 
   const isFormValid =
-    routineName.trim() && selectedDays.length > 0 && startTime && endTime;
+    routineName.trim() &&
+    selectedDays.length > 0 &&
+    startTime &&
+    endTime &&
+    selectedStartDate;
 
   const categories = [
     { id: 'life', name: '생활' },
@@ -126,6 +131,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
           onDaysChange={setSelectedDays}
           onStartDatePress={() => setShowDatePicker(true)}
           selectedStartDate={selectedStartDate}
+          readOnly={false}
           buttonSize={40}
           borderRadius={20}
         />

@@ -59,11 +59,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
             onComplete();
           } catch {}
         }
-        // 루틴 완료 후 바로 루틴 상세 화면으로 이동 (완료 상태와 함께)
-        navigation.replace('PersonalRoutineDetail', {
-          completedRoutine: true,
-          completedTasks: tasks,
-        });
+        // 루틴 완료 후 루틴 상세 화면으로 돌아가기
+        navigation.goBack();
       }, 3000);
 
       return () => clearTimeout(timer);

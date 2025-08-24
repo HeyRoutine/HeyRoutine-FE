@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // 초기 상태
   accessToken: null,
   refreshToken: null,
-  isLoggedIn: false,
+  isLoggedIn: true,
   signupData: {
     email: '',
     password: '',

@@ -48,12 +48,17 @@ const ResultScreen = ({ navigation, route }: any) => {
   );
 
   const handleComplete = () => {
+    console.log('ResultScreen handleComplete 호출됨');
+    console.log('title:', title);
+    console.log('nextScreen:', nextScreen);
+
     if (onSuccess) {
       onSuccess();
     }
 
     // 루틴 등록 완료인 경우 홈으로 이동
     if (title === '루틴 등록 완료!') {
+      console.log('루틴 등록 완료 처리');
       // 온보딩 완료 처리
       const { completeOnboarding } =
         require('../../store').useOnboardingStore.getState();
@@ -62,10 +67,15 @@ const ResultScreen = ({ navigation, route }: any) => {
       const { setLoggedIn } = require('../../store').useAuthStore.getState();
       setLoggedIn(true);
     } else if (title === '루틴 생성 완료') {
+      console.log('루틴 생성 완료 - 홈으로 이동');
       // 루틴 생성 완료인 경우 홈으로 이동
-      navigation.navigate('Home');
+      navigation.navigate('HomeMain');
     } else if (nextScreen) {
+      console.log('nextScreen으로 이동:', nextScreen);
       navigation.navigate(nextScreen);
+    } else {
+      console.log('기본 동작 - 뒤로가기');
+      navigation.goBack();
     }
   };
 

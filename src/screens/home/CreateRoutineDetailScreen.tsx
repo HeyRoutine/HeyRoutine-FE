@@ -62,7 +62,8 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
-    setRoutineSuggestionVisible(true);
+    // 시간 선택 모달을 직접 열기
+    setTimePickerVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -84,7 +85,12 @@ const CreateRoutineDetailScreen = ({
 
   const handleTextChange = (text: string) => {
     console.log('입력된 텍스트:', text);
-    setCurrentText(text);
+    // 시간 형식인지 확인 (예: "40분", "30분" 등)
+    if (text.includes('분')) {
+      setSelectedTime(text);
+    } else {
+      setCurrentText(text);
+    }
   };
 
   const handleTextPress = () => {
@@ -175,7 +181,7 @@ const CreateRoutineDetailScreen = ({
       type: 'success',
       title: '루틴 생성 완료',
       description: '루틴이 성공적으로 생성되었습니다.',
-      nextScreen: 'Home',
+      nextScreen: 'HomeMain',
     });
   };
 
