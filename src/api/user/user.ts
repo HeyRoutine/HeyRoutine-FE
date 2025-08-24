@@ -6,7 +6,7 @@ import {
   SignUpRequest,
   SignUpResponse,
   ReissueRequest,
-  ReissueResponse, 
+  ReissueResponse,
   MyPageResetPasswordRequest,
   MyPageResetPasswordResponse,
   ResetPasswordRequest,
@@ -60,10 +60,27 @@ export const signIn = async (
 export const signUp = async (
   data: SignUpRequest,
 ): Promise<ApiResponse<SignUpResponse>> => {
+  console.log('🔍 회원가입 API 호출:', '/api/v1/user/sign-up');
+  console.log('🔍 회원가입 요청 데이터:', {
+    email: data.email,
+    password: data.password,
+    nickname: data.nickname,
+    profileImage: data.profileImage,
+    roles: data.roles,
+  });
+
   const response = await apiClient.post<ApiResponse<SignUpResponse>>(
     '/api/v1/user/sign-up',
     data,
   );
+
+  console.log('🔍 회원가입 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    message: response.data?.message,
+  });
+
   return response.data;
 };
 
@@ -84,10 +101,16 @@ export const mypageResetPassword = async (
 ): Promise<ApiResponse<MyPageResetPasswordResponse>> => {
   const response = await apiClient.patch<
     ApiResponse<MyPageResetPasswordResponse>
-  >(`/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`);
+  >(
+    `/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`,
+  );
 
   // 일부 서버가 200/204에서 본문을 비우는 경우 대비
-  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+  if (
+    response?.data &&
+    typeof response.data === 'object' &&
+    'isSuccess' in response.data
+  ) {
     return response.data;
   }
 
@@ -119,7 +142,11 @@ export const resetNickname = async (
     `/api/v1/user/mypage-nickname?nickname=${encodeURIComponent(data.nickname)}`,
   );
 
-  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+  if (
+    response?.data &&
+    typeof response.data === 'object' &&
+    'isSuccess' in response.data
+  ) {
     return response.data;
   }
 

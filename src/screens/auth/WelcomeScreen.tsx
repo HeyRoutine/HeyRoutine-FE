@@ -7,11 +7,14 @@ import { theme } from '../../styles/theme';
 import { useAuthStore, useOnboardingStore } from '../../store';
 import { useSignUp } from '../../hooks/user/useUser';
 
-// 유저 닉네임을 props로 받는다고 가정
+// 모든 회원가입 데이터를 route.params로 받기
 const WelcomeScreen = ({ navigation, route }: any) => {
-  const nickname = route.params?.nickname || '냥냥이';
-  const { login, signupData } = useAuthStore();
+  const { nickname, email, password, profileImage } = route.params || {};
+  const { login } = useAuthStore();
   const { resetOnboarding } = useOnboardingStore();
+
+  // 디버깅용 로그
+  console.log('🔍 WelcomeScreen route.params:', route.params);
 
   // 회원가입 API hook
   const { mutate: signUp, isPending: isSigningUp } = useSignUp();
@@ -20,10 +23,10 @@ const WelcomeScreen = ({ navigation, route }: any) => {
     // 회원가입 API 호출
     signUp(
       {
-        email: signupData.email,
-        password: signupData.password,
+        email: email,
+        password: password,
         nickname: nickname,
-        profileImage: signupData.profileImage || '', // 기본 프로필 이미지
+        profileImage: profileImage || '', // 기본 프로필 이미지
         roles: ['USER'], // 기본 역할
       },
       {

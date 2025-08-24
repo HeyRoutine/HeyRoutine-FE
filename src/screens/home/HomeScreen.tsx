@@ -13,6 +13,8 @@ import GroupRoutineCard from '../../components/domain/routine/GroupRoutineCard';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
 import { useRoutineStore } from '../../store';
+import { usePersonalRoutines } from '../../hooks/routine/personal/usePersonalRoutines';
+import { useGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
 
 interface HomeScreenProps {
   navigation: any;
@@ -73,84 +75,54 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     completedDays: string[];
   };
 
-  // 샘플 루틴 데이터
-  const personalRoutines: RoutineListItem[] = [
-    {
-      id: '1',
-      category: '생활',
-      progress: 33,
-      title: '빵빵이의 아침 루틴',
-      timeRange: '오전 8:00 ~ 오전 9:00',
-      selectedDays: ['월', '화'],
-      completedDays: ['월', '화'],
-    },
-    {
-      id: '2',
-      category: '생활',
-      progress: 33,
-      title: '빵빵이의 아침 루틴',
-      timeRange: '오전 8:00 ~ 오전 9:00',
-      selectedDays: ['월', '화'],
-      completedDays: ['월'],
-    },
-    {
-      id: '3',
-      category: '운동',
-      progress: 67,
-      title: '저녁 운동 루틴',
-      timeRange: '오후 7:00 ~ 오후 8:00',
-      selectedDays: ['화', '목', '금'],
-      completedDays: ['화', '목', '금'],
-    },
-    {
-      id: '4',
-      category: '학습',
-      progress: 45,
-      title: '독서 시간',
-      timeRange: '오후 9:00 ~ 오후 10:00',
-      selectedDays: ['월', '수', '토', '일'],
-      completedDays: ['월', '수', '토'],
-    },
+  // API 훅 사용
+  const selectedDateString = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
+    selectedDate.getDay()
   ];
 
-  const groupRoutines: RoutineListItem[] = [
-    {
-      id: '5',
-      category: '생활',
-      progress: 67,
-      title: '저축 그룹 루틴',
-      timeRange: '오후 8:00 ~ 오후 9:00',
-      selectedDays: ['화'],
-      completedDays: ['화'],
-    },
-    {
-      id: '6',
-      category: '소비',
-      progress: 67,
-      title: '저축 그룹 루틴',
-      timeRange: '오후 8:00 ~ 오후 9:00',
-      selectedDays: ['화'],
-      completedDays: ['화'],
-    },
-    {
-      id: '7',
-      category: '운동',
-      progress: 89,
-      title: '그룹 헬스 루틴',
-      timeRange: '오후 6:00 ~ 오후 7:00',
-      selectedDays: ['월', '수', '금'],
-      completedDays: ['수', '금'],
-    },
-    {
-      id: '8',
-      category: '학습',
-      progress: 23,
-      title: '스터디 그룹',
-      timeRange: '오후 10:00 ~ 오후 11:00',
-      selectedDays: ['화', '목'],
-      completedDays: ['화', '목'],
-    },
-  ];
+  const {
+    data: personalRoutinesData,
+    isLoading: isPersonalRoutinesLoading,
+    error: personalRoutinesError,
+  } = usePersonalRoutines({
+    date: selectedDateString,
+    day: selectedDay,
+  });
+
+  // API 데이터를 화면에 맞는 형태로 변환
+  const personalRoutines: RoutineListItem[] =
+    personalRoutinesData?.result?.items?.map((item) => ({
+      id: item.id.toString(),
+      category: item.routineType === 'DAILY' ? '생활' : '소비',
+      progress: 0, // API에서 제공하지 않는 경우 기본값
+      title: item.title,
+      timeRange: `${item.startTime} ~ ${item.endTime}`,
+      selectedDays: item.dayTypes, // 타입 정의에 따르면 dayTypes
+      completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+    })) || [];
+
+  // 그룹 루틴 API 훅 사용
+  const {
+    data: groupRoutinesData,
+    isLoading: isGroupRoutinesLoading,
+    error: groupRoutinesError,
+  } = useGroupRoutines({
+    page: 0,
+    size: 10,
+  });
+
+  // 그룹 루틴 데이터를 화면에 맞는 형태로 변환
+  const groupRoutines: RoutineListItem[] =
+    groupRoutinesData?.result?.items?.map((item) => ({
+      id: item.id.toString(),
+      category: item.routineType === 'DAILY' ? '생활' : '소비',
+      progress: 0, // API에서 제공하지 않는 경우 기본값
+      title: item.title,
+      timeRange: `${item.startTime} ~ ${item.endTime}`,
+      selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
+      completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+    })) || [];
 
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');

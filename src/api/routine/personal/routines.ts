@@ -50,6 +50,16 @@ export const showMyRoutineList = async (
 ): Promise<ApiResponse<PersonalRoutineListResponse>> => {
   const { day, date, page = 0, size = 10 } = params;
 
+  const requestParams = {
+    ...(day && { day }),
+    ...(date && { date }),
+    page: page.toString(),
+    size: size.toString(),
+  };
+
+  const queryString = new URLSearchParams(requestParams).toString();
+  console.log('🔍 API 호출:', `/api/v1/my-routine/list?${queryString}`);
+
   const response = await apiClient.get<
     ApiResponse<PersonalRoutineListResponse>
   >('/api/v1/my-routine/list', {
@@ -59,6 +69,15 @@ export const showMyRoutineList = async (
       page,
       size,
     },
+  });
+
+  console.log('🔍 showMyRoutineList 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    items: response.data?.result?.items,
+    itemsCount: response.data?.result?.items?.length || 0,
   });
   return response.data;
 };

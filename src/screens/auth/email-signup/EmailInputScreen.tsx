@@ -72,7 +72,14 @@ const EmailInputScreen = ({ navigation }: any) => {
     if (isEmailValid && !errorMessage && !isCheckingDuplicate) {
       // Zustand 스토어에 이메일 저장
       setSignupEmail(email);
-      navigation.navigate('EmailVerification');
+      console.log('🔍 이메일 저장됨:', email);
+
+      // 저장 후 스토어 상태 확인
+      const currentState = useAuthStore.getState();
+      console.log('🔍 이메일 저장 후 스토어 상태:', currentState.signupData);
+
+      // route.params로 이메일 전달
+      navigation.navigate('EmailVerification', { email });
     }
   };
 

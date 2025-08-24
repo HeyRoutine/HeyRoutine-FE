@@ -53,6 +53,14 @@ export const getGroupRoutines = async (
 ): Promise<ApiResponse<GroupRoutineListResponse>> => {
   const { page = 0, size = 10 } = params;
 
+  const requestParams = {
+    page: page.toString(),
+    size: size.toString(),
+  };
+
+  const queryString = new URLSearchParams(requestParams).toString();
+  console.log('🔍 API 호출:', `/api/v1/routines/groups?${queryString}`);
+
   const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
     '/api/v1/routines/groups',
     {
@@ -62,6 +70,15 @@ export const getGroupRoutines = async (
       },
     },
   );
+
+  console.log('🔍 getGroupRoutines 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    items: response.data?.result?.items,
+    itemsCount: response.data?.result?.items?.length || 0,
+  });
 
   return response.data;
 };

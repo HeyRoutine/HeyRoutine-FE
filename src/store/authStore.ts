@@ -92,7 +92,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearSignupData: () =>
     set({
-      signupData: { email: '', password: '', nickname: '', profileImage: null },
+      signupData: {
+        email: '',
+        password: '',
+        nickname: '',
+        profileImage: null,
+      },
     }),
 
   completeSignup: () => {
@@ -108,23 +113,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     get().clearSignupData();
   },
 }));
-
-// 모바일 환경에서만 persist 적용
-if (!isWeb) {
-  const AsyncStorage = require('@react-native-async-storage/async-storage');
-  const { persist, createJSONStorage } = require('zustand/middleware');
-
-  const persistedStore = persist(useAuthStore, {
-    name: 'auth-storage',
-    storage: createJSONStorage(() => AsyncStorage),
-    partialize: (state: AuthState) => ({
-      accessToken: state.accessToken,
-      refreshToken: state.refreshToken,
-      isLoggedIn: state.isLoggedIn,
-      signupData: state.signupData,
-    }),
-  });
-
-  // 기존 스토어를 persisted 스토어로 교체
-  Object.assign(useAuthStore, persistedStore);
-}

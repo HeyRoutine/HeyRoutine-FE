@@ -9,7 +9,7 @@ import CustomButton from '../../components/common/CustomButton';
 import TermItem from '../../components/domain/auth/TermItem';
 import { useAuthStore } from '../../store';
 
-const TermsAgreementScreen = ({ navigation }: any) => {
+const TermsAgreementScreen = ({ navigation, route }: any) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
@@ -26,7 +26,9 @@ const TermsAgreementScreen = ({ navigation }: any) => {
   const handleNext = () => {
     // 회원가입 완료 처리
     completeSignup();
-    navigation.navigate('Welcome', { nickname });
+    // route.params로 모든 데이터 전달
+    const { email, password, nickname, profileImage } = route.params || {};
+    navigation.navigate('Welcome', { email, password, nickname, profileImage });
   };
 
   const handleAgreeAll = () => {

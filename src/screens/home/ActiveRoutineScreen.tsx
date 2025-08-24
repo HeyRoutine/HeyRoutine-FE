@@ -7,7 +7,6 @@ import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { Ionicons } from '@expo/vector-icons';
-
 import { useRoutineStore } from '../../store';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {

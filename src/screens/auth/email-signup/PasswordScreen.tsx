@@ -13,7 +13,7 @@ import {
 import { useAuthStore } from '../../../store';
 import { validatePassword } from '../../../utils/validation';
 
-const PasswordScreen = ({ navigation }: any) => {
+const PasswordScreen = ({ navigation, route }: any) => {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -47,7 +47,15 @@ const PasswordScreen = ({ navigation }: any) => {
   const handleNext = () => {
     // Zustand 스토어에 비밀번호 저장
     setSignupPassword(password);
-    navigation.navigate('Nickname');
+    console.log('🔍 비밀번호 저장됨:', password);
+
+    // 저장 후 스토어 상태 확인
+    const currentState = useAuthStore.getState();
+    console.log('🔍 비밀번호 저장 후 스토어 상태:', currentState.signupData);
+
+    // route.params로 이메일과 비밀번호 전달
+    const { email } = route.params || {};
+    navigation.navigate('Nickname', { email, password });
   };
 
   return (
