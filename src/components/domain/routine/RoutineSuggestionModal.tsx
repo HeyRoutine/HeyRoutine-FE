@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,9 @@ interface RoutineSuggestionModalProps {
   selectedTime?: string;
   selectedEmoji?: string;
   currentText?: string;
+  templates?: any[]; // 루틴 템플릿 데이터
+  emojis?: any[]; // 이모지 데이터
+  isLoading?: boolean; // 템플릿 로딩 상태
 }
 
 interface RoutineItem {
@@ -98,6 +101,9 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   selectedTime,
   selectedEmoji,
   currentText,
+  templates = [],
+  emojis = [],
+  isLoading = false,
 }) => {
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -108,14 +114,85 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   const [selectedTimeLocal, setSelectedTimeLocal] = useState(
     selectedTime || '',
   );
+
+  // selectedTimeLocal 변경 추적
+  useEffect(() => {
+    console.log(
+      '🔍 RoutineSuggestionModal - selectedTimeLocal 변경됨:',
+      selectedTimeLocal,
+    );
+  }, [selectedTimeLocal]);
+
+  // selectedTime prop 변경 시 selectedTimeLocal 업데이트 (초기화 시에만)
+  useEffect(() => {
+    console.log(
+      '🔍 RoutineSuggestionModal - selectedTime prop 확인:',
+      selectedTime,
+    );
+    if (selectedTime && selectedTime !== selectedTimeLocal) {
+      console.log(
+        '🔍 RoutineSuggestionModal - selectedTime prop 변경됨:',
+        selectedTime,
+      );
+      setSelectedTimeLocal(selectedTime);
+    }
+  }, [selectedTime]);
   const [currentTextLocal, setCurrentTextLocal] = useState(currentText || '');
 
-  const categoryTabs = ['음식', '활동', '기호', '학습', '사람'];
-  const categoryIds = ['food', 'activity', 'preference', 'learning', 'people'];
+  // 백엔드 카테고리에 맞게 수정
+  const categoryTabs = ['생활', '소비', '식사', '학습', '건강', '취미'];
+  const categoryIds = [
+    'LIFE',
+    'CONSUMPTION',
+    'EATING',
+    'STUDY',
+    'HEALTH',
+    'HOBBY',
+  ];
   const selectedCategory = categoryIds[selectedCategoryIndex];
 
-  const filteredRoutines = routineSuggestions.filter(
-    (routine) => routine.category === selectedCategory,
+  // 이모지 ID를 URL로 매핑하는 함수
+  const getEmojiUrl = (emojiId: number) => {
+    const emoji = emojis.find((e) => e.emojiId === emojiId);
+    return emoji?.emojiUrl || '📝'; // 이모지가 없으면 기본 아이콘 사용
+  };
+
+  // 템플릿 데이터가 있으면 템플릿을 사용하고, 없으면 기본 추천 루틴을 사용
+  const availableRoutines =
+    templates && templates.length > 0
+      ? templates.map((template) => ({
+          id: template.templateId.toString(),
+          title: template.name,
+          description: template.content,
+          icon: getEmojiUrl(template.emojiId), // 템플릿의 emojiId에 해당하는 이모지 URL 사용
+          category: template.category || 'template', // 템플릿에 카테고리 정보가 있으면 사용
+        }))
+      : routineSuggestions;
+
+  // 카테고리별 필터링 로직 수정 - 모든 템플릿 표시
+  const filteredRoutines = availableRoutines.filter((routine) => {
+    // 템플릿 데이터인 경우 모든 카테고리에서 표시
+    if (templates && templates.length > 0) {
+      return true; // 모든 템플릿 표시
+    }
+    // 기본 추천 루틴인 경우 카테고리별 필터링
+    return routine.category === selectedCategory;
+  });
+
+  // 디버깅용 로그
+  console.log('🔍 RoutineSuggestionModal - templates prop:', templates);
+  console.log(
+    '🔍 RoutineSuggestionModal - availableRoutines:',
+    availableRoutines,
+  );
+  console.log(
+    '🔍 RoutineSuggestionModal - filteredRoutines:',
+    filteredRoutines,
+  );
+  console.log('🔍 RoutineSuggestionModal - isLoading:', isLoading);
+  console.log(
+    '🔍 RoutineSuggestionModal - filteredRoutines.length:',
+    filteredRoutines.length,
   );
 
   const handleRoutineSelect = (routine: RoutineItem) => {
@@ -143,11 +220,16 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   };
 
   const handleTimeSelect = (time: string | number) => {
-    setSelectedTimeLocal(time.toString());
-    // 부모 컴포넌트에 선택된 시간 전달
-    if (onClockPress) {
-      onClockPress();
-    }
+    const timeString = time.toString();
+    console.log(
+      '🔍 RoutineSuggestionModal - handleTimeSelect 호출됨, 입력값:',
+      time,
+    );
+    console.log('🔍 RoutineSuggestionModal - 변환된 시간 문자열:', timeString);
+
+    setSelectedTimeLocal(timeString);
+    console.log('🔍 RoutineSuggestionModal - setSelectedTimeLocal 호출됨');
+
     setTimePickerVisible(false);
     // 시간 선택 완료 후 숨겨진 루틴 추천 모달이 다시 보임
   };
@@ -167,6 +249,12 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         category: categoryTabs[selectedCategoryIndex],
       });
     }
+
+    // 완료 후 입력 필드들 초기화
+    setSelectedEmojiLocal('');
+    setSelectedTimeLocal('');
+    setCurrentTextLocal('');
+
     onRequestClose();
   };
 
@@ -194,6 +282,11 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
                 currentText={currentTextLocal}
                 placeholder="루틴을 추가해주세요"
               />
+              {/* 디버깅용 로그 */}
+              {console.log(
+                '🔍 RoutineSuggestionModal - RoutineItemAdder에 전달되는 selectedTime:',
+                selectedTimeLocal,
+              )}
             </AdderContainer>
 
             {/* 카테고리 선택 */}
@@ -219,15 +312,25 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
             {/* 루틴 목록 */}
             <RoutineList>
               <ScrollView showsVerticalScrollIndicator={false}>
-                {filteredRoutines.map((routine) => (
-                  <RoutineSuggestionItem
-                    key={routine.id}
-                    icon={routine.icon}
-                    title={routine.title}
-                    description={routine.description}
-                    onPress={() => handleRoutineSelect(routine)}
-                  />
-                ))}
+                {isLoading ? (
+                  <LoadingContainer>
+                    <LoadingText>루틴 템플릿을 불러오는 중...</LoadingText>
+                  </LoadingContainer>
+                ) : filteredRoutines.length > 0 ? (
+                  filteredRoutines.map((routine) => (
+                    <RoutineSuggestionItem
+                      key={routine.id}
+                      icon={routine.icon}
+                      title={routine.title}
+                      description={routine.description}
+                      onPress={() => handleRoutineSelect(routine)}
+                    />
+                  ))
+                ) : (
+                  <EmptyContainer>
+                    <EmptyText>사용 가능한 루틴 템플릿이 없습니다.</EmptyText>
+                  </EmptyContainer>
+                )}
               </ScrollView>
             </RoutineList>
 
@@ -257,6 +360,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         onRequestClose={() => setTimePickerVisible(false)}
         onTimeSelect={handleTimeSelect}
         type="minutes"
+        initialMinutes={40}
       />
     </BottomSheetDialog>
   );
@@ -316,4 +420,32 @@ const CategoryText = styled.Text<{ isSelected: boolean }>`
   font-size: 16px;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray600};
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray500};
+  text-align: center;
+`;
+
+const EmptyContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+`;
+
+const EmptyText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray500};
+  text-align: center;
 `;

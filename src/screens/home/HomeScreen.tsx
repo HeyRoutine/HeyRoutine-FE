@@ -130,16 +130,35 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      navigation.navigate('PersonalRoutineDetail', {
-        routineData: {
-          name: '빵빵이의 점심루틴',
-          startTime: '오후 7:00',
-          endTime: '오후 10:00',
-          days: ['월', '화'],
-        },
-      });
+      // 개인 루틴에서 실제 데이터 찾기
+      const routine = personalRoutines.find((r) => r.id === routineId);
+      if (routine) {
+        navigation.navigate('PersonalRoutineDetail', {
+          routineData: {
+            id: routine.id,
+            name: routine.title,
+            startTime: routine.timeRange.split(' ~ ')[0],
+            endTime: routine.timeRange.split(' ~ ')[1],
+            days: routine.selectedDays,
+            category: routine.category,
+          },
+        });
+      }
     } else {
-      navigation.navigate('GroupRoutineDetail');
+      // 그룹 루틴에서 실제 데이터 찾기
+      const routine = groupRoutines.find((r) => r.id === routineId);
+      if (routine) {
+        navigation.navigate('GroupRoutineDetail', {
+          routineData: {
+            id: routine.id,
+            name: routine.title,
+            startTime: routine.timeRange.split(' ~ ')[0],
+            endTime: routine.timeRange.split(' ~ ')[1],
+            days: routine.selectedDays,
+            category: routine.category,
+          },
+        });
+      }
     }
   };
 
@@ -316,6 +335,29 @@ const DateText = styled.Text<{ isSelected: boolean }>`
 const RoutineList = styled.View`
   flex: 1;
   margin-bottom: 36px;
+`;
+
+const GroupRoutineGuide = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const GuideText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 18px;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-bottom: 12px;
+`;
+
+const GuideSubText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  line-height: 20px;
 `;
 
 // 모달 관련 스타일

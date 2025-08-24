@@ -11,3 +11,4 @@ export { default as TimePickerModal } from './TimePickerModal';
 export { default as EmojiPickerModal } from './EmojiPickerModal';
 export { default as RoutineSuggestionModal } from './RoutineSuggestionModal';
 export { default as RoutineSuggestionItem } from './RoutineSuggestionItem';
+export { default as DeleteRoutineModal } from './DeleteRoutineModal';

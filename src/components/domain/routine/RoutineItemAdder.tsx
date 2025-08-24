@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { TextInput } from 'react-native';
+import { TextInput, Image } from 'react-native';
 
 interface RoutineItemAdderProps {
   onPlusPress: () => void;
@@ -42,13 +42,23 @@ const RoutineItemAdder = ({
     setText(currentText || '');
   }, [currentText]);
 
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log('🔍 RoutineItemAdder - selectedTime prop:', selectedTime);
+  }, [selectedTime]);
+
   return (
     <Container>
       <PlusSection onPress={onPlusPress}>
         {isCompleted ? (
           <Ionicons name="checkmark" size={24} color={theme.colors.primary} />
         ) : selectedEmoji ? (
-          <EmojiText>{selectedEmoji}</EmojiText>
+          // 이모지가 URL인지 텍스트 이모지인지 판단
+          selectedEmoji.startsWith('http') ? (
+            <EmojiImage source={{ uri: selectedEmoji }} resizeMode="contain" />
+          ) : (
+            <EmojiText>{selectedEmoji}</EmojiText>
+          )
         ) : (
           <Ionicons name="add" size={28} color={theme.colors.gray400} />
         )}
@@ -159,4 +169,9 @@ const EmojiText = styled.Text`
   font-size: 24px;
   text-align: center;
   line-height: 28px;
+`;
+
+const EmojiImage = styled.Image`
+  width: 24px;
+  height: 24px;
 `;

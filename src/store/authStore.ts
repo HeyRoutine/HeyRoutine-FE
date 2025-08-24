@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // 초기 상태
   accessToken: null,
   refreshToken: null,
-  isLoggedIn: true,
+  isLoggedIn: false,
   signupData: {
     email: '',
     password: '',
@@ -49,16 +49,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   // 액션들
-  setAccessToken: (token) => set({ accessToken: token }),
+  setAccessToken: (token) => {
+    console.log('🔍 AccessToken 저장:', token);
+    set({ accessToken: token });
+    console.log('🔍 저장 후 스토어 상태:', get());
+  },
 
-  setRefreshToken: (token) => set({ refreshToken: token }),
+  setRefreshToken: (token) => {
+    console.log('🔍 RefreshToken 저장:', token);
+    set({ refreshToken: token });
+    console.log('🔍 저장 후 스토어 상태:', get());
+  },
 
   setLoggedIn: (loggedIn) => set({ isLoggedIn: loggedIn }),
 
   login: () => {
+    console.log('🔍 로그인 상태 변경: true');
     set({
       isLoggedIn: true,
     });
+    console.log('🔍 로그인 후 전체 스토어 상태:', get());
   },
 
   logout: () => {

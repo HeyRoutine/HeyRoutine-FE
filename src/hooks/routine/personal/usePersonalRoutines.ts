@@ -9,6 +9,7 @@ import {
 } from '../../../api/routine/personal/routines';
 import {
   makeRoutineToMyRoutineList,
+  makeRoutinesToMyRoutineList,
   getRoutinesInListByDate,
   updateRoutineInMyRoutineList,
   deleteRoutineInMyRoutineList,
@@ -18,6 +19,7 @@ import {
   CreatePersonalRoutineListRequest,
   UpdatePersonalRoutineListRequest,
   CreatePersonalRoutineDetailRequest,
+  CreatePersonalRoutineDetailArrayRequest,
   UpdatePersonalRoutineDetailRequest,
   DonePersonalRoutineParams,
 } from '../../../types/api';
@@ -26,6 +28,8 @@ import {
 
 // 개인루틴 리스트 조회 훅
 export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
+  console.log('🔍 개인루틴 리스트 조회 훅 호출:', params);
+
   return useQuery({
     queryKey: ['personalRoutines', params],
     queryFn: () => showMyRoutineList(params),
@@ -39,11 +43,17 @@ export const useCreatePersonalRoutineList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePersonalRoutineListRequest) =>
-      makeMyRoutineList(data),
-    onSuccess: () => {
+    mutationFn: (data: CreatePersonalRoutineListRequest) => {
+      console.log('🔍 개인루틴 생성 훅 호출:', data);
+      return makeMyRoutineList(data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 생성 성공:', data);
       // 생성 성공 시 개인루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 생성 실패:', error);
     },
   });
 };
@@ -94,10 +104,46 @@ export const useCreatePersonalRoutineDetail = () => {
     }: {
       myRoutineListId: string;
       data: CreatePersonalRoutineDetailRequest;
-    }) => makeRoutineToMyRoutineList(myRoutineListId, data),
-    onSuccess: () => {
+    }) => {
+      console.log('🔍 개인루틴 상세 생성 훅 호출:', { myRoutineListId, data });
+      return makeRoutineToMyRoutineList(myRoutineListId, data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 상세 생성 성공:', data);
       // 생성 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 상세 생성 실패:', error);
+    },
+  });
+};
+
+// 개인루틴 상세 생성 훅 (배열)
+export const useCreatePersonalRoutineDetailArray = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      myRoutineListId,
+      data,
+    }: {
+      myRoutineListId: string;
+      data: CreatePersonalRoutineDetailArrayRequest;
+    }) => {
+      console.log('🔍 개인루틴 상세 생성 훅 호출 (배열):', {
+        myRoutineListId,
+        data,
+      });
+      return makeRoutinesToMyRoutineList(myRoutineListId, data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 상세 생성 성공 (배열):', data);
+      // 생성 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 상세 생성 실패 (배열):', error);
     },
   });
 };
@@ -107,6 +153,8 @@ export const usePersonalRoutineDetails = (
   myRoutineListId: string,
   params: { date: string },
 ) => {
+  console.log('🔍 개인루틴 상세 조회 훅 호출:', { myRoutineListId, params });
+
   return useQuery({
     queryKey: ['personalRoutineDetails', myRoutineListId, params],
     queryFn: () => getRoutinesInListByDate(myRoutineListId, params),
@@ -182,4 +230,3 @@ export const useDonePersonalRoutineList = () => {
     },
   });
 };
-

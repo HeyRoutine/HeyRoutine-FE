@@ -17,7 +17,6 @@ const MainNavigator = () => {
     'Result',
     'ActiveRoutine',
     'PersonalRoutineDetail',
-    'EditRoutine',
     'Loading',
     'RoutineSuggestion',
     'FinancialProduct',

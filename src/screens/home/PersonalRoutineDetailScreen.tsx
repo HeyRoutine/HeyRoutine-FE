@@ -19,6 +19,10 @@ import CompletedRoutineItem from '../../components/domain/routine/CompletedRouti
 import { useRoutineStore } from '../../store';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from 'react-native';
+import {
+  usePersonalRoutineDetails,
+  useDeletePersonalRoutineList,
+} from '../../hooks/routine/personal/usePersonalRoutines';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
@@ -45,20 +49,7 @@ const PersonalRoutineDetailScreen = ({
       time: string;
       isCompleted: boolean;
     }>
-  >([
-    {
-      emoji: '🍞',
-      text: '식빵 굽기',
-      time: '30분',
-      isCompleted: false,
-    },
-    {
-      emoji: '☕',
-      text: '커피 마시기',
-      time: '15분',
-      isCompleted: false,
-    },
-  ]);
+  >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -66,6 +57,8 @@ const PersonalRoutineDetailScreen = ({
   const [currentText, setCurrentText] = useState<string>('');
   const [moreSheetVisible, setMoreSheetVisible] = useState(false);
   const [exitConfirmVisible, setExitConfirmVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [deleteSuccessVisible, setDeleteSuccessVisible] = useState(false);
 
   // 수정 중인 아이템 인덱스 (null이면 새로 추가하는 중)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -74,10 +67,74 @@ const PersonalRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
+  // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
+  const { data: existingRoutinesData, isLoading: isLoadingExistingRoutines } =
+    usePersonalRoutineDetails(routineData?.id?.toString() || '', {
+      date: new Date().toISOString().split('T')[0], // 오늘 날짜
+    });
+
+  // 개인루틴 삭제 훅
+  const { mutate: deleteRoutine } = useDeletePersonalRoutineList();
+
+  // 루틴 삭제 확인 모달 열기
+  const handleDeleteRoutine = () => {
+    closeMoreSheet();
+    setDeleteConfirmVisible(true);
+  };
+
+  // 루틴 삭제 실행
+  const handleConfirmDelete = () => {
+    if (!routineData?.id) {
+      console.error('🔍 루틴 ID가 없습니다:', routineData);
+      return;
+    }
+
+    console.log('🔍 루틴 삭제 시작:', routineData.id);
+    deleteRoutine(routineData.id.toString(), {
+      onSuccess: () => {
+        console.log('🔍 루틴 삭제 성공');
+        setDeleteConfirmVisible(false);
+        setDeleteSuccessVisible(true);
+      },
+      onError: (error) => {
+        console.error('🔍 루틴 삭제 실패:', error);
+        Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
+      },
+    });
+  };
+
+  // 삭제 확인 모달 닫기
+  const closeDeleteConfirm = () => setDeleteConfirmVisible(false);
+
+  // 삭제 성공 모달 닫기
+  const closeDeleteSuccess = () => {
+    setDeleteSuccessVisible(false);
+    navigation.goBack();
+  };
+
   // 화면 진입 시 편집 모드 해제
   useEffect(() => {
     setEditMode(false);
   }, [setEditMode]);
+
+  // 기존 루틴 데이터를 화면에 로드
+  useEffect(() => {
+    if (
+      existingRoutinesData?.result &&
+      existingRoutinesData.result.length > 0
+    ) {
+      console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
+
+      const existingItems = existingRoutinesData.result.map((routine: any) => ({
+        emoji: routine.emojiUrl,
+        text: routine.routineName,
+        time: `${routine.time}분`,
+        isCompleted: routine.completed,
+      }));
+
+      setRoutineItems(existingItems);
+    }
+  }, [existingRoutinesData]);
 
   // 완료 상태 관련 로직은 API 연동 시 구현 예정
 
@@ -297,35 +354,30 @@ const PersonalRoutineDetailScreen = ({
 
   const handleEditRoutine = () => {
     closeMoreSheet();
+
+    // HomeScreen에서 전달받은 데이터 구조를 CreateRoutineScreen에서 기대하는 구조로 변환
     const data = {
-      name: routineData?.name || '빵빵이의 점심루틴',
-      category: routineData?.category,
-      days: selectedDays,
-      startTime: routineData?.startTime || '오후 7:00',
-      endTime: routineData?.endTime || '오후 10:00',
-      startDate: routineData?.startDate,
+      id: routineData?.id,
+      title: routineData?.name || routineData?.title || '루틴 제목',
+      routineType: routineData?.category === '생활' ? 'DAILY' : 'FINANCE',
+      dayTypes: routineData?.days || selectedDays,
+      startTime: routineData?.startTime || '00:00',
+      endTime: routineData?.endTime || '00:00',
+      startDate:
+        routineData?.startDate || new Date().toISOString().split('T')[0],
     };
-    navigation.navigate('EditRoutine', { routineData: data });
+
+    console.log('🔍 루틴 수정 데이터 전달:', {
+      originalData: routineData,
+      convertedData: data,
+    });
+
+    navigation.navigate('CreateRoutine', { mode: 'edit', routineData: data });
   };
 
   const handleEditRoutineDetail = () => {
     closeMoreSheet();
     setEditMode(true);
-  };
-
-  const handleDeleteRoutine = () => {
-    closeMoreSheet();
-    Alert.alert('루틴 삭제', '이 루틴을 삭제하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => {
-          // 루틴 삭제 로직
-          navigation.goBack();
-        },
-      },
-    ]);
   };
 
   return (
@@ -337,9 +389,7 @@ const PersonalRoutineDetailScreen = ({
       <Content>
         <RoutineCard>
           <TitleContainer>
-            <RoutineTitle>
-              {routineData?.name || '빵빵이의 점심루틴'}
-            </RoutineTitle>
+            <RoutineTitle>{routineData?.name || '루틴 제목'}</RoutineTitle>
             {!isEditMode && (
               <MoreButton onPress={handleMorePress}>
                 <Ionicons
@@ -351,8 +401,8 @@ const PersonalRoutineDetailScreen = ({
             )}
           </TitleContainer>
           <RoutineTime>
-            {routineData?.startTime || '오후 7:00'} -{' '}
-            {routineData?.endTime || '오후 10:00'}
+            {routineData?.startTime || '00:00'} -{' '}
+            {routineData?.endTime || '00:00'}
           </RoutineTime>
           <DayOfWeekSelector
             selectedDays={selectedDays}
@@ -488,6 +538,51 @@ const PersonalRoutineDetailScreen = ({
           </ButtonWrapper>
         </ButtonRow>
       </BottomSheetDialog>
+
+      {/* 삭제 확인 모달 */}
+      <BottomSheetDialog
+        visible={deleteConfirmVisible}
+        onRequestClose={closeDeleteConfirm}
+      >
+        <ModalTitle>루틴 삭제</ModalTitle>
+        <ModalSubtitle>
+          이 루틴을 삭제하시겠습니까?{'\n'}삭제된 루틴은 복구할 수 없습니다.
+        </ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={closeDeleteConfirm}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="삭제"
+              onPress={handleConfirmDelete}
+              backgroundColor={theme.colors.error}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 삭제 성공 모달 */}
+      <BottomSheetDialog
+        visible={deleteSuccessVisible}
+        onRequestClose={closeDeleteSuccess}
+      >
+        <ModalTitle>삭제 완료</ModalTitle>
+        <ModalSubtitle>루틴이 삭제되었습니다.</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="확인"
+              onPress={closeDeleteSuccess}
+              backgroundColor={theme.colors.primary}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -596,7 +691,7 @@ const ButtonWrapper = styled.View`
 const CancelButton = styled.TouchableOpacity`
   background-color: ${theme.colors.gray200};
   border-radius: 12px;
-  padding: 14px;
+  padding: 18px;
   align-items: center;
 `;
 

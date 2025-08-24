@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../styles/theme';
 
@@ -17,10 +17,18 @@ const RoutineSuggestionItem: React.FC<RoutineSuggestionItemProps> = ({
   description,
   onPress,
 }) => {
+  // 이모지가 URL인지 텍스트 이모지인지 판단
+  const isEmojiUrl = icon.startsWith('http');
+  const isTextEmoji = icon.length <= 4 && !isEmojiUrl; // 이모지 텍스트는 보통 1-4자
+
   return (
     <Container onPress={onPress}>
       <IconContainer>
-        <IconText>{icon}</IconText>
+        {isEmojiUrl ? (
+          <EmojiImage source={{ uri: icon }} resizeMode="contain" />
+        ) : (
+          <IconText>{icon}</IconText>
+        )}
       </IconContainer>
 
       <ContentContainer>
@@ -57,6 +65,11 @@ const IconContainer = styled.View`
 
 const IconText = styled.Text`
   font-size: 20px;
+`;
+
+const EmojiImage = styled.Image`
+  width: 24px;
+  height: 24px;
 `;
 
 const ContentContainer = styled.View`

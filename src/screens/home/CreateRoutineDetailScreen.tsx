@@ -12,6 +12,14 @@ import {
   RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
+import {
+  useCreatePersonalRoutineDetailArray,
+  usePersonalRoutineDetails,
+} from '../../hooks/routine/personal/usePersonalRoutines';
+import {
+  useRoutineTemplates,
+  useRoutineEmojis,
+} from '../../hooks/routine/common/useCommonRoutines';
 
 interface CreateRoutineDetailScreenProps {
   navigation: any;
@@ -29,6 +37,7 @@ const CreateRoutineDetailScreen = ({
   const [routineItems, setRoutineItems] = useState<
     Array<{
       emoji: string;
+      emojiId: number; // 이모지 ID 추가
       text: string;
       time: string;
       isCompleted: boolean;
@@ -47,6 +56,45 @@ const CreateRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
+  // 개인루틴 상세 생성 훅 (배열)
+  const { mutate: createRoutineDetail, isPending } =
+    useCreatePersonalRoutineDetailArray();
+
+  // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
+  const { data: existingRoutinesData, isLoading: isLoadingExistingRoutines } =
+    usePersonalRoutineDetails(routineData?.routineListId || '', {
+      date: routineData?.startDate || new Date().toISOString().split('T')[0],
+    });
+
+  // 루틴 템플릿 조회 훅 - 모든 템플릿을 가져오기 위해 카테고리 필터링 제거
+  const { data: templateData, isLoading: isLoadingTemplates } =
+    useRoutineTemplates({
+      size: 50, // 더 많은 템플릿을 가져오기 위해 size 증가
+    });
+
+  // 이모지 조회 훅 - 모든 이모지를 가져오기 위해 카테고리 필터링 제거
+  const { data: emojiData, isLoading: isLoadingEmojis } = useRoutineEmojis({});
+
+  // 기존 루틴 데이터를 화면에 로드
+  useEffect(() => {
+    if (
+      existingRoutinesData?.result &&
+      existingRoutinesData.result.length > 0
+    ) {
+      console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
+
+      const existingItems = existingRoutinesData.result.map((routine: any) => ({
+        emoji: routine.emojiUrl,
+        emojiId: routine.emojiId || 1, // 서버에서 emojiId가 없을 경우 기본값
+        text: routine.routineName,
+        time: `${routine.time}분`,
+        isCompleted: routine.completed,
+      }));
+
+      setRoutineItems(existingItems);
+    }
+  }, [existingRoutinesData]);
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -58,7 +106,32 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handlePlusPress = () => {
-    setRoutineSuggestionVisible(true);
+    console.log('🔍 루틴 템플릿 조회 시작');
+    console.log('🔍 템플릿 데이터:', templateData);
+    console.log('🔍 템플릿 로딩 상태:', isLoadingTemplates);
+    console.log('🔍 이모지 데이터:', emojiData);
+    console.log('🔍 이모지 로딩 상태:', isLoadingEmojis);
+
+    if (isLoadingTemplates || isLoadingEmojis) {
+      console.log('🔍 템플릿 또는 이모지 로딩 중...');
+      return;
+    }
+
+    if (templateData?.result?.items && templateData.result.items.length > 0) {
+      console.log(
+        '🔍 사용 가능한 템플릿 개수:',
+        templateData.result.items.length,
+      );
+      console.log(
+        '🔍 사용 가능한 이모지 개수:',
+        emojiData?.result?.items?.length || 0,
+      );
+      setRoutineSuggestionVisible(true);
+    } else {
+      console.log('🔍 사용 가능한 템플릿이 없습니다');
+      // 템플릿이 없어도 모달을 열어서 직접 입력할 수 있도록 함
+      setRoutineSuggestionVisible(true);
+    }
   };
 
   const handleClockPress = () => {
@@ -109,11 +182,20 @@ const CreateRoutineDetailScreen = ({
   // 수정 완료 또는 새 아이템 추가
   const handleCompleteEdit = () => {
     if (selectedEmoji && currentText && selectedTime) {
+      // 이모지 ID 찾기 (이모지 데이터에서 매칭)
+      const emojiItem = emojiData?.result?.items?.find(
+        (emoji: any) =>
+          emoji.emojiUrl === selectedEmoji ||
+          emoji.emojiId?.toString() === selectedEmoji,
+      );
+      const emojiId = emojiItem?.emojiId || 1; // 기본값 1
+
       if (editingIndex !== null) {
         // 기존 아이템 수정
         const updatedItems = [...routineItems];
         updatedItems[editingIndex] = {
           emoji: selectedEmoji,
+          emojiId: emojiId,
           text: currentText,
           time: selectedTime,
           isCompleted: false, // 생성 화면에서는 미완료 상태로
@@ -124,6 +206,7 @@ const CreateRoutineDetailScreen = ({
         // 새 아이템 추가
         const newItem = {
           emoji: selectedEmoji,
+          emojiId: emojiId,
           text: currentText,
           time: selectedTime,
           isCompleted: false, // 생성 화면에서는 미완료 상태로
@@ -145,9 +228,13 @@ const CreateRoutineDetailScreen = ({
 
   // 루틴 추천 선택 핸들러 (완료 버튼 클릭 시 호출)
   const handleRoutineSuggestionSelect = (routine: any) => {
+    // 이모지 ID 찾기 (템플릿의 emojiId 사용)
+    const emojiId = routine.emojiId || 1; // 기본값 1
+
     // 완성된 루틴 아이템을 화면에 추가
     const newItem = {
       emoji: routine.icon,
+      emojiId: emojiId,
       text: routine.title,
       time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
       isCompleted: false, // 생성 화면에서는 미완료 상태로
@@ -168,21 +255,53 @@ const CreateRoutineDetailScreen = ({
   const isFormValid = routineItems.length > 0;
 
   const handleSave = () => {
-    // 루틴 저장 로직
-    console.log('루틴 저장:', {
-      ...routineData,
+    console.log('🔍 루틴 상세 생성 시작:', {
+      routineData,
       selectedDays,
       routineItems,
       selectedTime,
     });
 
-    // 결과 화면으로 이동
-    navigation.navigate('Result', {
-      type: 'success',
-      title: '루틴 생성 완료',
-      description: '루틴이 성공적으로 생성되었습니다.',
-      nextScreen: 'HomeMain',
+    // 루틴 리스트 ID가 없으면 에러
+    if (!routineData?.routineListId) {
+      console.error('🔍 루틴 리스트 ID가 없습니다:', routineData);
+      return;
+    }
+
+    // 루틴 아이템들을 배열로 변환
+    const routineDetailsArray = routineItems.map((item) => ({
+      routineName: item.text,
+      emojiId: item.emojiId, // 저장된 이모지 ID 사용
+      time: parseInt(item.time.replace('분', '')), // "30분" -> 30
+    }));
+
+    console.log('🔍 루틴 상세 생성 요청 데이터 (배열):', {
+      myRoutineListId: routineData.routineListId,
+      data: routineDetailsArray,
     });
+
+    // 배열로 한 번에 API 호출
+    createRoutineDetail(
+      {
+        myRoutineListId: routineData.routineListId,
+        data: routineDetailsArray,
+      },
+      {
+        onSuccess: (data) => {
+          console.log('🔍 루틴 상세 생성 성공:', data);
+          navigation.navigate('Result', {
+            type: 'success',
+            title: '루틴 생성 완료',
+            description: '루틴이 성공적으로 생성되었습니다.',
+            nextScreen: 'HomeMain',
+          });
+        },
+        onError: (error) => {
+          console.error('🔍 루틴 상세 생성 실패:', error);
+          // 에러 처리 (나중에 토스트나 알림 추가)
+        },
+      },
+    );
   };
 
   return (
@@ -202,6 +321,13 @@ const CreateRoutineDetailScreen = ({
             buttonSize={40}
             borderRadius={20}
           />
+
+          {/* 기존 루틴 로딩 중 표시 */}
+          {isLoadingExistingRoutines && (
+            <LoadingContainer>
+              <LoadingText>기존 루틴을 불러오는 중...</LoadingText>
+            </LoadingContainer>
+          )}
 
           {/* 새로운 루틴 추가 */}
           {editingIndex === null && (
@@ -227,8 +353,11 @@ const CreateRoutineDetailScreen = ({
                 index={index}
                 onEdit={(index, emoji, text, time) => {
                   const updatedItems = [...routineItems];
+                  // 기존 아이템의 emojiId 유지
+                  const existingItem = routineItems[index];
                   updatedItems[index] = {
                     emoji,
+                    emojiId: existingItem?.emojiId || 1, // 기존 emojiId 유지
                     text,
                     time,
                     isCompleted: false, // 생성 화면에서는 미완료 상태로
@@ -273,6 +402,9 @@ const CreateRoutineDetailScreen = ({
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}
+        templates={templateData?.result?.items || []} // 템플릿 데이터 전달
+        emojis={emojiData?.result?.items || []} // 이모지 데이터 전달
+        isLoading={isLoadingTemplates || isLoadingEmojis} // 로딩 상태 전달
       />
     </Container>
   );
@@ -330,4 +462,16 @@ const CreateButtonText = styled.Text<{ isDisabled?: boolean }>`
   font-size: 16px;
   color: ${({ isDisabled }) =>
     isDisabled ? theme.colors.gray500 : theme.colors.white};
+`;
+
+const LoadingContainer = styled.View`
+  padding: 20px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray500};
 `;

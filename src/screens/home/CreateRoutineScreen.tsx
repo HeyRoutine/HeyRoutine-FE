@@ -11,44 +11,150 @@ import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import DatePickerModal from '../../components/domain/routine/DatePickerModal';
 import TimePickerModal from '../../components/domain/routine/TimePickerModal';
+import {
+  useCreatePersonalRoutineList,
+  useUpdatePersonalRoutineList,
+} from '../../hooks/routine/personal/usePersonalRoutines';
+import { RoutineType, DayType } from '../../types/api';
 
 interface CreateRoutineScreenProps {
   navigation: any;
+  route: { params?: { mode?: 'create' | 'edit'; routineData?: any } };
 }
 
-const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
-  const [routineName, setRoutineName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('life');
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+const CreateRoutineScreen = ({
+  navigation,
+  route,
+}: CreateRoutineScreenProps) => {
+  const mode = route?.params?.mode || 'create';
+  const routineData = route?.params?.routineData;
+
+  console.log('🔍 CreateRoutineScreen - 전달받은 데이터:', {
+    mode,
+    routineData,
+  });
+
+  // 기존 데이터로 초기화 (수정 모드인 경우)
+  const [routineName, setRoutineName] = useState(routineData?.title || '');
+  const [selectedCategory, setSelectedCategory] = useState(
+    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
+  );
+  const [selectedDays, setSelectedDays] = useState<string[]>(
+    routineData?.dayTypes || [],
+  );
+  const [startTime, setStartTime] = useState(routineData?.startTime || '');
+  const [endTime, setEndTime] = useState(routineData?.endTime || '');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedStartDate, setSelectedStartDate] = useState('');
+  const [selectedStartDate, setSelectedStartDate] = useState(
+    routineData?.startDate || '',
+  );
+
+  console.log('🔍 CreateRoutineScreen - 초기화된 상태:', {
+    routineName,
+    selectedCategory,
+    selectedDays,
+    startTime,
+    endTime,
+    selectedStartDate,
+  });
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  const handleCreateRoutine = () => {
-    // TODO: 루틴 생성 로직
-    console.log('루틴 생성:', {
+  // 개인루틴 생성/수정 훅
+  const { mutate: createRoutine, isPending: isCreating } =
+    useCreatePersonalRoutineList();
+  const { mutate: updateRoutine, isPending: isUpdating } =
+    useUpdatePersonalRoutineList();
+
+  const isPending = isCreating || isUpdating;
+
+  const handleSubmitRoutine = () => {
+    console.log('🔍 루틴 처리 시작:', {
+      mode,
       name: routineName,
       category: selectedCategory,
       days: selectedDays,
       startTime,
       endTime,
+      startDate: selectedStartDate,
     });
 
-    // CreateRoutineDetailScreen으로 이동
-    navigation.navigate('CreateRoutineDetail', {
-      routineData: {
-        name: routineName,
-        category: selectedCategory,
-        days: selectedDays,
-        startTime,
-        endTime,
-        startDate: selectedStartDate,
-      },
+    // API 요청 데이터 준비
+    const submitData = {
+      title: routineName,
+      startDate: selectedStartDate, // YYYY-MM-DD 형식 (LocalDate)
+      startTime: formatTimeForAPI(startTime), // HH:mm:ss 형식 (LocalTime)
+      endTime: formatTimeForAPI(endTime), // HH:mm:ss 형식 (LocalTime)
+      routineType: (selectedCategory === 'life'
+        ? 'DAILY'
+        : 'FINANCE') as RoutineType,
+      dayTypes: selectedDays as DayType[],
+    };
+
+    console.log('🔍 API 요청 데이터:', submitData);
+    console.log('🔍 날짜/시간 형식 확인:', {
+      startDate: selectedStartDate,
+      startTime: startTime,
+      endTime: endTime,
+      startDateType: typeof selectedStartDate,
+      startTimeType: typeof startTime,
+      endTimeType: typeof endTime,
     });
+
+    if (mode === 'edit') {
+      // 수정 모드
+      if (!routineData?.id) {
+        console.error('🔍 루틴 ID가 없습니다:', routineData);
+        return;
+      }
+
+      updateRoutine(
+        {
+          myRoutineListId: routineData.id.toString(),
+          data: submitData,
+        },
+        {
+          onSuccess: (data) => {
+            console.log('🔍 루틴 수정 성공:', data);
+            navigation.navigate('Result', {
+              type: 'success',
+              title: '루틴 수정 완료',
+              description: '루틴이 성공적으로 수정되었습니다.',
+              nextScreen: 'HomeMain',
+            });
+          },
+          onError: (error) => {
+            console.error('🔍 루틴 수정 실패:', error);
+            // 에러 처리 (나중에 토스트나 알림 추가)
+          },
+        },
+      );
+    } else {
+      // 생성 모드
+      createRoutine(submitData, {
+        onSuccess: (data) => {
+          console.log('🔍 루틴 생성 성공:', data);
+
+          // CreateRoutineDetailScreen으로 이동
+          navigation.navigate('CreateRoutineDetail', {
+            routineData: {
+              name: routineName,
+              category: selectedCategory,
+              days: selectedDays,
+              startTime,
+              endTime,
+              startDate: selectedStartDate,
+              routineListId: data.result?.id, // 생성된 루틴 리스트 ID
+            },
+          });
+        },
+        onError: (error) => {
+          console.error('🔍 루틴 생성 실패:', error);
+          // 에러 처리 (나중에 토스트나 알림 추가)
+        },
+      });
+    }
   };
 
   const isFormValid =
@@ -69,15 +175,45 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   };
 
   const handleDateSelect = (date: string) => {
+    // date는 이미 YYYY-MM-DD 형식으로 전달됨
+    console.log('선택된 날짜:', date);
     setSelectedStartDate(date);
     setShowDatePicker(false);
+  };
+
+  // 시간을 HH:mm 형식으로 변환하는 함수 (화면 표시용)
+  const formatTimeForDisplay = (time: string): string => {
+    // "오전 9:00" 또는 "오후 2:30" 형식을 "09:00" 또는 "14:30"으로 변환
+    let hour: string;
+    let minute: string;
+
+    if (time.includes('오전')) {
+      hour = time.replace('오전 ', '').split(':')[0];
+      minute = time.split(':')[1];
+      return `${hour.padStart(2, '0')}:${minute}`;
+    } else if (time.includes('오후')) {
+      const hourNum = parseInt(time.replace('오후 ', '').split(':')[0]) + 12;
+      minute = time.split(':')[1];
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+    }
+    return time; // 이미 HH:mm 형식이면 그대로 반환
+  };
+
+  // 시간을 HH:mm:ss 형식으로 변환하는 함수 (API 요청용)
+  const formatTimeForAPI = (time: string): string => {
+    // HH:mm 형식을 HH:mm:ss 형식으로 변환
+    if (time.includes(':')) {
+      return `${time}:00`;
+    }
+    return time;
   };
 
   const handleStartTimeSelect = (time: string | number) => {
     console.log('시작 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
-      setStartTime(time);
-      console.log('시작 시간 설정됨:', time);
+      const displayTime = formatTimeForDisplay(time);
+      setStartTime(displayTime);
+      console.log('시작 시간 설정됨:', displayTime);
     }
     setShowStartTimePicker(false);
   };
@@ -85,8 +221,9 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   const handleEndTimeSelect = (time: string | number) => {
     console.log('종료 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
-      setEndTime(time);
-      console.log('종료 시간 설정됨:', time);
+      const displayTime = formatTimeForDisplay(time);
+      setEndTime(displayTime);
+      console.log('종료 시간 설정됨:', displayTime);
     }
     setShowEndTimePicker(false);
   };
@@ -101,7 +238,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
             color={theme.colors.gray800}
           />
         </BackButton>
-        <Title>루틴 생성</Title>
+        <Title>{mode === 'edit' ? '루틴 수정' : '루틴 생성'}</Title>
         <Spacer />
       </Header>
 
@@ -148,8 +285,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
       {/* 하단 버튼 */}
       <ButtonWrapper>
         <CustomButton
-          text="루틴 생성"
-          onPress={handleCreateRoutine}
+          text={mode === 'edit' ? '루틴 수정' : '루틴 생성'}
+          onPress={handleSubmitRoutine}
           disabled={!isFormValid}
           backgroundColor={
             isFormValid ? theme.colors.primary : theme.colors.gray300

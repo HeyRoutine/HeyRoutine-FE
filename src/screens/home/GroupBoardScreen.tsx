@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import { RoutineCard, AddRoutineButton } from '../../components/domain/routine';
+import { useGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
 
 const MOCK_ROUTINES = [
   {
@@ -50,6 +51,69 @@ const MOCK_ROUTINES = [
 // 댓글 목업 제거
 
 const GroupBoardScreen = ({ navigation }: any) => {
+  // 그룹 루틴 API 훅 사용
+  const {
+    data: groupRoutinesData,
+    isLoading: isGroupRoutinesLoading,
+    error: groupRoutinesError,
+  } = useGroupRoutines({
+    page: 0,
+    size: 50,
+  });
+
+  // 시간을 HH:mm 형식으로 변환하는 함수
+  const formatTimeForDisplay = (time: any): string => {
+    if (!time) return '00:00';
+
+    // [11, 0] 배열 형태로 받아오는 경우
+    if (Array.isArray(time)) {
+      const [hour, minute] = time;
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+
+    // 문자열인 경우
+    if (typeof time === 'string') {
+      // 9,0 형식을 09:00 형식으로 변환
+      if (time.includes(',')) {
+        const [hour, minute] = time.split(',');
+        return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+      }
+
+      // HH:mm:ss 형식을 HH:mm 형식으로 변환
+      if (time.includes(':')) {
+        return time.split(':').slice(0, 2).join(':');
+      }
+    }
+
+    return '00:00';
+  };
+
+  // API 데이터를 화면에 맞는 형태로 변환
+  const groupRoutines =
+    groupRoutinesData?.result?.items?.map((item) => {
+      console.log('🔍 그룹 루틴 API 원본 데이터:', {
+        id: item.id,
+        title: item.title,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        routineType: item.routineType,
+        dayOfWeek: item.dayOfWeek,
+      });
+
+      const formattedItem = {
+        id: item.id.toString(),
+        category: item.routineType === 'DAILY' ? '생활' : '소비',
+        progress: 0, // API에서 제공하지 않는 경우 기본값
+        title: item.title,
+        timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
+        selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
+        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+      };
+
+      console.log('🔍 그룹 루틴 변환된 데이터:', formattedItem);
+      return formattedItem;
+    }) || [];
+
   const renderRoutine = ({ item }: any) => (
     <RoutineCard
       category={item.category}
@@ -59,7 +123,16 @@ const GroupBoardScreen = ({ navigation }: any) => {
       selectedDays={item.selectedDays}
       completedDays={item.completedDays}
       onPress={() =>
-        navigation.navigate('GroupRoutineDetail', { routineId: item.id })
+        navigation.navigate('GroupRoutineDetail', {
+          routineData: {
+            id: item.id,
+            name: item.title,
+            startTime: item.timeRange.split(' ~ ')[0],
+            endTime: item.timeRange.split(' ~ ')[1],
+            days: item.selectedDays,
+            category: item.category,
+          },
+        })
       }
     />
   );
@@ -70,7 +143,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
 
       <ListWrapper>
         <FlatList
-          data={MOCK_ROUTINES}
+          data={groupRoutines}
           renderItem={renderRoutine}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={() => (
@@ -87,7 +160,10 @@ const GroupBoardScreen = ({ navigation }: any) => {
               </BannerText>
             </Banner>
           )}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 100,
+          }}
           showsVerticalScrollIndicator={false}
         />
       </ListWrapper>
