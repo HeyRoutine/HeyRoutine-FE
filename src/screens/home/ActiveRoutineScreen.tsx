@@ -3,10 +3,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { ScrollView } from 'react-native';
 import { theme } from '../../styles/theme';
-import Header from '../../components/common/Header';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import RoutineActionButton from '../../components/domain/routine/RoutineActionButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import { Ionicons } from '@expo/vector-icons';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
@@ -50,6 +50,26 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
+  // 모든 루틴 완료 상태일 때만 ResultScreen으로 이동
+  useEffect(() => {
+    if (isCompleted && activeTaskIndex >= tasks.length - 1) {
+      const timer = setTimeout(() => {
+        if (onComplete) {
+          try {
+            onComplete();
+          } catch {}
+        }
+        navigation.navigate('Result', {
+          title: '루틴 완료!',
+          description: '오늘도 좋은 하루 되세요',
+          nextScreen: 'HomeMain',
+        });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isCompleted, activeTaskIndex, tasks.length, onComplete, navigation]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -88,7 +108,15 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
-      goToNextTask();
+      // 개별 루틴 완료 시 잠깐 성공 화면 표시
+      setIsActive(false);
+      setIsCompleted(true);
+
+      // 2초 후 다음 루틴으로 이동
+      setTimeout(() => {
+        setIsCompleted(false);
+        goToNextTask();
+      }, 2000);
     } else {
       setCompleteModalVisible(false);
       setIsActive(false);
@@ -109,8 +137,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       setProgress(0);
       setIsActive(true);
     } else {
-      // 마지막 태스크 완료 흐름으로 전환
-      setCompleteModalVisible(true);
+      // 마지막 항목이면 홈으로 돌아가기
+      navigation.goBack();
     }
   };
 
@@ -121,11 +149,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
 
   const handleCloseSkipModal = () => setSkipModalVisible(false);
 
-  const handleBack = () => navigation.goBack();
-
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="루틴 타이머" onBackPress={handleBack} />
       <ScrollContent
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
@@ -138,7 +163,13 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
             {isCompleted ? (
               <SuccessContainer>
                 <SuccessCircle>
-                  <CheckIcon>✓</CheckIcon>
+                  <CheckIcon>
+                    <Ionicons
+                      name="checkmark"
+                      size={80}
+                      color={theme.colors.white}
+                    />
+                  </CheckIcon>
                 </SuccessCircle>
                 <SuccessTitle>루틴 성공🎉</SuccessTitle>
                 <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
@@ -178,26 +209,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
               <RoutineActionButton type="skip" onPress={handleSkipPress} />
             </ActionButtonsContainer>
           )}
-          {isCompleted && null}
         </ContentContainer>
       </ScrollContent>
-
-      {isCompleted && (
-        <ConfirmButtonBar>
-          <CreateButton
-            onPress={() => {
-              if (onComplete) {
-                try {
-                  onComplete();
-                } catch {}
-              }
-              navigation.goBack();
-            }}
-          >
-            <CreateButtonText>확인</CreateButtonText>
-          </CreateButton>
-        </ConfirmButtonBar>
-      )}
 
       {/* 일시정지 확인 모달 */}
       <BottomSheetDialog
@@ -321,7 +334,7 @@ const Subtitle = styled.Text`
 `;
 
 const TimerContainer = styled.View`
-  margin: 8px 0 24px 0;
+  margin: 0 0 40px 0;
   position: relative;
   width: 280px;
   height: 280px;
@@ -357,27 +370,29 @@ const ActionButtonsContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin-top: -8px;
+  margin-top: 0;
 `;
 
 // Success styles
 const SuccessContainer = styled.View`
   align-items: center;
+  width: 280px;
+  height: 280px;
+  justify-content: center;
 `;
 
 const SuccessCircle = styled.View`
-  width: 180px;
-  height: 180px;
-  border-radius: 90px;
+  width: 200px;
+  height: 200px;
+  border-radius: 100px;
   background-color: ${theme.colors.primary};
   align-items: center;
   justify-content: center;
 `;
 
-const CheckIcon = styled.Text`
-  font-size: 72px;
-  color: ${theme.colors.white};
-  margin-top: -6px;
+const CheckIcon = styled.View`
+  align-items: center;
+  justify-content: center;
 `;
 
 const SuccessTitle = styled.Text`
@@ -481,26 +496,6 @@ const SkipButton = styled.TouchableOpacity`
 
 const SkipText = styled.Text`
   font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.white};
-`;
-
-// 하단 확인 버튼 바
-const ConfirmButtonBar = styled.View`
-  padding: 24px 16px;
-  background-color: ${theme.colors.white};
-`;
-
-const CreateButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
-  border-radius: 12px;
-  padding: 16px;
-  align-items: center;
-  justify-content: center;
-`;
-
-const CreateButtonText = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.white};
 `;
