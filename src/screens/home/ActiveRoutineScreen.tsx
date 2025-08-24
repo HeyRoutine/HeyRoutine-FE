@@ -17,12 +17,16 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [isResumeModalVisible, setResumeModalVisible] = useState(false);
   const [isSkipModalVisible, setSkipModalVisible] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const { markActiveRoutineTaskCompleted, resetActiveRoutineProgress } =
+    useRoutineStore();
 
   const incomingTasks = route?.params?.tasks as
     | Array<{ icon: string; title: string; duration: string }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
-  const onComplete = route?.params?.onComplete as (() => void) | undefined;
+  const onTaskComplete = route?.params?.onTaskComplete as
+    | ((index: number) => void)
+    | undefined;
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
@@ -109,6 +113,14 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   };
 
   const handleConfirmComplete = () => {
+    // 현재 태스크 완료를 전역에도 기록
+    try {
+      markActiveRoutineTaskCompleted(activeTaskIndex);
+    } catch {}
+    // 상세 화면 콜백도 유지
+    try {
+      onTaskComplete?.(activeTaskIndex);
+    } catch {}
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
@@ -141,7 +153,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       setProgress(0);
       setIsActive(true);
     } else {
-      // 마지막 항목이면 홈으로 돌아가기
       navigation.goBack();
     }
   };

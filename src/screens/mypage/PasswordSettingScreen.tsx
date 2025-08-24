@@ -7,6 +7,7 @@ import { theme } from '../../styles/theme';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { validatePassword } from '../../utils/validation';
+import { useMyPageResetPassword } from '../../hooks/user';
 
 interface IPasswordSettingScreenProps {
   navigation: any;
@@ -18,6 +19,7 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isValidForm, setIsValidForm] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
+  const { mutateAsync: resetPasswordMutate } = useMyPageResetPassword();
 
   // 실시간 검증을 위한 useEffect (PasswordScreen과 동일한 방식)
   useEffect(() => {
@@ -68,18 +70,33 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
     setConfirmPassword(text);
   };
 
-  const handlePasswordChange = () => {
-    if (isValidForm) {
-      // 비밀번호 변경 완료 화면으로 이동
+  const handlePasswordChange = async () => {
+    if (!isValidForm) return;
+
+    try {
+      const response = await resetPasswordMutate({ password: newPassword });
+      if (response.isSuccess) {
+        navigation.replace('Result', {
+          type: 'success',
+          title: '변경 완료',
+          description: '비밀번호를 성공적으로 변경했어요',
+          nextScreen: 'ProfileEdit',
+          onSuccess: () => {},
+        });
+      } else {
+        navigation.replace('Result', {
+          type: 'failure',
+          title: '변경 실패',
+          description: response.message || '비밀번호 변경에 실패했어요',
+          nextScreen: 'ProfileEdit',
+        });
+      }
+    } catch (error: any) {
       navigation.replace('Result', {
-        type: 'success',
-        title: '변경 완료',
-        description: '비밀번호를 성공적으로 변경했어요',
+        type: 'failure',
+        title: '변경 실패',
+        description: error?.response?.data?.message || '비밀번호 변경에 실패했어요',
         nextScreen: 'ProfileEdit',
-        onSuccess: () => {
-          // TODO: API 호출하여 비밀번호 변경
-          console.log('비밀번호 변경 완료');
-        },
       });
     }
   };

@@ -8,6 +8,7 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { useUserStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
+import { useResetNickname } from '../../hooks/user';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -18,6 +19,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [isValidNickname, setIsValidNickname] = useState(false);
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
+  const { mutateAsync: resetNicknameMutate } = useResetNickname();
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
@@ -69,19 +71,35 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     validateNicknameInput(text);
   };
 
-  const handleComplete = () => {
-    if (isValidNickname) {
-      // 닉네임 변경 완료 화면으로 이동
+  const handleComplete = async () => {
+    if (!isValidNickname) return;
+
+    try {
+      const response = await resetNicknameMutate({ nickname });
+      if (response.isSuccess) {
+        navigation.replace('Result', {
+          type: 'success',
+          title: '변경 완료',
+          description: '닉네임을 성공적으로 변경했어요',
+          nextScreen: 'ProfileEdit',
+          onSuccess: () => {
+            updateUserInfo({ nickname });
+          },
+        });
+      } else {
+        navigation.replace('Result', {
+          type: 'failure',
+          title: '변경 실패',
+          description: response.message || '닉네임 변경에 실패했어요',
+          nextScreen: 'ProfileEdit',
+        });
+      }
+    } catch (error: any) {
       navigation.replace('Result', {
-        type: 'success',
-        title: '변경 완료',
-        description: '닉네임을 성공적으로 변경했어요',
+        type: 'failure',
+        title: '변경 실패',
+        description: error?.response?.data?.message || '닉네임 변경에 실패했어요',
         nextScreen: 'ProfileEdit',
-        onSuccess: () => {
-          // Zustand 스토어에 닉네임 업데이트
-          updateUserInfo({ nickname: nickname });
-          console.log('닉네임 변경 완료:', nickname);
-        },
       });
     }
   };

@@ -110,7 +110,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           currentText={item.text}
           placeholder={item.text}
           isCompleted={item.isCompleted}
-          editable={isEditMode} // 편집 모드일 때만 텍스트 편집 가능
+          editable={isEditMode}
         />
       </Swipeable>
 

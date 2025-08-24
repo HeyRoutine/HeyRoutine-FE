@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { BackHandler } from 'react-native';
@@ -7,6 +7,7 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   DayButton,
   RoutineItemAdder,
@@ -272,6 +273,16 @@ const PersonalRoutineDetailScreen = ({
     });
   };
 
+  // 화면에 돌아오면(포커스 시) 편집 모드를 강제로 종료하여 추가 탭 숨김
+  useFocusEffect(
+    useCallback(() => {
+      setEditMode(false);
+      setEditingIndex(null);
+    }, [setEditMode]),
+  );
+
+  // 전역 동기화 제거: 실행 화면에서 전달되는 콜백(onTaskComplete)로만 완료 상태 반영
+
   const handleMorePress = () => {
     setMoreSheetVisible(true);
   };
@@ -364,6 +375,7 @@ const PersonalRoutineDetailScreen = ({
                 selectedEmoji={selectedEmoji}
                 currentText={currentText}
                 placeholder="루틴을 추가해주세요"
+                editable={isEditMode}
               />
             </AdderContainer>
           )}
