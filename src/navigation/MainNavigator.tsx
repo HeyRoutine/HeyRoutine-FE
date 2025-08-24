@@ -103,7 +103,7 @@ const MainNavigator = () => {
             'EmailVerification',
             'PointCashoutComplete',
             'NicknameSetting',
-            'EmailSetting',
+            'PasswordSetting',
             'PhoneNumberSetting',
           ];
 

@@ -51,6 +51,12 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
           // 로그인 상태 변경
           login();
+
+          // 홈 화면으로 이동
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+          });
         },
         onError: (error: any) => {
           console.error('로그인 실패:', error);
