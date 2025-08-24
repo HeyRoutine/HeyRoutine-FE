@@ -7,7 +7,7 @@ import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
-import { useBuyProduct } from '../../hooks/shop/useShop';
+import { useBuyProduct, useProductDetail } from '../../hooks/shop/useShop';
 
 interface IGifticonProductScreenProps {
   navigation: any;
@@ -18,13 +18,25 @@ const GifticonProductScreen = ({
   navigation,
   route,
 }: IGifticonProductScreenProps) => {
-  const { product, userPoints } = route.params || {};
+  const { product, productId: paramProductId, userPoints } = route.params || {};
+  // Legacy: 라우트 파라미터에서 모든 정보를 직접 받던 방식
+  // const brand = product?.brand ?? '브랜드';
+  // const title = product?.title ?? '상품명';
+  // const price = product?.price ?? 0;
+  // const remain = product?.remain ?? 20;
+  // const imageSource = product?.image ?? null; // require(...) 또는 { uri }
 
-  const brand = product?.brand ?? '브랜드';
-  const title = product?.title ?? '상품명';
-  const price = product?.price ?? 0;
-  const remain = product?.remain ?? 20;
-  const imageSource = product?.image ?? null; // require(...) 또는 { uri }
+  // 선택된 상품의 id를 확보하여 상세 API 호출
+  const productId = String(product?.id ?? paramProductId ?? '');
+  const { data: detailResp } = useProductDetail(productId);
+
+  const brand = detailResp?.result?.brand ?? product?.brand ?? '브랜드';
+  const title = detailResp?.result?.productName ?? product?.title ?? '상품명';
+  const price = detailResp?.result?.price ?? product?.price ?? 0;
+  const remain = detailResp?.result?.stock ?? product?.remain ?? 0;
+  const imageSource = detailResp?.result?.imageUrl
+    ? { uri: detailResp.result.imageUrl }
+    : product?.image ?? null; // require(...) 또는 { uri }
 
   const myPoints: number = typeof userPoints === 'number' ? userPoints : 0;
   const hasEnoughPoints = myPoints >= price;
@@ -51,7 +63,7 @@ const GifticonProductScreen = ({
     try {
       setIsConfirmOpen(false);
       // 실제 구매 요청 (성공 시 포인트/리스트 캐시 무효화됨)
-      await buyProductMutate(String(product?.id));
+      await buyProductMutate(String(productId));
       setIsDoneOpen(true);
       setShowBarcode(false);
     } catch (e) {

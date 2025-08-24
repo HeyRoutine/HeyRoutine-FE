@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -11,6 +12,7 @@ import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
 import { useUserStore, useFinanceStore } from '../../store';
+import { myPoint } from '../../api/shop/shop';
 
 interface IPointCashoutScreenProps {
   navigation: any;
@@ -19,12 +21,33 @@ interface IPointCashoutScreenProps {
 const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   const [pointAmount, setPointAmount] = useState('0');
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Zustand 스토어에서 상태 가져오기
   const { userInfo, deductPoints } = useUserStore();
   const { currentBalance, setCurrentBalance } = useFinanceStore();
 
-  const maxPoints = userInfo?.points ?? 0; // Zustand에서 가져온 포인트
+  // Legacy: 스토어에서 보유 포인트 사용
+  // const maxPoints = userInfo?.points ?? 0;
+
+  // 서버에서 보유 포인트 조회 (/api/v1/shop/my-point), result가 문자열("10000") 형태
+  const { data: myPointData, isError: isMyPointError } = useQuery({
+    queryKey: ['myPoint'],
+    queryFn: () => myPoint(),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 0,
+  });
+
+  const maxPoints = React.useMemo(() => {
+    if (!myPointData || isMyPointError) return userInfo?.points ?? 0;
+    const r: any = myPointData.result;
+    if (typeof r === 'string' || typeof r === 'number') {
+      const n = Number(r);
+      return Number.isFinite(n) ? n : (userInfo?.points ?? 0);
+    }
+    return userInfo?.points ?? 0;
+  }, [myPointData, isMyPointError, userInfo?.points]);
 
   const handleInputChange = (text: string) => {
     // 숫자만 입력 가능
@@ -51,15 +74,48 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
     }
   };
 
+  // Legacy: 스토어만 차감하고 화면 이동
+  // const handleConfirmTransfer = () => {
+  //   const amount = parseInt(pointAmount) || 0;
+  //   deductPoints(amount);
+  //   setCurrentBalance(currentBalance + amount);
+  //   setIsTransferModalOpen(false);
+  //   navigation.navigate('PointCashoutComplete', { transferredPoints: amount });
+  // };
+
   const handleConfirmTransfer = () => {
     const amount = parseInt(pointAmount) || 0;
 
-    // 포인트 차감
-    deductPoints(amount);
+    // Optimistic update: 전역 myPoint 캐시 값을 즉시 차감 반영
+    const prev = queryClient.getQueryData<any>(['myPoint']);
+    if (prev && typeof prev === 'object' && prev !== null) {
+      const r: any = prev.result;
+      const prevNum =
+        typeof r === 'string' || typeof r === 'number'
+          ? Number(r)
+          : Number(userInfo?.points ?? 0);
+      const nextNum = Math.max(0, prevNum - amount);
+      queryClient.setQueryData(['myPoint'], {
+        ...prev,
+        result: String(nextNum),
+      });
+    } else {
+      // 캐시가 없을 때도 최소한 화면상 일관성 유지
+      const base = Number(userInfo?.points ?? 0);
+      const nextNum = Math.max(0, base - amount);
+      queryClient.setQueryData(['myPoint'], {
+        isSuccess: true,
+        code: 'COMMON200',
+        message: '성공입니다.',
+        result: String(nextNum),
+      });
+    }
 
-    // 계좌 잔액 증가 (1P = 1원으로 가정)
+    // 스토어 차감 및 잔액 증가
+    deductPoints(amount);
     setCurrentBalance(currentBalance + amount);
 
+    // 모달 닫기 및 완료 화면 이동
     setIsTransferModalOpen(false);
     navigation.navigate('PointCashoutComplete', { transferredPoints: amount });
   };
