@@ -8,6 +8,8 @@ import RoutineActionButton from '../../components/domain/routine/RoutineActionBu
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useRoutineStore } from '../../store';
+
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
   const [isActive, setIsActive] = useState(true);
@@ -27,6 +29,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const onTaskComplete = route?.params?.onTaskComplete as
     | ((index: number) => void)
     | undefined;
+  const onComplete = route?.params?.onComplete as (() => void) | undefined;
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;

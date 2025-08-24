@@ -7,7 +7,6 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
-import { useFocusEffect } from '@react-navigation/native';
 import {
   DayButton,
   RoutineItemAdder,

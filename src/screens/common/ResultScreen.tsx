@@ -64,23 +64,25 @@ const ResultScreen = ({ navigation, route }: any) => {
       // 로그인 상태로 변경하여 홈 화면으로 이동
       const { setLoggedIn } = require('../../store').useAuthStore.getState();
       setLoggedIn(true);
+      return;
     } else if (title === '루틴 생성 완료') {
       // 루틴 생성 완료인 경우 홈으로 이동
       navigation.navigate('HomeMain');
-    } else if (nextScreen) {
-      navigation.navigate(nextScreen);
-    } else {
-      navigation.goBack();
-    }
-    else if (nextScreen === 'PersonalRoutineDetail') {
+      return;
+    } else if (nextScreen === 'PersonalRoutineDetail') {
       // 편집 모드 해제 후 상세 화면으로 이동
       setEditMode(false);
       navigation.navigate('PersonalRoutineDetail', {
         routineData: updatedRoutineData,
       });
       return;
+    } else if (typeof nextScreen === 'string' && nextScreen.length > 0) {
+      navigation.navigate(nextScreen);
+      return;
     }
-    navigation.navigate(nextScreen);
+
+    // nextScreen이 없거나 잘못된 경우 안전하게 홈으로 이동
+    navigation.navigate('HomeMain');
   };
 
   const renderIcon = () => {

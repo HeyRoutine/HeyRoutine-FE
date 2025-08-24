@@ -7,6 +7,7 @@ import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
+import { useBuyProduct } from '../../hooks/shop/useShop';
 
 interface IGifticonProductScreenProps {
   navigation: any;
@@ -32,15 +33,31 @@ const GifticonProductScreen = ({
   const [isDoneOpen, setIsDoneOpen] = React.useState(false);
   const [showBarcode, setShowBarcode] = React.useState(false);
 
+  // 구매 API 훅 (성공 시 포인트/목록 캐시 무효화)
+  const { mutateAsync: buyProductMutate, isPending: isBuying } = useBuyProduct();
+
   const handlePurchase = () => {
     if (!hasEnoughPoints) return;
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmPurchase = () => {
-    setIsConfirmOpen(false);
-    // TODO: 실제 구매 로직 (포인트 차감/영수증 생성 등)
-    setTimeout(() => setIsDoneOpen(true), 150);
+  // Legacy: 구매 확인 시 로컬 타이머로 완료 모달만 띄우던 방식
+  // const handleConfirmPurchase = () => {
+  //   setIsConfirmOpen(false);
+  //   setTimeout(() => setIsDoneOpen(true), 150);
+  // };
+
+  const handleConfirmPurchase = async () => {
+    try {
+      setIsConfirmOpen(false);
+      // 실제 구매 요청 (성공 시 포인트/리스트 캐시 무효화됨)
+      await buyProductMutate(String(product?.id));
+      setIsDoneOpen(true);
+      setShowBarcode(false);
+    } catch (e) {
+      // 구매 실패 시 확인 모달만 닫고 그대로 유지
+      setIsConfirmOpen(false);
+    }
   };
 
   const handleCloseDone = () => {
@@ -50,6 +67,18 @@ const GifticonProductScreen = ({
 
   const handleShowBarcode = () => {
     setShowBarcode(true);
+  };
+
+  // Legacy: 완료 모달에서 바코드 토글/닫기만 처리
+  // const handleDoneConfirm = () => {
+  //   setIsDoneOpen(false);
+  //   setShowBarcode(false);
+  // };
+
+  const handleDoneConfirm = () => {
+    setIsDoneOpen(false);
+    // 구매 완료 후 포인트 상점으로 복귀
+    navigation.navigate('PointGifticon');
   };
 
   return (
@@ -93,14 +122,14 @@ const GifticonProductScreen = ({
 
       <ButtonWrapper>
         <CustomButton
-          text={hasEnoughPoints ? '구매하기' : '잔액이 부족합니다'}
+          text={hasEnoughPoints ? (isBuying ? '구매 중...' : '구매하기') : '잔액이 부족합니다'}
           onPress={handlePurchase}
-          disabled={!hasEnoughPoints}
+          disabled={!hasEnoughPoints || isBuying}
           backgroundColor={
-            hasEnoughPoints ? theme.colors.primary : theme.colors.gray200
+            hasEnoughPoints && !isBuying ? theme.colors.primary : theme.colors.gray200
           }
           textColor={
-            hasEnoughPoints ? theme.colors.white : theme.colors.gray500
+            hasEnoughPoints && !isBuying ? theme.colors.white : theme.colors.gray500
           }
         />
       </ButtonWrapper>
@@ -134,10 +163,7 @@ const GifticonProductScreen = ({
           </BarcodeBox>
         )}
         <ModalButtonsContainer>
-          <ModalButton
-            onPress={showBarcode ? handleCloseDone : handleShowBarcode}
-            variant="primary"
-          >
+          <ModalButton onPress={handleDoneConfirm} variant="primary">
             <ModalButtonText variant="primary">확인</ModalButtonText>
           </ModalButton>
         </ModalButtonsContainer>

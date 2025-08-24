@@ -7,10 +7,14 @@ import {
   Image,
   ImageSourcePropType,
 } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
 import { useUserStore } from '../../store';
+import { shopCategoryList, shopList, myPoint } from '../../api/shop/shop';
+// Legacy: 전체를 카테고리 경로로 호출하던 방식
+// import { shopCategoryList } from '../../api/shop/shop';
 
 interface IPointGifticonScreenProps {
   navigation: any;
@@ -30,50 +34,60 @@ type CategoryMeta = {
   icon: ImageSourcePropType;
 };
 
-const MOCK_PRODUCTS = [
-  {
-    id: '1',
-    title: '아이스 카페 아메리카노 Tall',
-    brand: '스타벅스',
-    price: 6100,
-    category: 'cafe' as CategoryKey,
-  },
-  {
-    id: '2',
-    title: '아이스 카페 라떼 Tall',
-    brand: '스타벅스',
-    price: 6600,
-    category: 'cafe' as CategoryKey,
-  },
-  {
-    id: '3',
-    title: '불고기버거 세트',
-    brand: '맥도날드',
-    price: 7900,
-    category: 'fastfood' as CategoryKey,
-  },
-  {
-    id: '4',
-    title: '교촌콤보',
-    brand: '교촌치킨',
-    price: 19000,
-    category: 'dining' as CategoryKey,
-  },
-  {
-    id: '5',
-    title: '소금빵',
-    brand: '파리바게뜨',
-    price: 3500,
-    category: 'bakery' as CategoryKey,
-  },
-  {
-    id: '6',
-    title: '삼각김밥',
-    brand: 'GS25',
-    price: 1200,
-    category: 'convenience' as CategoryKey,
-  },
-];
+// ===== Legacy: 로컬 목(Mock) 데이터 (API 연동 전 사용) =====
+// const MOCK_PRODUCTS = [
+//   {
+//     id: '1',
+//     title: '아이스 카페 아메리카노 Tall',
+//     brand: '스타벅스',
+//     price: 6100,
+//     category: 'cafe' as CategoryKey,
+//   },
+//   {
+//     id: '2',
+//     title: '아이스 카페 라떼 Tall',
+//     brand: '스타벅스',
+//     price: 6600,
+//     category: 'cafe' as CategoryKey,
+//   },
+//   {
+//     id: '3',
+//     title: '불고기버거 세트',
+//     brand: '맥도날드',
+//     price: 7900,
+//     category: 'fastfood' as CategoryKey,
+//   },
+//   {
+//     id: '4',
+//     title: '교촌콤보',
+//     brand: '교촌치킨',
+//     price: 19000,
+//     category: 'dining' as CategoryKey,
+//   },
+//   {
+//     id: '5',
+//     title: '소금빵',
+//     brand: '파리바게뜨',
+//     price: 3500,
+//     category: 'bakery' as CategoryKey,
+//   },
+//   {
+//     id: '6',
+//     title: '삼각김밥',
+//     brand: 'GS25',
+//     price: 1200,
+//     category: 'convenience' as CategoryKey,
+//   },
+// ];
+
+// API 카테고리 맵핑
+const CATEGORY_MAP: Record<Exclude<CategoryKey, 'all'>, '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리'> = {
+  cafe: '카페',
+  convenience: '편의점',
+  fastfood: '패스트푸드',
+  dining: '외식',
+  bakery: '베이커리',
+};
 
 // 현재는 예시 이미지로 party_popper.png를 넣어두었습니다. 실제 아이콘 이미지를 교체하여 사용하세요.
 const iconAll = require('../../assets/images/total_food.png');
@@ -95,16 +109,119 @@ const CATEGORIES: CategoryMeta[] = [
 const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   const [selectedCategory, setSelectedCategory] =
     React.useState<CategoryKey>('all');
+  const [page] = React.useState<number>(0);
+  const pageSize = 10;
 
-  const points = useUserStore((s) => s.userInfo?.points ?? 0);
+  // Legacy: 로컬 스토어에서 포인트 조회
+  // const points = useUserStore((s) => s.userInfo?.points ?? 0);
 
-  const filteredProducts = React.useMemo(() => {
-    if (selectedCategory === 'all') return MOCK_PRODUCTS;
-    return MOCK_PRODUCTS.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
+  // 서버에서 포인트 조회 (/api/v1/shop/my-point), result가 문자열("10000") 형태
+  const storePoints = useUserStore((s) => s.userInfo?.points ?? 0);
+  const { data: myPointData, isError: isMyPointError } = useQuery({
+    queryKey: ['myPoint'],
+    queryFn: () => myPoint(),
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 0,
+  });
+  const points = React.useMemo(() => {
+    if (!myPointData || isMyPointError) return storePoints;
+    const r: any = myPointData.result;
+    if (typeof r === 'string' || typeof r === 'number') {
+      const n = Number(r);
+      return Number.isFinite(n) ? n : storePoints;
+    }
+    return storePoints;
+  }, [myPointData, isMyPointError, storePoints]);
 
+  // ===== Legacy: 로컬 필터링 (API 연동 전) =====
+  // const filteredProducts = React.useMemo(() => {
+  //   if (selectedCategory === 'all') return MOCK_PRODUCTS;
+  //   return MOCK_PRODUCTS.filter((p) => p.category === selectedCategory);
+  // }, [selectedCategory]);
+
+  // ===== API 연동: 전체 리스트 (경로: /api/v1/shop/list) =====
+  const {
+    data: allData,
+    isLoading: isAllLoading,
+    isFetching: isAllFetching,
+    refetch: refetchAll,
+  } = useQuery({
+    queryKey: ['shopList', { page, size: pageSize }],
+    queryFn: () => shopList({ page, size: pageSize }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: selectedCategory === 'all',
+  });
+
+  // ===== Legacy: 전체 리스트를 카테고리 경로로 호출하던 방식 =====
+  // const {
+  //   data: allData,
+  //   isLoading: isAllLoading,
+  //   isFetching: isAllFetching,
+  //   refetch: refetchAll,
+  // } = useQuery({
+  //   queryKey: ['shopCategoryList', { category: '전체', page, size: pageSize }],
+  //   queryFn: () =>
+  //     shopCategoryList({
+  //       category: '전체' as any,
+  //       page,
+  //       size: pageSize,
+  //     }),
+  //   staleTime: 5 * 60 * 1000,
+  //   gcTime: 10 * 60 * 1000,
+  //   enabled: selectedCategory === 'all',
+  // });
+
+  // 카테고리 리스트
+  const apiCategory =
+    selectedCategory !== 'all' ? CATEGORY_MAP[selectedCategory] : undefined;
+  const {
+    data: catData,
+    isLoading: isCatLoading,
+    isFetching: isCatFetching,
+    refetch: refetchCat,
+  } = useQuery({
+    queryKey: [
+      'shopCategoryList',
+      { category: apiCategory, page, size: pageSize },
+    ],
+    queryFn: () =>
+      shopCategoryList({
+        category: apiCategory as any,
+        page,
+        size: pageSize,
+      }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: selectedCategory !== 'all' && !!apiCategory,
+  });
+
+  const products = React.useMemo(() => {
+    const items =
+      selectedCategory === 'all'
+        ? allData?.result?.items
+        : catData?.result?.items;
+    return items ?? [];
+  }, [selectedCategory, allData, catData]);
+
+  const isLoading =
+    selectedCategory === 'all' ? isAllLoading || isAllFetching : isCatLoading || isCatFetching;
+
+  // Legacy: 화면 이동 시 기존에는 원본 아이템을 그대로 전달했습니다.
+  // navigation.navigate('GifticonProduct', { product, userPoints: points });
   const handlePressProduct = (product: any) => {
-    navigation.navigate('GifticonProduct', { product, userPoints: points });
+    navigation.navigate('GifticonProduct', {
+      product: {
+        id: product.id,
+        title: product.productName,
+        brand: product.brand,
+        price: product.price,
+        remain: product.stock,
+        image: product.imageUrl ? { uri: product.imageUrl } : null,
+      },
+      userPoints: points,
+    });
   };
 
   const handleGoCashout = () => {
@@ -115,10 +232,12 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
     <ProductItem onPress={() => handlePressProduct(item)}>
       <Thumb />
       <ProductInfo>
-        <ProductTitle numberOfLines={1}>{item.title}</ProductTitle>
+        {/* Legacy: {item.title} */}
+        <ProductTitle numberOfLines={1}>{item.productName}</ProductTitle>
         <BrandText>{item.brand}</BrandText>
       </ProductInfo>
-      <PriceText>{item.price.toLocaleString()}P</PriceText>
+      {/* Legacy: {item.price.toLocaleString()}P */}
+      <PriceText>{item.price?.toLocaleString()}P</PriceText>
     </ProductItem>
   );
 
@@ -160,12 +279,26 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
       </Content>
       {/* 리스트 스크롤 하면서 탭 세로길이는 동일하게 유지하기 위해 ListContainer 따로 생성 */}
       <ListContainer>
+        {/* Legacy:
         <FlatList
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={renderProduct}
           contentContainerStyle={{ paddingBottom: 16 }}
           showsVerticalScrollIndicator={false}
+        />
+        */}
+        <FlatList
+          data={products}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderProduct}
+          contentContainerStyle={{ paddingBottom: 16 }}
+          showsVerticalScrollIndicator={false}
+          refreshing={isLoading}
+          onRefresh={() => {
+            if (selectedCategory === 'all') refetchAll();
+            else refetchCat();
+          }}
         />
       </ListContainer>
     </Container>

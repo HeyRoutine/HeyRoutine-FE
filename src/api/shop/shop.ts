@@ -1,5 +1,6 @@
 import apiClient from '../client';
 import { ApiResponse } from '../../types/api';
+import { useAuthStore } from '../../store';
 import {
   BuyProductRequest,
   BuyProductResponse,
@@ -26,9 +27,23 @@ export const buyProduct = async (
 };
 
 // 내 포인트 조회
+// Legacy: 인터셉터에 의존하여 토큰 자동 첨부
+// export const myPoint = async (): Promise<ApiResponse<MyPointResponse>> => {
+//   const response = await apiClient.get<ApiResponse<MyPointResponse>>(
+//     '/api/v1/shop/my-point',
+//   );
+//   return response.data;
+// };
+
+// 헤더에 직접 토큰을 넣어 호출하는 방식
 export const myPoint = async (): Promise<ApiResponse<MyPointResponse>> => {
+  const { accessToken } = useAuthStore.getState();
+  const config = accessToken
+    ? { headers: { Authorization: `Bearer ${accessToken}` } }
+    : {};
   const response = await apiClient.get<ApiResponse<MyPointResponse>>(
     '/api/v1/shop/my-point',
+    config,
   );
   return response.data;
 };
