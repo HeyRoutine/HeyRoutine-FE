@@ -399,6 +399,8 @@ const ModalTitle = styled.Text`
   font-size: 18px;
   color: ${theme.colors.gray900};
   text-align: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const ModalSubtitle = styled.Text`
@@ -406,13 +408,12 @@ const ModalSubtitle = styled.Text`
   font-size: 14px;
   color: ${theme.colors.gray600};
   text-align: center;
-  margin-top: 8px;
+  margin-bottom: 36px;
 `;
 
 const ButtonRow = styled.View`
   flex-direction: row;
   gap: 12px;
-  margin-top: 20px;
 `;
 
 const ButtonWrapper = styled.View`

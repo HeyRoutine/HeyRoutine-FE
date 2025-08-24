@@ -270,7 +270,8 @@ const ModalTitle = styled.Text`
   font-size: 24px;
   color: ${theme.colors.gray900};
   text-align: center;
-  margin-bottom: 36px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const ModalMessage = styled.Text`

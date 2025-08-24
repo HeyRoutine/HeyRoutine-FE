@@ -257,7 +257,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         visible={showAddRoutineModal}
         onRequestClose={() => setShowAddRoutineModal(false)}
       >
-        <ModalTitle>루틴 추가</ModalTitle>
         <SelectionButtonsContainer>
           <CustomButton
             text="AI 추천 루틴 생성"
@@ -348,14 +347,6 @@ const RoutineList = styled.View`
 `;
 
 // 모달 관련 스타일
-const ModalTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 24px;
-  color: ${theme.colors.gray900};
-  text-align: center;
-  margin-bottom: 36px;
-`;
-
 const SelectionButtonsContainer = styled.View`
   gap: 12px;
 `;

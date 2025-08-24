@@ -156,7 +156,6 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         visible={showCategoryModal}
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <ModalTitle>루틴 유형</ModalTitle>
         <CategoryButtonsContainer>
           {categories.map((category) => (
             <CategoryButton

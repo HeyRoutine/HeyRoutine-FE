@@ -67,6 +67,11 @@ const PersonalRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
+  // 화면 진입 시 편집 모드 해제
+  useEffect(() => {
+    setEditMode(false);
+  }, [setEditMode]);
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -373,7 +378,6 @@ const PersonalRoutineDetailScreen = ({
         visible={moreSheetVisible}
         onRequestClose={closeMoreSheet}
       >
-        <SheetTitle>루틴 관리</SheetTitle>
         <SheetActions>
           <CustomButton
             text="루틴 수정"

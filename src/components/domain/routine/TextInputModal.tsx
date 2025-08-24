@@ -32,7 +32,6 @@ const TextInputModal = ({
   return (
     <BottomSheetDialog visible={visible} onRequestClose={onRequestClose}>
       <Container>
-        <Title>루틴 입력</Title>
         <InputContainer>
           <StyledTextInput
             value={text}
@@ -60,14 +59,6 @@ export default TextInputModal;
 
 const Container = styled.View`
   padding: 24px;
-`;
-
-const Title = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 18px;
-  color: ${theme.colors.gray800};
-  text-align: center;
-  margin-bottom: 24px;
 `;
 
 const InputContainer = styled.View`

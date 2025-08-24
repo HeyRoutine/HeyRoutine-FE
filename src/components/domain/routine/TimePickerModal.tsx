@@ -12,7 +12,6 @@ interface TimePickerModalProps {
   type?: 'time' | 'minutes';
   initialTime?: string;
   initialMinutes?: number;
-  hideTitle?: boolean;
 }
 
 const TimePickerModal = ({
@@ -22,7 +21,6 @@ const TimePickerModal = ({
   type,
   initialTime = '09:00',
   initialMinutes = 40,
-  hideTitle = false,
 }: TimePickerModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
   const [selectedHour, setSelectedHour] = useState(9);
@@ -103,8 +101,6 @@ const TimePickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
-      {!hideTitle && <Title>{type === 'time' ? '시간 선택' : '분 선택'}</Title>}
-
       <TimePickerContainer>
         <SelectionOverlay />
 
@@ -179,14 +175,6 @@ const TimePickerModal = ({
 };
 
 export default React.memo(TimePickerModal);
-
-const Title = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 18px;
-  color: ${theme.colors.gray800};
-  text-align: center;
-  margin-bottom: 10px;
-`;
 
 const CompleteButton = styled.TouchableOpacity`
   background-color: ${theme.colors.primary};
