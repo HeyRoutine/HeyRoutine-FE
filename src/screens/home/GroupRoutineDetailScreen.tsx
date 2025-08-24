@@ -5,6 +5,7 @@ import { Image, Modal, TouchableWithoutFeedback, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 
 interface GroupRoutineDetailScreenProps {
   navigation: any;
@@ -204,80 +205,59 @@ const GroupRoutineDetailScreen = ({
       )}
 
       {/* 참여 확인 모달 */}
-      <Modal
+      <BottomSheetDialog
         visible={isJoinModalVisible}
-        transparent
-        animationType="slide"
         onRequestClose={handleCloseJoinModal}
       >
-        <TouchableWithoutFeedback onPress={handleCloseJoinModal}>
-          <ModalOverlay>
-            <TouchableWithoutFeedback>
-              <BottomSheet>
-                <SheetHandle />
-                <ModalTitle>단체루틴에 참여하시겠습니까?</ModalTitle>
-                <ModalSubtitle>
-                  바로 단체 루틴에 (방장이 루틴을 수정시 루틴이 변경됩니다)
-                </ModalSubtitle>
+        <ModalTitle>단체루틴에 참여하시겠습니까?</ModalTitle>
+        <ModalSubtitle>
+          바로 단체 루틴에 (방장이 루틴을 수정시 루틴이 변경됩니다)
+        </ModalSubtitle>
 
-                <ButtonRow>
-                  <ButtonWrapper>
-                    <CustomButton
-                      text="취소"
-                      onPress={handleCloseJoinModal}
-                      backgroundColor={theme.colors.gray200}
-                      textColor={theme.colors.gray700}
-                    />
-                  </ButtonWrapper>
-                  <ButtonWrapper>
-                    <CustomButton
-                      text="참여하기"
-                      onPress={handleConfirmJoin}
-                      backgroundColor={theme.colors.primary}
-                      textColor={theme.colors.white}
-                    />
-                  </ButtonWrapper>
-                </ButtonRow>
-              </BottomSheet>
-            </TouchableWithoutFeedback>
-          </ModalOverlay>
-        </TouchableWithoutFeedback>
-      </Modal>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCloseJoinModal}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="참여하기"
+              onPress={handleConfirmJoin}
+              backgroundColor={theme.colors.primary}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
 
       {/* 메뉴 모달 */}
-      <Modal
+      <BottomSheetDialog
         visible={isMenuVisible}
-        transparent
-        animationType="fade"
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setIsMenuVisible(false)}>
-          <MenuModalOverlay>
-            <TouchableWithoutFeedback>
-              <MenuContainer>
-                {userRole === 'host' ? (
-                  <>
-                    <MenuItem onPress={handleEditRoutine}>
-                      <MenuItemText>수정</MenuItemText>
-                    </MenuItem>
-                    <MenuItem onPress={handleDeleteRoutine}>
-                      <MenuItemText style={{ color: theme.colors.error }}>
-                        삭제
-                      </MenuItemText>
-                    </MenuItem>
-                  </>
-                ) : (
-                  <MenuItem onPress={handleLeaveRoutine}>
-                    <MenuItemText style={{ color: theme.colors.error }}>
-                      나가기
-                    </MenuItemText>
-                  </MenuItem>
-                )}
-              </MenuContainer>
-            </TouchableWithoutFeedback>
-          </MenuModalOverlay>
-        </TouchableWithoutFeedback>
-      </Modal>
+        {userRole === 'host' ? (
+          <>
+            <MenuItem onPress={handleEditRoutine}>
+              <MenuItemText>수정</MenuItemText>
+            </MenuItem>
+            <MenuItem onPress={handleDeleteRoutine}>
+              <MenuItemText style={{ color: theme.colors.error }}>
+                삭제
+              </MenuItemText>
+            </MenuItem>
+          </>
+        ) : (
+          <MenuItem onPress={handleLeaveRoutine}>
+            <MenuItemText style={{ color: theme.colors.error }}>
+              나가기
+            </MenuItemText>
+          </MenuItem>
+        )}
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -526,29 +506,6 @@ const TaskDuration = styled.Text`
 `;
 
 // Modal Styles
-const ModalOverlay = styled.View`
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.35);
-  justify-content: flex-end;
-`;
-
-const BottomSheet = styled.View`
-  background-color: ${theme.colors.white};
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  padding: 24px 16px 40px 16px;
-  min-height: 240px;
-`;
-
-const SheetHandle = styled.View`
-  align-self: center;
-  width: 48px;
-  height: 4px;
-  border-radius: 2px;
-  background-color: ${theme.colors.gray300};
-  margin-bottom: 12px;
-`;
-
 const ModalTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
   font-size: 18px;
@@ -584,19 +541,6 @@ const MenuIcon = styled.Text`
   font-size: 20px;
   color: ${theme.colors.gray600};
   font-weight: bold;
-`;
-
-const MenuModalOverlay = styled.View`
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.35);
-  justify-content: flex-end;
-`;
-
-const MenuContainer = styled.View`
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  margin: 16px;
-  overflow: hidden;
 `;
 
 const MenuItem = styled.TouchableOpacity`
