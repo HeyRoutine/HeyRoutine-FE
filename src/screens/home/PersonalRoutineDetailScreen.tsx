@@ -213,6 +213,14 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleStartRoutine = () => {
+    if (isEditMode) {
+      // 편집 모드일 때는 수정 완료 처리
+      setEditMode(false);
+      // 여기에 수정된 데이터를 저장하는 로직을 추가할 수 있습니다
+      return;
+    }
+
+    // 일반 모드일 때는 루틴 실행
     const routineName = routineData?.name;
     const tasks = routineItems.map((item) => ({
       icon: item.emoji,
@@ -344,7 +352,9 @@ const PersonalRoutineDetailScreen = ({
 
         {/* 루틴 실행 버튼 */}
         <CreateButton onPress={handleStartRoutine}>
-          <CreateButtonText>루틴 실행하기</CreateButtonText>
+          <CreateButtonText>
+            {isEditMode ? '수정 완료' : '루틴 실행하기'}
+          </CreateButtonText>
         </CreateButton>
       </Content>
 
