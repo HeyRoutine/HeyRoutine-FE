@@ -1,6 +1,11 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { ApiResponse, ApiError } from '../types/api';
 import { useAuthStore } from '../store';
+
+// AxiosRequestConfig 타입 확장
+interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+  _retry?: boolean;
+}
 
 // API 기본 URL (환경에 따라 변경 필요)
 const API_BASE_URL = 'http://13.124.86.72:8080'; // 실제 백엔드 서버 URL
@@ -49,9 +54,49 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
     return response;
   },
-  (error) => {
-    // 401 에러 시 토큰 만료 처리
-    if (error.response?.status === 401) {
+  async (error) => {
+    const originalRequest = error.config as CustomAxiosRequestConfig;
+
+    // 401 에러이고 재시도하지 않은 요청인 경우
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // 토큰 재발급 시도
+        const { accessToken, refreshToken } = useAuthStore.getState();
+
+        if (refreshToken) {
+          console.log('토큰 재발급 시도...');
+
+          // 토큰 재발급 API 호출
+          const reissueResponse = await axios.post(
+            `${API_BASE_URL}/api/v1/user/token/reissue`,
+            {
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            },
+          );
+
+          if (reissueResponse.data.isSuccess) {
+            // 새로운 토큰 저장
+            const { setAccessToken, setRefreshToken } = useAuthStore.getState();
+            setAccessToken(reissueResponse.data.result.accessToken);
+            setRefreshToken(reissueResponse.data.result.refreshToken);
+
+            console.log('토큰 재발급 성공');
+
+            // 원래 요청 재시도
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${reissueResponse.data.result.accessToken}`;
+            }
+            return apiClient(originalRequest);
+          }
+        }
+      } catch (reissueError) {
+        console.log('토큰 재발급 실패:', reissueError);
+      }
+
+      // 토큰 재발급 실패 시 로그아웃
       const { logout } = useAuthStore.getState();
       logout();
     }
