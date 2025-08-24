@@ -6,7 +6,7 @@ import {
   SignUpRequest,
   SignUpResponse,
   ReissueRequest,
-  ReissueResponse,
+  ReissueResponse, 
   MyPageResetPasswordRequest,
   MyPageResetPasswordResponse,
   ResetPasswordRequest,
@@ -78,8 +78,20 @@ export const mypageResetPassword = async (
 ): Promise<ApiResponse<MyPageResetPasswordResponse>> => {
   const response = await apiClient.patch<
     ApiResponse<MyPageResetPasswordResponse>
-  >(`/api/v1/user/mypage-password?password=${data.password}`);
-  return response.data;
+  >(`/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`);
+
+  // 일부 서버가 200/204에서 본문을 비우는 경우 대비
+  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+    return response.data;
+  }
+
+  const isOk = response?.status >= 200 && response?.status < 300;
+  return {
+    isSuccess: isOk,
+    code: isOk ? 'COMMON200' : 'COMMON500',
+    message: isOk ? '성공입니다.' : '실패했습니다.',
+    result: isOk ? '비밀번호가 변경되었습니다' : '비밀번호 변경 실패',
+  };
 };
 
 // 비밀번호 찾기 후 재설정
@@ -98,9 +110,20 @@ export const resetNickname = async (
   data: ResetNicknameRequest,
 ): Promise<ApiResponse<ResetNicknameResponse>> => {
   const response = await apiClient.patch<ApiResponse<ResetNicknameResponse>>(
-    `/api/v1/user/mypage-nickname?nickname=${data.nickname}`,
+    `/api/v1/user/mypage-nickname?nickname=${encodeURIComponent(data.nickname)}`,
   );
-  return response.data;
+
+  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+    return response.data;
+  }
+
+  const isOk = response?.status >= 200 && response?.status < 300;
+  return {
+    isSuccess: isOk,
+    code: isOk ? 'COMMON200' : 'COMMON500',
+    message: isOk ? '성공입니다.' : '실패했습니다.',
+    result: isOk ? '닉네임이 변경되었습니다' : '닉네임 변경 실패',
+  };
 };
 
 // TODO: 다른 유저 API 함수들 구현 예정
