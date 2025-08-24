@@ -68,8 +68,8 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       setCurrentStep(statusItems.length - 1);
       // 100% 완료 후 1초 더 기다린 후 완료
       setTimeout(() => {
-        if (nextScreen && navigation && navigation.navigate) {
-          navigation.navigate(nextScreen);
+        if (nextScreen && navigation && navigation.replace) {
+          navigation.replace(nextScreen);
         }
       }, 1000);
     }, 5000);
