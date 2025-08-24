@@ -24,7 +24,7 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
   return (
-    <Container edges={['top', 'bottom']}>
+    <Container edges={['top', 'left', 'right']}>
       <Header
         title="✨ New 추천 루틴"
         onBackPress={() => navigation.navigate('ConsumptionAnalysis')}

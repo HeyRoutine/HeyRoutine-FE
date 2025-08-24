@@ -18,7 +18,7 @@ const FinancialProductScreen = ({
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="맞춤 금융 상품 추천" onBackPress={handleBack} />
 
       {/* 👇 이제 이 Content 영역은 스크롤이 가능합니다. */}

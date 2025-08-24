@@ -344,6 +344,7 @@ const DateText = styled.Text<{ isSelected: boolean }>`
 
 const RoutineList = styled.View`
   flex: 1;
+  margin-bottom: 36px;
 `;
 
 // 모달 관련 스타일

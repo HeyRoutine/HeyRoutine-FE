@@ -267,8 +267,6 @@ const Underline = styled.View`
 const ButtonWrapper = styled.View`
   padding: 24px 16px;
   background-color: ${theme.colors.white};
-  border-top-width: 1px;
-  border-top-color: ${theme.colors.gray200};
 `;
 
 // 모달 관련 스타일

@@ -65,7 +65,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
   );
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="단체루틴 목록" onBackPress={() => navigation.goBack()} />
 
       <ListWrapper>

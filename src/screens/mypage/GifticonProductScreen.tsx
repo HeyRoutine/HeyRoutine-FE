@@ -53,7 +53,7 @@ const GifticonProductScreen = ({
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header
         title={product?.title ?? '상품 상세'}
         onBackPress={() => navigation.goBack()}

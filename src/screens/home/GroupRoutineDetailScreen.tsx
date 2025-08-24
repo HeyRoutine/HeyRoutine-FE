@@ -82,11 +82,11 @@ const GroupRoutineDetailScreen = ({
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="단체 루틴" onBackPress={handleBack} />
       <ScrollContent
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
       >
         <SummaryCard>
           <SummaryHeader>
@@ -186,21 +186,22 @@ const GroupRoutineDetailScreen = ({
             </>
           )}
         </ParticipantsCard>
-
-        {!isJoined ? (
-          <JoinCta>
-            <JoinButton onPress={handleJoin}>
-              <JoinText>단체루틴 참여</JoinText>
-            </JoinButton>
-          </JoinCta>
-        ) : (
-          <JoinCta>
-            <JoinButton disabled>
-              <JoinText>참여 완료</JoinText>
-            </JoinButton>
-          </JoinCta>
-        )}
       </ScrollContent>
+
+      {/* 하단 고정 버튼 */}
+      {!isJoined ? (
+        <FixedJoinCta>
+          <JoinButton onPress={handleJoin}>
+            <JoinText>단체루틴 참여</JoinText>
+          </JoinButton>
+        </FixedJoinCta>
+      ) : (
+        <FixedJoinCta>
+          <JoinButton disabled>
+            <JoinText>참여 완료</JoinText>
+          </JoinButton>
+        </FixedJoinCta>
+      )}
 
       {/* 참여 확인 모달 */}
       <Modal
@@ -469,6 +470,15 @@ const Avatar = styled(Image)`
 
 const JoinCta = styled.View`
   margin-top: 8px;
+`;
+
+const FixedJoinCta = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background-color: ${theme.colors.white};
 `;
 
 const JoinButton = styled.TouchableOpacity<{ disabled?: boolean }>`

@@ -65,8 +65,8 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   };
 
   return (
-    <Container>
-      <Header title="포인트 상점" onBackPress={() => navigation.goBack()} />
+    <Container edges={['top', 'left', 'right']}>
+      <Header title="포인트 전환하기" onBackPress={() => navigation.goBack()} />
 
       <Content>
         <TitleSection>

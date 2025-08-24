@@ -93,7 +93,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header
         title="이번 주 소비패턴 분석"
         onBackPress={() => navigation.goBack()}
