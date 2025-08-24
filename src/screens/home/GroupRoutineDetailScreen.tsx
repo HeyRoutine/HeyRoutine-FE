@@ -1,15 +1,26 @@
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { Image, Modal, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Image,
+  Modal,
+  TouchableWithoutFeedback,
+  View,
+  Alert,
+} from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import {
+  useDeleteGroupRoutine,
+  useJoinGroupRoutine,
+  useLeaveGroupRoutine,
+} from '../../hooks/routine/group/useGroupRoutines';
 
 interface GroupRoutineDetailScreenProps {
   navigation: any;
-  route: { params?: { routineId?: string } };
+  route: { params?: { routineId?: string; routineData?: any } };
 }
 
 const GroupRoutineDetailScreen = ({
@@ -19,13 +30,17 @@ const GroupRoutineDetailScreen = ({
   const routine = useMemo(
     () => ({
       id: route?.params?.routineId ?? '1',
-      title: '아이고 종강이야',
+      title: route?.params?.routineData?.title || '아이고 종강이야',
       description:
+        route?.params?.routineData?.description ||
         '중깟까지 아침 갓생 루틴 필요하신 분 들어오셈 교수는 출입금지이긴한데 들어오면 환영하겠습니다아',
-      membersCount: 52,
-      timeRange: '오후 8:00 - 오후 9:00',
+      membersCount: route?.params?.routineData?.pepoleNums || 52,
+      timeRange: `${route?.params?.routineData?.startTime || '20:00'} - ${route?.params?.routineData?.endTime || '21:00'}`,
       progressText: '[자기개발] 67%',
-      selectedDays: ['화', '토', '일'],
+      selectedDays: route?.params?.routineData?.dayOfWeek || ['화', '토', '일'],
+      isJoined: route?.params?.routineData?.isJoined || false,
+      routineType: route?.params?.routineData?.routineType || 'DAILY',
+      routineNums: route?.params?.routineData?.routineNums || 5,
       tasks: [
         { icon: '☕', title: '커피 내리기', duration: '3분' },
         { icon: '🥐', title: '식빵 굽기', duration: '5분' },
@@ -43,22 +58,50 @@ const GroupRoutineDetailScreen = ({
         'https://i.pravatar.cc/100?img=8',
       ],
     }),
-    [route?.params?.routineId],
+    [route?.params?.routineId, route?.params?.routineData],
   );
 
   const [isJoinModalVisible, setJoinModalVisible] = useState(false);
-  const [isJoined, setIsJoined] = useState(false);
+  const [isJoined, setIsJoined] = useState(
+    route?.params?.routineData?.isJoined || false,
+  );
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [userRole, setUserRole] = useState<'host' | 'member' | null>(null);
+
+  // 그룹 루틴 관련 훅들
+  const { mutate: deleteGroupRoutine, isPending: isDeleting } =
+    useDeleteGroupRoutine();
+  const { mutate: joinGroupRoutine, isPending: isJoining } =
+    useJoinGroupRoutine();
+  const { mutate: leaveGroupRoutine, isPending: isLeaving } =
+    useLeaveGroupRoutine();
 
   const handleBack = () => navigation.goBack();
   const handleJoin = () => setJoinModalVisible(true);
   const handleCloseJoinModal = () => setJoinModalVisible(false);
   const handleConfirmJoin = () => {
-    // 참여 확정 로직 (API 연동 등)
-    setIsJoined(true);
-    setUserRole('member'); // 기본적으로 팀원으로 설정 (실제로는 API에서 사용자 역할 확인)
-    setJoinModalVisible(false);
+    // 그룹 루틴 가입 API 호출
+    joinGroupRoutine(routine.id, {
+      onSuccess: () => {
+        console.log('🔍 그룹 루틴 가입 성공');
+        setIsJoined(true);
+        setUserRole('member'); // 기본적으로 팀원으로 설정
+        setJoinModalVisible(false);
+        // 성공 메시지 표시
+        navigation.navigate('Result', {
+          type: 'success',
+          title: '그룹 루틴 가입 완료',
+          description: '그룹 루틴에 성공적으로 가입되었습니다.',
+          nextScreen: 'HomeMain',
+        });
+      },
+      onError: (error) => {
+        console.error('🔍 그룹 루틴 가입 실패:', error);
+        setJoinModalVisible(false);
+        // 에러 처리 (나중에 토스트나 알림 추가)
+      },
+    });
   };
 
   const handleMenuPress = () => {
@@ -68,18 +111,71 @@ const GroupRoutineDetailScreen = ({
   const handleEditRoutine = () => {
     // 루틴 수정 로직
     setIsMenuVisible(false);
+    navigation.navigate('CreateGroupRoutine', {
+      mode: 'edit',
+      routineData: {
+        id: routine.id,
+        title: routine.title,
+        description: routine.description,
+        startTime: routine.timeRange.split(' - ')[0],
+        endTime: routine.timeRange.split(' - ')[1],
+        dayTypes: routine.selectedDays,
+      },
+    });
   };
 
   const handleDeleteRoutine = () => {
     // 루틴 삭제 로직
     setIsMenuVisible(false);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteGroupRoutine(routine.id, {
+      onSuccess: () => {
+        console.log('🔍 그룹 루틴 삭제 성공');
+        setIsDeleteModalVisible(false);
+        navigation.navigate('Result', {
+          type: 'success',
+          title: '그룹 루틴 삭제 완료',
+          description: '그룹 루틴이 성공적으로 삭제되었습니다.',
+          nextScreen: 'HomeMain',
+        });
+      },
+      onError: (error) => {
+        console.error('🔍 그룹 루틴 삭제 실패:', error);
+        setIsDeleteModalVisible(false);
+        // 에러 처리 (나중에 토스트나 알림 추가)
+      },
+    });
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalVisible(false);
   };
 
   const handleLeaveRoutine = () => {
-    // 루틴 나가기 로직
-    setIsJoined(false);
-    setUserRole(null);
-    setIsMenuVisible(false);
+    // 그룹 루틴 나가기 API 호출
+    leaveGroupRoutine(routine.id, {
+      onSuccess: () => {
+        console.log('🔍 그룹 루틴 나가기 성공');
+        setIsJoined(false);
+        setUserRole(null);
+        setIsMenuVisible(false);
+        // 성공 메시지 표시
+        navigation.navigate('Result', {
+          type: 'success',
+          title: '그룹 루틴 나가기 완료',
+          description: '그룹 루틴에서 성공적으로 나갔습니다.',
+          nextScreen: 'HomeMain',
+        });
+      },
+      onError: (error) => {
+        console.error('🔍 그룹 루틴 나가기 실패:', error);
+        setIsMenuVisible(false);
+        // 에러 처리 (나중에 토스트나 알림 추가)
+      },
+    });
   };
 
   return (
@@ -192,8 +288,8 @@ const GroupRoutineDetailScreen = ({
       {/* 하단 고정 버튼 */}
       {!isJoined ? (
         <FixedJoinCta>
-          <JoinButton onPress={handleJoin}>
-            <JoinText>단체루틴 참여</JoinText>
+          <JoinButton onPress={handleJoin} disabled={isJoining}>
+            <JoinText>{isJoining ? '가입 중...' : '단체루틴 참여'}</JoinText>
           </JoinButton>
         </FixedJoinCta>
       ) : (
@@ -225,10 +321,11 @@ const GroupRoutineDetailScreen = ({
           </ButtonWrapper>
           <ButtonWrapper>
             <CustomButton
-              text="참여하기"
+              text={isJoining ? '가입 중...' : '참여하기'}
               onPress={handleConfirmJoin}
               backgroundColor={theme.colors.primary}
               textColor={theme.colors.white}
+              disabled={isJoining}
             />
           </ButtonWrapper>
         </ButtonRow>
@@ -253,10 +350,39 @@ const GroupRoutineDetailScreen = ({
         ) : (
           <MenuItem onPress={handleLeaveRoutine}>
             <MenuItemText style={{ color: theme.colors.error }}>
-              나가기
+              {isLeaving ? '나가는 중...' : '나가기'}
             </MenuItemText>
           </MenuItem>
         )}
+      </BottomSheetDialog>
+
+      {/* 삭제 확인 모달 */}
+      <BottomSheetDialog
+        visible={isDeleteModalVisible}
+        onRequestClose={handleCancelDelete}
+      >
+        <ModalTitle>그룹 루틴을 삭제하시겠습니까?</ModalTitle>
+        <ModalSubtitle>삭제된 그룹 루틴은 복구할 수 없습니다.</ModalSubtitle>
+
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCancelDelete}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="삭제"
+              onPress={handleConfirmDelete}
+              backgroundColor={theme.colors.error}
+              textColor={theme.colors.white}
+              disabled={isDeleting}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
       </BottomSheetDialog>
     </Container>
   );

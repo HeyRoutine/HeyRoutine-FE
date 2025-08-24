@@ -132,13 +132,17 @@ export interface GroupRoutineItem {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  peopleNums: number;
+  pepoleNums: number; // API 응답에서 pepoleNums로 오고 있음
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
   isJoined: boolean;
 }
 
 // 단체루틴 리스트 조회 응답 타입
 export interface GroupRoutineListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
   items: GroupRoutineItem[];
 }
 

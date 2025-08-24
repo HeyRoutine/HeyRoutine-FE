@@ -22,6 +22,8 @@ const MainNavigator = () => {
     'FinancialProduct',
     'CreateRoutine',
     'CreateRoutineDetail',
+    'CreateGroupRoutine',
+    'CreateGroupRoutineDetail',
   ];
 
   return (

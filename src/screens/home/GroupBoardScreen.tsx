@@ -105,9 +105,16 @@ const GroupBoardScreen = ({ navigation }: any) => {
         category: item.routineType === 'DAILY' ? '생활' : '소비',
         progress: 0, // API에서 제공하지 않는 경우 기본값
         title: item.title,
+        description: item.description,
+        startTime: item.startTime,
+        endTime: item.endTime,
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
         selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
         completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+        pepoleNums: item.pepoleNums,
+        routineNums: item.routineNums,
+        routineType: item.routineType,
+        isJoined: item.isJoined,
       };
 
       console.log('🔍 그룹 루틴 변환된 데이터:', formattedItem);
@@ -124,13 +131,18 @@ const GroupBoardScreen = ({ navigation }: any) => {
       completedDays={item.completedDays}
       onPress={() =>
         navigation.navigate('GroupRoutineDetail', {
+          routineId: item.id,
           routineData: {
             id: item.id,
-            name: item.title,
-            startTime: item.timeRange.split(' ~ ')[0],
-            endTime: item.timeRange.split(' ~ ')[1],
-            days: item.selectedDays,
-            category: item.category,
+            title: item.title,
+            description: item.description || '',
+            startTime: item.startTime,
+            endTime: item.endTime,
+            dayOfWeek: item.selectedDays,
+            pepoleNums: item.pepoleNums || 0,
+            routineNums: item.routineNums || 0,
+            routineType: item.routineType,
+            isJoined: item.isJoined || false,
           },
         })
       }
@@ -168,7 +180,9 @@ const GroupBoardScreen = ({ navigation }: any) => {
         />
       </ListWrapper>
 
-      <AddRoutineButton onPress={() => {}} />
+      <AddRoutineButton
+        onPress={() => navigation.navigate('CreateGroupRoutine')}
+      />
     </Container>
   );
 };

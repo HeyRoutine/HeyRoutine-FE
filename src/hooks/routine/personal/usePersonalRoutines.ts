@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import {
   makeMyRoutineList,
   updateRoutineToMyRoutineList,
@@ -33,6 +38,28 @@ export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
   return useQuery({
     queryKey: ['personalRoutines', params],
     queryFn: () => showMyRoutineList(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 무한 스크롤용 개인루틴 리스트 조회 훅
+export const useInfinitePersonalRoutines = (
+  params: Omit<PersonalRoutineListParams, 'page' | 'size'> = {},
+) => {
+  console.log('🔍 무한 스크롤 개인루틴 리스트 조회 훅 호출:', params);
+
+  return useInfiniteQuery({
+    queryKey: ['infinitePersonalRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      showMyRoutineList({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
