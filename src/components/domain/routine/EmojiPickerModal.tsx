@@ -9,7 +9,6 @@ interface EmojiPickerModalProps {
   onRequestClose: () => void;
   onEmojiSelect: (emoji: string) => void;
   categories?: string[];
-  hideTitle?: boolean;
 }
 
 const EmojiPickerModal = ({
@@ -17,7 +16,6 @@ const EmojiPickerModal = ({
   onRequestClose,
   onEmojiSelect,
   categories = ['음식', '활동', '기호', '학습', '사람'],
-  hideTitle = false,
 }: EmojiPickerModalProps) => {
   const [selectedCategory, setSelectedCategory] = useState(
     categories.length > 0 ? categories[0] : '음식',
@@ -439,8 +437,6 @@ const EmojiPickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
-      {!hideTitle && <Title>이모지 선택</Title>}
-
       <CategoryContainer>
         <CategoryScrollView horizontal showsHorizontalScrollIndicator={false}>
           {categories.map((category) => (
@@ -477,14 +473,6 @@ const EmojiPickerModal = ({
 };
 
 export default EmojiPickerModal;
-
-const Title = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 18px;
-  color: ${theme.colors.gray800};
-  text-align: center;
-  margin-bottom: 24px;
-`;
 
 const CategoryContainer = styled.View`
   margin-bottom: 24px;

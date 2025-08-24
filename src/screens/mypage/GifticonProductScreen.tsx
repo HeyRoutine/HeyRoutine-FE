@@ -53,7 +53,7 @@ const GifticonProductScreen = ({
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header
         title={product?.title ?? '상품 상세'}
         onBackPress={() => navigation.goBack()}
@@ -245,7 +245,8 @@ const ModalTitle = styled.Text`
   font-size: 24px;
   color: ${theme.colors.gray900};
   text-align: center;
-  margin-bottom: 36px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const ModalMessage = styled.Text`

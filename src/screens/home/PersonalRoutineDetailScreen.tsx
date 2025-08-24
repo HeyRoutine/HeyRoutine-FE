@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
@@ -21,7 +23,11 @@ import { Alert } from 'react-native';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
-  route: { params?: { routineData?: any } };
+  route: {
+    params?: {
+      routineData?: any;
+    };
+  };
 }
 
 const PersonalRoutineDetailScreen = ({
@@ -60,6 +66,7 @@ const PersonalRoutineDetailScreen = ({
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [currentText, setCurrentText] = useState<string>('');
   const [moreSheetVisible, setMoreSheetVisible] = useState(false);
+  const [exitConfirmVisible, setExitConfirmVisible] = useState(false);
 
   // 수정 중인 아이템 인덱스 (null이면 새로 추가하는 중)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -68,8 +75,39 @@ const PersonalRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
+  // 화면 진입 시 편집 모드 해제
+  useEffect(() => {
+    setEditMode(false);
+  }, [setEditMode]);
+
+  // 완료 상태 관련 로직은 API 연동 시 구현 예정
+
+  // 폰의 뒤로가기 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (isEditMode) {
+          setExitConfirmVisible(true);
+          return true; // 이벤트 소비
+        }
+        return false; // 기본 뒤로가기 동작 허용
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [isEditMode]),
+  );
+
   const handleBack = () => {
-    navigation.goBack();
+    if (isEditMode) {
+      setExitConfirmVisible(true);
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleDayPress = (day: string) => {
@@ -171,7 +209,7 @@ const PersonalRoutineDetailScreen = ({
     const newItem = {
       emoji: routine.icon,
       text: routine.title,
-      time: '30분', // 기본 시간 설정
+      time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
       isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
@@ -209,6 +247,20 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleStartRoutine = () => {
+    if (isEditMode) {
+      // 편집 모드일 때는 수정 완료 처리
+      setEditMode(false);
+      // ResultScreen으로 이동
+      navigation.replace('Result', {
+        type: 'success',
+        title: '루틴 상세 수정 완료',
+        description: '루틴 상세가 성공적으로 수정되었습니다.',
+        nextScreen: 'HomeMain',
+      });
+      return;
+    }
+
+    // 일반 모드일 때는 루틴 실행
     const routineName = routineData?.name;
     const tasks = routineItems.map((item) => ({
       icon: item.emoji,
@@ -218,11 +270,6 @@ const PersonalRoutineDetailScreen = ({
     navigation.navigate('ActiveRoutine', {
       routineName,
       tasks,
-      onTaskComplete: (index: number) => {
-        setRoutineItems((prev) =>
-          prev.map((it, i) => (i === index ? { ...it, isCompleted: true } : it)),
-        );
-      },
     });
   };
 
@@ -241,6 +288,13 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const closeMoreSheet = () => setMoreSheetVisible(false);
+
+  const closeExitConfirm = () => setExitConfirmVisible(false);
+
+  const handleConfirmExit = () => {
+    closeExitConfirm();
+    setEditMode(false);
+  };
 
   const handleEditRoutine = () => {
     closeMoreSheet();
@@ -338,7 +392,7 @@ const PersonalRoutineDetailScreen = ({
                     emoji,
                     text,
                     time,
-                    isCompleted: true,
+                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
                   };
                   setRoutineItems(updatedItems);
                 }}
@@ -351,7 +405,9 @@ const PersonalRoutineDetailScreen = ({
 
         {/* 루틴 실행 버튼 */}
         <CreateButton onPress={handleStartRoutine}>
-          <CreateButtonText>루틴 실행하기</CreateButtonText>
+          <CreateButtonText>
+            {isEditMode ? '수정 완료' : '루틴 실행하기'}
+          </CreateButtonText>
         </CreateButton>
       </Content>
 
@@ -385,7 +441,6 @@ const PersonalRoutineDetailScreen = ({
         visible={moreSheetVisible}
         onRequestClose={closeMoreSheet}
       >
-        <SheetTitle>루틴 관리</SheetTitle>
         <SheetActions>
           <CustomButton
             text="루틴 수정"
@@ -412,6 +467,27 @@ const PersonalRoutineDetailScreen = ({
             borderWidth={1}
           />
         </SheetActions>
+      </BottomSheetDialog>
+
+      {/* 나가기 확인 모달 */}
+      <BottomSheetDialog
+        visible={exitConfirmVisible}
+        onRequestClose={closeExitConfirm}
+      >
+        <ModalTitle>정말 나가시겠습니까?</ModalTitle>
+        <ModalSubtitle>변경한 내용은 저장되지 않습니다.</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={closeExitConfirm}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <ConfirmButton onPress={handleConfirmExit}>
+              <ConfirmText>나가기</ConfirmText>
+            </ConfirmButton>
+          </ButtonWrapper>
+        </ButtonRow>
       </BottomSheetDialog>
     </Container>
   );
@@ -490,4 +566,56 @@ const SheetTitle = styled.Text`
 
 const SheetActions = styled.View`
   gap: 12px;
+`;
+
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 18px;
+  color: ${theme.colors.gray900};
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
+`;
+
+const ModalSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex: 1;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.gray200};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CancelText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray700};
+`;
+
+const ConfirmButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const ConfirmText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
 `;

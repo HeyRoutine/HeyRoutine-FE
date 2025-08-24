@@ -159,7 +159,7 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
         </PasswordSection>
       </Content>
 
-      <ButtonWrapper>
+      <ButtonContainer>
         <CustomButton
           text="비밀번호 변경"
           onPress={handlePasswordChange}
@@ -169,7 +169,7 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
           }
           textColor={isValidForm ? theme.colors.white : theme.colors.gray500}
         />
-      </ButtonWrapper>
+      </ButtonContainer>
     </Container>
   );
 };
@@ -232,6 +232,6 @@ const ErrorText = styled.Text`
   color: ${theme.colors.error};
 `;
 
-const ButtonWrapper = styled.View`
+const ButtonContainer = styled.View`
   padding: 24px;
 `;

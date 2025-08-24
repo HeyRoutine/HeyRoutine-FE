@@ -4,8 +4,9 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { ScrollView, Image, View } from 'react-native';
+import { ScrollView, Image, View, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import BubbleCard from '../../components/domain/analysis/BubbleCard';
@@ -23,11 +24,29 @@ const routineNoSpendIcon = require('../../assets/images/robot.png');
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
+  // 하드웨어 백 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // 소비패턴 분석 화면으로 replace로 이동
+        navigation.replace('ConsumptionAnalysis');
+        return true; // 이벤트 소비
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [navigation]),
+  );
+
   return (
-    <Container edges={['top', 'bottom']}>
+    <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header
         title="✨ New 추천 루틴"
-        onBackPress={() => navigation.navigate('ConsumptionAnalysis')}
+        onBackPress={() => navigation.replace('ConsumptionAnalysis')}
       />
 
       <ScrollView

@@ -123,7 +123,7 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   );
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header title="포인트 상점" onBackPress={() => navigation.goBack()} />
 
       <Content>

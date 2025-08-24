@@ -1,8 +1,14 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Image, ImageSourcePropType } from 'react-native';
+import {
+  ScrollView,
+  Image,
+  ImageSourcePropType,
+  BackHandler,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -65,8 +71,26 @@ const categories: CategoryItem[] = [
 const formatWon = (n: number) => `${n.toLocaleString()}원`;
 
 const ConsumptionAnalysisScreen = ({ navigation }: any) => {
+  // 하드웨어 백 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // 이전 화면으로 이동
+        navigation.goBack();
+        return true; // 이벤트 소비
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [navigation]),
+  );
+
   const goFinancial = () => {
-    navigation.navigate('Loading', {
+    navigation.replace('Loading', {
       title: '맞춤 금융 상품 찾는중...',
       description: 'AI가 내게 잘 맞는 상품을 찾고 있어요',
       statusItems: [
@@ -80,7 +104,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
   };
 
   const goRoutine = () => {
-    navigation.navigate('Loading', {
+    navigation.replace('Loading', {
       title: 'AI 루틴 추천 중...',
       description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
       statusItems: [
@@ -93,7 +117,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
   };
 
   return (
-    <Container>
+    <Container edges={['top', 'left', 'right']}>
       <Header
         title="이번 주 소비패턴 분석"
         onBackPress={() => navigation.goBack()}

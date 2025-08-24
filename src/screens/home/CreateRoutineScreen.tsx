@@ -46,11 +46,17 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         days: selectedDays,
         startTime,
         endTime,
+        startDate: selectedStartDate,
       },
     });
   };
 
-  const isFormValid = routineName.trim() && selectedDays.length > 0;
+  const isFormValid =
+    routineName.trim() &&
+    selectedDays.length > 0 &&
+    startTime &&
+    endTime &&
+    selectedStartDate;
 
   const categories = [
     { id: 'life', name: '생활' },
@@ -86,7 +92,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   };
 
   return (
-    <Container edges={['top', 'left', 'right']}>
+    <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
           <Ionicons
@@ -125,6 +131,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
           onDaysChange={setSelectedDays}
           onStartDatePress={() => setShowDatePicker(true)}
           selectedStartDate={selectedStartDate}
+          readOnly={false}
           buttonSize={40}
           borderRadius={20}
         />
@@ -156,7 +163,6 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
         visible={showCategoryModal}
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <ModalTitle>루틴 유형</ModalTitle>
         <CategoryButtonsContainer>
           {categories.map((category) => (
             <CategoryButton
@@ -212,8 +218,6 @@ const Header = styled.View`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
 `;
 
 const BackButton = styled(TouchableOpacity)`
@@ -267,8 +271,6 @@ const Underline = styled.View`
 const ButtonWrapper = styled.View`
   padding: 24px 16px;
   background-color: ${theme.colors.white};
-  border-top-width: 1px;
-  border-top-color: ${theme.colors.gray200};
 `;
 
 // 모달 관련 스타일

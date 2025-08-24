@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../styles/theme';
 import BottomSheetDialog from '../../common/BottomSheetDialog';
 import RoutineItemAdder from './RoutineItemAdder';
-import TabNavigation from '../../common/TabNavigation';
 import RoutineSuggestionItem from './RoutineSuggestionItem';
 import EmojiPickerModal from './EmojiPickerModal';
 import TimePickerModal from './TimePickerModal';
@@ -199,12 +198,22 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
 
             {/* 카테고리 선택 */}
             <CategoryContainer>
-              <TabNavigation
-                selectedIndex={selectedCategoryIndex}
-                onTabChange={setSelectedCategoryIndex}
-                tabs={categoryTabs}
-                containerStyle={{ gap: 16 }}
-              />
+              <CategoryScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              >
+                {categoryTabs.map((category, index) => (
+                  <CategoryButton
+                    key={index}
+                    onPress={() => setSelectedCategoryIndex(index)}
+                    isSelected={selectedCategoryIndex === index}
+                  >
+                    <CategoryText isSelected={selectedCategoryIndex === index}>
+                      {category}
+                    </CategoryText>
+                  </CategoryButton>
+                ))}
+              </CategoryScrollView>
             </CategoryContainer>
 
             {/* 루틴 목록 */}
@@ -241,7 +250,6 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         onRequestClose={() => setEmojiPickerVisible(false)}
         onEmojiSelect={handleEmojiSelect}
         categories={categoryTabs}
-        hideTitle={true}
       />
 
       <TimePickerModal
@@ -249,7 +257,6 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         onRequestClose={() => setTimePickerVisible(false)}
         onTimeSelect={handleTimeSelect}
         type="minutes"
-        hideTitle={true}
       />
     </BottomSheetDialog>
   );
@@ -290,4 +297,23 @@ const CompleteButtonText = styled.Text<{ enabled: boolean }>`
   font-size: 16px;
   color: ${({ enabled }) =>
     enabled ? theme.colors.white : theme.colors.gray500};
+`;
+
+const CategoryScrollView = styled.ScrollView`
+  flex-direction: row;
+`;
+
+const CategoryButton = styled(TouchableOpacity)<{ isSelected: boolean }>`
+  padding: 8px 16px;
+  margin-right: 16px;
+  border-bottom-width: 2px;
+  border-bottom-color: ${({ isSelected }) =>
+    isSelected ? theme.colors.primary : 'transparent'};
+`;
+
+const CategoryText = styled.Text<{ isSelected: boolean }>`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${({ isSelected }) =>
+    isSelected ? theme.colors.primary : theme.colors.gray600};
 `;

@@ -62,7 +62,8 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
-    setRoutineSuggestionVisible(true);
+    // 시간 선택 모달을 직접 열기
+    setTimePickerVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -84,7 +85,12 @@ const CreateRoutineDetailScreen = ({
 
   const handleTextChange = (text: string) => {
     console.log('입력된 텍스트:', text);
-    setCurrentText(text);
+    // 시간 형식인지 확인 (예: "40분", "30분" 등)
+    if (text.includes('분')) {
+      setSelectedTime(text);
+    } else {
+      setCurrentText(text);
+    }
   };
 
   const handleTextPress = () => {
@@ -110,7 +116,7 @@ const CreateRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false, // 생성 화면에서는 미완료 상태로
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -120,7 +126,7 @@ const CreateRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: true,
+          isCompleted: false, // 생성 화면에서는 미완료 상태로
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -131,13 +137,6 @@ const CreateRoutineDetailScreen = ({
       setSelectedTime('');
     }
   };
-
-  // 세 개 필드가 모두 채워졌을 때 자동으로 추가/수정
-  useEffect(() => {
-    if (selectedEmoji && currentText && selectedTime) {
-      handleCompleteEdit();
-    }
-  }, [selectedEmoji, currentText, selectedTime]);
 
   const handleDeleteItem = (index: number) => {
     const updatedItems = routineItems.filter((_, i) => i !== index);
@@ -150,8 +149,8 @@ const CreateRoutineDetailScreen = ({
     const newItem = {
       emoji: routine.icon,
       text: routine.title,
-      time: '30분', // 기본 시간 설정
-      isCompleted: true,
+      time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
+      isCompleted: false, // 생성 화면에서는 미완료 상태로
     };
     setRoutineItems([...routineItems, newItem]);
 
@@ -165,6 +164,8 @@ const CreateRoutineDetailScreen = ({
   const handleRoutineSuggestionClose = () => {
     setRoutineSuggestionVisible(false);
   };
+
+  const isFormValid = routineItems.length > 0;
 
   const handleSave = () => {
     // 루틴 저장 로직
@@ -180,13 +181,13 @@ const CreateRoutineDetailScreen = ({
       type: 'success',
       title: '루틴 생성 완료',
       description: '루틴이 성공적으로 생성되었습니다.',
-      nextScreen: 'Home',
+      nextScreen: 'HomeMain',
     });
   };
 
   return (
-    <Container>
-      <Header title="상세 루틴" onBackPress={handleBack} />
+    <Container edges={['top', 'left', 'right', 'bottom']}>
+      <Header title="상세 루틴 생성" onBackPress={handleBack} />
       <Content>
         <RoutineCard>
           <RoutineTitle>{routineData?.name || '새 루틴'}</RoutineTitle>
@@ -230,7 +231,7 @@ const CreateRoutineDetailScreen = ({
                     emoji,
                     text,
                     time,
-                    isCompleted: true,
+                    isCompleted: false, // 생성 화면에서는 미완료 상태로
                   };
                   setRoutineItems(updatedItems);
                 }}
@@ -242,8 +243,10 @@ const CreateRoutineDetailScreen = ({
         </RoutineCard>
 
         {/* 루틴 생성 버튼 */}
-        <CreateButton onPress={handleSave}>
-          <CreateButtonText>루틴 생성</CreateButtonText>
+        <CreateButton onPress={handleSave} disabled={!isFormValid}>
+          <CreateButtonText isDisabled={!isFormValid}>
+            루틴 생성
+          </CreateButtonText>
         </CreateButton>
       </Content>
 
@@ -312,8 +315,9 @@ const AdderContainer = styled.View`
   margin-bottom: 10px;
 `;
 
-const CreateButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+const CreateButton = styled.TouchableOpacity<{ disabled?: boolean }>`
+  background-color: ${({ disabled }) =>
+    disabled ? theme.colors.gray300 : theme.colors.primary};
   border-radius: 12px;
   padding: 16px;
   margin: 0 16px;
@@ -321,8 +325,9 @@ const CreateButton = styled.TouchableOpacity`
   justify-content: center;
 `;
 
-const CreateButtonText = styled.Text`
+const CreateButtonText = styled.Text<{ isDisabled?: boolean }>`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  color: ${({ isDisabled }) =>
+    isDisabled ? theme.colors.gray500 : theme.colors.white};
 `;

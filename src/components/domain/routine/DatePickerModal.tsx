@@ -92,7 +92,6 @@ const DatePickerModal = ({
       <ModalOverlay onPress={onRequestClose} />
       <ModalContent>
         <Handle />
-        <Title>시작 날짜 선택</Title>
 
         <Calendar
           current={selectedDate}
@@ -173,14 +172,6 @@ const Handle = styled.View`
   background-color: ${theme.colors.gray300};
   border-radius: 2px;
   align-self: center;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 18px;
-  color: ${theme.colors.gray800};
-  text-align: center;
   margin-bottom: 20px;
 `;
 
