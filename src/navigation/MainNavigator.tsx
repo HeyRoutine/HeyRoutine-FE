@@ -51,7 +51,12 @@ const MainNavigator = () => {
         component={AnalysisStack}
         options={({ route }) => {
           const routeName = getFocusedRouteNameFromRoute(route) ?? 'Analysis';
-          const hideOnScreens = ['Result', 'ActiveRoutine'];
+          const hideOnScreens = [
+            'Result',
+            'ActiveRoutine',
+            'PersonalRoutineDetail',
+            'EditRoutine',
+          ];
 
           return {
             tabBarStyle: {
@@ -72,7 +77,12 @@ const MainNavigator = () => {
         component={HomeStack}
         options={({ route }) => {
           const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-          const hideOnScreens = ['Result', 'ActiveRoutine'];
+          const hideOnScreens = [
+            'Result',
+            'ActiveRoutine',
+            'PersonalRoutineDetail',
+            'EditRoutine',
+          ];
 
           return {
             tabBarStyle: {

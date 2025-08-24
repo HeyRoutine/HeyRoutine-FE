@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { TextInput, TouchableOpacity, Text, View } from 'react-native';
+import {
+  TextInput,
+  TouchableOpacity,
+  Text,
+  View,
+  BackHandler,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import RoutineCategorySelector from '../../components/domain/routine/RoutineCategorySelector';
@@ -35,6 +42,7 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
   );
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [exitConfirmVisible, setExitConfirmVisible] = useState(false);
 
   const handleEditRoutine = () => {
     // TODO: 루틴 수정 로직
@@ -90,10 +98,38 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
     setShowEndTimePicker(false);
   };
 
+  // 폰의 뒤로가기 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        setExitConfirmVisible(true);
+        return true; // 이벤트 소비
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, []),
+  );
+
+  const handleBack = () => {
+    setExitConfirmVisible(true);
+  };
+
+  const closeExitConfirm = () => setExitConfirmVisible(false);
+
+  const handleConfirmExit = () => {
+    closeExitConfirm();
+    navigation.goBack();
+  };
+
   return (
-    <Container edges={['top', 'left', 'right']}>
+    <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header>
-        <BackButton onPress={() => navigation.goBack()}>
+        <BackButton onPress={handleBack}>
           <Ionicons
             name="chevron-back"
             size={24}
@@ -145,17 +181,17 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
       </Content>
 
       {/* 하단 버튼 */}
-      <ButtonWrapper>
+      <ButtonContainer>
         <CustomButton
           text="루틴 수정"
           onPress={handleEditRoutine}
           disabled={!isFormValid}
           backgroundColor={
-            isFormValid ? theme.colors.primary : theme.colors.gray300
+            isFormValid ? theme.colors.primary : theme.colors.gray200
           }
           textColor={isFormValid ? theme.colors.white : theme.colors.gray500}
         />
-      </ButtonWrapper>
+      </ButtonContainer>
 
       {/* 루틴 카테고리 선택 모달 */}
       <BottomSheetDialog
@@ -201,6 +237,27 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
         type="time"
         initialTime="11:00"
       />
+
+      {/* 나가기 확인 모달 */}
+      <BottomSheetDialog
+        visible={exitConfirmVisible}
+        onRequestClose={closeExitConfirm}
+      >
+        <ModalTitle>정말 나가시겠습니까?</ModalTitle>
+        <ModalSubtitle>변경한 내용은 저장되지 않습니다.</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={closeExitConfirm}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <ConfirmButton onPress={handleConfirmExit}>
+              <ConfirmText>나가기</ConfirmText>
+            </ConfirmButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -268,17 +325,21 @@ const Underline = styled.View`
 `;
 
 const ButtonWrapper = styled.View`
-  padding: 24px 16px;
-  background-color: ${theme.colors.white};
+  flex: 1;
+`;
+
+const ButtonContainer = styled.View`
+  padding: 24px;
 `;
 
 // 모달 관련 스타일
 const ModalTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
+  font-family: ${theme.fonts.Bold};
   font-size: 18px;
-  color: ${theme.colors.gray800};
+  color: ${theme.colors.gray900};
   text-align: center;
-  margin-bottom: 24px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 `;
 
 const CategoryButtonsContainer = styled.View`
@@ -300,4 +361,44 @@ const CategoryButtonText = styled(Text)<{ isSelected: boolean }>`
   font-size: 16px;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray600};
+`;
+
+// 나가기 확인 모달 스타일
+const ModalSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.gray200};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CancelText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray700};
+`;
+
+const ConfirmButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const ConfirmText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
 `;
