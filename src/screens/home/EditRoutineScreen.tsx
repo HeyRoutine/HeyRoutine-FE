@@ -55,11 +55,11 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
     });
 
     // 수정 완료 후 ResultScreen으로 이동
-    navigation.navigate('Result', {
+    navigation.replace('Result', {
       type: 'success',
-      title: '루틴 상세 수정 완료',
-      description: '루틴 상세가 성공적으로 수정되었습니다.',
-      nextScreen: 'PersonalRoutineDetail',
+      title: '루틴 수정 완료',
+      description: '루틴이 성공적으로 수정되었습니다.',
+      nextScreen: 'HomeMain',
     });
   };
 

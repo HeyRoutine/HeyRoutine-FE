@@ -250,11 +250,11 @@ const PersonalRoutineDetailScreen = ({
       // 편집 모드일 때는 수정 완료 처리
       setEditMode(false);
       // ResultScreen으로 이동
-      navigation.navigate('Result', {
+      navigation.replace('Result', {
         type: 'success',
         title: '루틴 상세 수정 완료',
         description: '루틴 상세가 성공적으로 수정되었습니다.',
-        nextScreen: 'PersonalRoutineDetail',
+        nextScreen: 'HomeMain',
       });
       return;
     }
