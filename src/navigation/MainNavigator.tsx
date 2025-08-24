@@ -12,6 +12,19 @@ const Tab = createBottomTabNavigator();
 const MainNavigator = () => {
   const insets = useSafeAreaInsets();
 
+  // 탭 바를 숨길 화면 이름 목록 (공통으로 관리)
+  const hideOnScreens = [
+    'Result',
+    'ActiveRoutine',
+    'PersonalRoutineDetail',
+    'EditRoutine',
+    'Loading',
+    'RoutineSuggestion',
+    'FinancialProduct',
+    'CreateRoutine',
+    'CreateRoutineDetail',
+  ];
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -51,15 +64,6 @@ const MainNavigator = () => {
         component={AnalysisStack}
         options={({ route }) => {
           const routeName = getFocusedRouteNameFromRoute(route) ?? 'Analysis';
-          const hideOnScreens = [
-            'Result',
-            'ActiveRoutine',
-            'PersonalRoutineDetail',
-            'EditRoutine',
-            'Loading',
-            'RoutineSuggestion',
-            'FinancialProduct',
-          ];
 
           return {
             tabBarStyle: {
@@ -80,15 +84,6 @@ const MainNavigator = () => {
         component={HomeStack}
         options={({ route }) => {
           const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-          const hideOnScreens = [
-            'Result',
-            'ActiveRoutine',
-            'PersonalRoutineDetail',
-            'EditRoutine',
-            'Loading',
-            'RoutineSuggestion',
-            'FinancialProduct',
-          ];
 
           return {
             tabBarStyle: {

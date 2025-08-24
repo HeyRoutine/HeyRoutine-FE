@@ -50,7 +50,8 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
     });
   };
 
-  const isFormValid = routineName.trim() && selectedDays.length > 0;
+  const isFormValid =
+    routineName.trim() && selectedDays.length > 0 && startTime && endTime;
 
   const categories = [
     { id: 'life', name: '생활' },
@@ -86,7 +87,7 @@ const CreateRoutineScreen = ({ navigation }: CreateRoutineScreenProps) => {
   };
 
   return (
-    <Container edges={['top', 'left', 'right']}>
+    <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
           <Ionicons
@@ -211,8 +212,6 @@ const Header = styled.View`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
 `;
 
 const BackButton = styled(TouchableOpacity)`

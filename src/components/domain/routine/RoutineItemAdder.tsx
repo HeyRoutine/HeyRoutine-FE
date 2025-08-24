@@ -15,6 +15,7 @@ interface RoutineItemAdderProps {
   selectedEmoji?: string;
   currentText?: string;
   isCompleted?: boolean;
+  editable?: boolean; // 텍스트 편집 가능 여부
 }
 
 const RoutineItemAdder = ({
@@ -28,6 +29,7 @@ const RoutineItemAdder = ({
   selectedEmoji,
   currentText,
   isCompleted = false,
+  editable = true, // 기본값은 편집 가능
 }: RoutineItemAdderProps) => {
   const [text, setText] = useState(currentText || '');
 
@@ -70,7 +72,7 @@ const RoutineItemAdder = ({
               width: '100%',
               height: '100%',
             }}
-            editable={true}
+            editable={editable}
           />
         </TextSection>
       )}

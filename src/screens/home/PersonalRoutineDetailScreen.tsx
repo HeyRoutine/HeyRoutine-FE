@@ -22,7 +22,13 @@ import { Alert } from 'react-native';
 
 interface PersonalRoutineDetailScreenProps {
   navigation: any;
-  route: { params?: { routineData?: any } };
+  route: {
+    params?: {
+      routineData?: any;
+      completedRoutine?: boolean;
+      completedTasks?: Array<{ icon: string; title: string; duration: string }>;
+    };
+  };
 }
 
 const PersonalRoutineDetailScreen = ({
@@ -74,6 +80,24 @@ const PersonalRoutineDetailScreen = ({
   useEffect(() => {
     setEditMode(false);
   }, [setEditMode]);
+
+  // 루틴 완료 후 돌아왔을 때 완료 상태 업데이트
+  useEffect(() => {
+    if (route?.params?.completedRoutine && route?.params?.completedTasks) {
+      const completedTasks = route.params.completedTasks;
+      setRoutineItems((prev) =>
+        prev.map((item) => {
+          const completedTask = completedTasks.find(
+            (task: any) => task.title === item.text,
+          );
+          return {
+            ...item,
+            isCompleted: completedTask ? true : item.isCompleted,
+          };
+        }),
+      );
+    }
+  }, [route?.params?.completedRoutine, route?.params?.completedTasks]);
 
   // 폰의 뒤로가기 버튼 처리
   useFocusEffect(
@@ -202,7 +226,7 @@ const PersonalRoutineDetailScreen = ({
     const newItem = {
       emoji: routine.icon,
       text: routine.title,
-      time: '30분', // 기본 시간 설정
+      time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
       isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
@@ -257,11 +281,6 @@ const PersonalRoutineDetailScreen = ({
     navigation.navigate('ActiveRoutine', {
       routineName,
       tasks,
-      onComplete: () => {
-        setRoutineItems((prev) =>
-          prev.map((it) => ({ ...it, isCompleted: true })),
-        );
-      },
     });
   };
 
@@ -373,7 +392,7 @@ const PersonalRoutineDetailScreen = ({
                     emoji,
                     text,
                     time,
-                    isCompleted: true,
+                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
                   };
                   setRoutineItems(updatedItems);
                 }}

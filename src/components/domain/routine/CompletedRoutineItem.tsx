@@ -47,9 +47,12 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
   };
 
   const handleEmojiClick = () => {
-    if (!isEditMode) return; // 수정 모드가 아니면 클릭 무시
-    console.log('이모지 클릭됨');
-    setEmojiPickerVisible(true);
+    if (isEditMode) {
+      // 수정 모드일 때는 이모지 선택 모달 열기
+      console.log('이모지 클릭됨');
+      setEmojiPickerVisible(true);
+    }
+    // 일반 모드일 때는 아무것도 하지 않음 (완료 처리는 ActiveRoutine에서만)
   };
 
   const handleTimeClick = () => {
@@ -107,6 +110,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           currentText={item.text}
           placeholder={item.text}
           isCompleted={item.isCompleted}
+          editable={isEditMode} // 편집 모드일 때만 텍스트 편집 가능
         />
       </Swipeable>
 
