@@ -57,6 +57,8 @@ const MainNavigator = () => {
             'PersonalRoutineDetail',
             'EditRoutine',
             'Loading',
+            'RoutineSuggestion',
+            'FinancialProduct',
           ];
 
           return {
@@ -84,6 +86,8 @@ const MainNavigator = () => {
             'PersonalRoutineDetail',
             'EditRoutine',
             'Loading',
+            'RoutineSuggestion',
+            'FinancialProduct',
           ];
 
           return {

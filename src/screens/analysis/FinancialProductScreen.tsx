@@ -1,6 +1,8 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import BubbleCard from '../../components/domain/analysis/BubbleCard';
@@ -13,12 +15,30 @@ interface FinancialProductScreenProps {
 const FinancialProductScreen = ({
   navigation,
 }: FinancialProductScreenProps) => {
+  // 하드웨어 백 버튼 처리
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        // 소비패턴 분석 화면으로 replace로 이동
+        navigation.replace('ConsumptionAnalysis');
+        return true; // 이벤트 소비
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [navigation]),
+  );
+
   const handleBack = () => {
-    navigation.navigate('ConsumptionAnalysis');
+    navigation.replace('ConsumptionAnalysis');
   };
 
   return (
-    <Container edges={['top', 'left', 'right']}>
+    <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header title="맞춤 금융 상품 추천" onBackPress={handleBack} />
 
       {/* 👇 이제 이 Content 영역은 스크롤이 가능합니다. */}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import ProgressCircle from '../../components/common/ProgressCircle';
 import StatusCard from '../../components/common/StatusCard';
@@ -20,6 +22,22 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
   } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+
+  // 하드웨어 백 버튼 비활성화
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        return true; // 이벤트 소비하여 뒤로가기 동작 방지
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, []),
+  );
 
   useEffect(() => {
     // 실시간 프로그레스 업데이트 (100ms마다)
