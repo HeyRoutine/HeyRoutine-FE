@@ -13,6 +13,12 @@ import {
   ResetPasswordResponse,
   ResetNicknameRequest,
   ResetNicknameResponse,
+  MailSendRequest,
+  MailSendResponse,
+  MailSendForPasswordRequest,
+  MailSendForPasswordResponse,
+  AuthCheckRequest,
+  AuthCheckResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -124,6 +130,38 @@ export const resetNickname = async (
     message: isOk ? '성공입니다.' : '실패했습니다.',
     result: isOk ? '닉네임이 변경되었습니다' : '닉네임 변경 실패',
   };
+};
+
+// 회원가입 인증메일 보내기
+export const mailSend = async (
+  data: MailSendRequest,
+): Promise<ApiResponse<MailSendResponse>> => {
+  const response = await apiClient.post<ApiResponse<MailSendResponse>>(
+    '/api/v1/mail/send',
+    data,
+  );
+  return response.data;
+};
+
+// 비밀번호 찾기 인증메일 보내기
+export const mailSendForPassword = async (
+  data: MailSendForPasswordRequest,
+): Promise<ApiResponse<MailSendForPasswordResponse>> => {
+  const response = await apiClient.post<
+    ApiResponse<MailSendForPasswordResponse>
+  >('/api/v1/mail/send-password', data);
+  return response.data;
+};
+
+// 인증번호 확인
+export const authCheck = async (
+  data: AuthCheckRequest,
+): Promise<ApiResponse<AuthCheckResponse>> => {
+  const response = await apiClient.post<ApiResponse<AuthCheckResponse>>(
+    '/api/v1/mail/auth-check',
+    data,
+  );
+  return response.data;
 };
 
 // TODO: 다른 유저 API 함수들 구현 예정

@@ -117,6 +117,9 @@ export type DeleteGroupRoutineResponse = EmptyResponse;
 // 단체루틴 가입 응답 타입
 export type JoinGroupRoutineResponse = EmptyResponse;
 
+// 단체루틴 나가기 응답 타입
+export type LeaveGroupRoutineResponse = EmptyResponse;
+
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
   id: number;
@@ -221,6 +224,31 @@ export interface ResetNicknameRequest {
 
 // 닉네임 재설정 응답 타입
 export type ResetNicknameResponse = string; // "닉네임이 변경되었습니다"
+
+// 회원가입 인증메일 보내기 요청 타입
+export interface MailSendRequest {
+  email: string;
+}
+
+// 회원가입 인증메일 보내기 응답 타입
+export type MailSendResponse = string; // "메일이 전송되었습니다"
+
+// 비밀번호 찾기 인증메일 보내기 요청 타입
+export interface MailSendForPasswordRequest {
+  email: string;
+}
+
+// 비밀번호 찾기 인증메일 보내기 응답 타입
+export type MailSendForPasswordResponse = string; // "메일이 전송되었습니다"
+
+// 인증번호 확인 요청 타입
+export interface AuthCheckRequest {
+  email: string;
+  authNum: string;
+}
+
+// 인증번호 확인 응답 타입
+export type AuthCheckResponse = string; // UUID 형식의 문자열
 
 // ===== 포인트샵 (Point Shop) 타입 =====
 

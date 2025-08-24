@@ -9,6 +9,7 @@ import {
   UpdateGroupRoutineResponse,
   DeleteGroupRoutineResponse,
   JoinGroupRoutineResponse,
+  LeaveGroupRoutineResponse,
 } from '../../../types/api';
 
 // 단체루틴 생성 API
@@ -75,10 +76,13 @@ export const joinGroupRoutine = async (
   return response.data;
 };
 
-// 단체루틴 탈퇴 API (향후 확장용)
-export const leaveGroupRoutine = async (routineId: number) => {
-  const response = await apiClient.delete(
-    `/api/v1/routines/groups/${routineId}/join`,
-  );
+// 단체루틴 나가기 API
+export const leaveGroupRoutine = async (
+  groupRoutineListId: string,
+): Promise<ApiResponse<LeaveGroupRoutineResponse>> => {
+  const response = await apiClient.delete<
+    ApiResponse<LeaveGroupRoutineResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}/leave`);
+
   return response.data;
 };

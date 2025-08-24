@@ -102,14 +102,15 @@ export const useJoinGroupRoutine = () => {
   });
 };
 
-// 단체루틴 탈퇴 훅
+// 단체루틴 나가기 훅
 export const useLeaveGroupRoutine = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (routineId: number) => leaveGroupRoutine(routineId),
+    mutationFn: (groupRoutineListId: string) =>
+      leaveGroupRoutine(groupRoutineListId),
     onSuccess: () => {
-      // 탈퇴 성공 시 단체루틴 리스트 캐시 무효화
+      // 나가기 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
     },
   });

@@ -8,6 +8,9 @@ import {
   mypageResetPassword,
   resetPassword,
   resetNickname,
+  mailSend,
+  mailSendForPassword,
+  authCheck,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -16,6 +19,9 @@ import {
   MyPageResetPasswordRequest,
   ResetPasswordRequest,
   ResetNicknameRequest,
+  MailSendRequest,
+  MailSendForPasswordRequest,
+  AuthCheckRequest,
 } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
@@ -148,6 +154,54 @@ export const useResetNickname = () => {
 
       // TODO: 닉네임 재설정 성공 후 처리 로직 추가
       // 예: 성공 메시지 표시, 마이페이지로 이동 등
+    },
+  });
+};
+
+// 회원가입 인증메일 보내기 훅
+export const useMailSend = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MailSendRequest) => mailSend(data),
+    onSuccess: (data) => {
+      // 인증메일 전송 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 인증메일 전송 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 인증코드 입력 화면으로 이동 등
+    },
+  });
+};
+
+// 비밀번호 찾기 인증메일 보내기 훅
+export const useMailSendForPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: MailSendForPasswordRequest) => mailSendForPassword(data),
+    onSuccess: (data) => {
+      // 인증메일 전송 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 인증메일 전송 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 인증코드 입력 화면으로 이동 등
+    },
+  });
+};
+
+// 인증번호 확인 훅
+export const useAuthCheck = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: AuthCheckRequest) => authCheck(data),
+    onSuccess: (data) => {
+      // 인증번호 확인 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 인증번호 확인 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 다음 단계로 이동 등
     },
   });
 };
