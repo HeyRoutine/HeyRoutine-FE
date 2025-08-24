@@ -6,6 +6,7 @@ import LottieView from 'lottie-react-native';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import SuccessIcon from '../../components/common/SuccessIcon';
+import { useRoutineStore } from '../../store';
 
 interface IResultScreenProps {
   type: 'success' | 'failure' | 'celebration';
@@ -18,6 +19,7 @@ interface IResultScreenProps {
 }
 
 const ResultScreen = ({ navigation, route }: any) => {
+  const { setEditMode } = useRoutineStore();
   const {
     type = 'celebration',
     title = '등록 성공',
@@ -26,6 +28,7 @@ const ResultScreen = ({ navigation, route }: any) => {
     lottieSource,
     nextScreen = 'MyPage',
     onSuccess,
+    updatedRoutineData,
   } = route.params || {};
 
   const handleComplete = () => {
@@ -42,9 +45,18 @@ const ResultScreen = ({ navigation, route }: any) => {
       // 로그인 상태로 변경하여 홈 화면으로 이동
       const { setLoggedIn } = require('../../store').useAuthStore.getState();
       setLoggedIn(true);
-    } else if (nextScreen) {
-      navigation.navigate(nextScreen);
+    // } else if (nextScreen) {
+    //   navigation.navigate(nextScreen);
     }
+    else if (nextScreen === 'PersonalRoutineDetail') {
+      // 편집 모드 해제 후 상세 화면으로 이동
+      setEditMode(false);
+      navigation.navigate('PersonalRoutineDetail', {
+        routineData: updatedRoutineData,
+      });
+      return;
+    }
+    navigation.navigate(nextScreen);
   };
 
   const renderIcon = () => {

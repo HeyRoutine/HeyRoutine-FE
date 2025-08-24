@@ -107,6 +107,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           currentText={item.text}
           placeholder={item.text}
           isCompleted={item.isCompleted}
+          editable={isEditMode}
         />
       </Swipeable>
 

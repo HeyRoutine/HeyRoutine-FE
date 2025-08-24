@@ -47,11 +47,21 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
     });
 
     // 수정 완료 후 ResultScreen으로 이동
+    const updatedRoutineData = {
+      name: routineName,
+      category: selectedCategory,
+      days: selectedDays,
+      startTime,
+      endTime,
+      startDate: selectedStartDate,
+    };
+
     navigation.navigate('Result', {
       type: 'success',
       title: '루틴 수정 완료',
       description: '루틴이 성공적으로 수정되었습니다.',
-      nextScreen: 'Home',
+      nextScreen: 'PersonalRoutineDetail',
+      updatedRoutineData,
     });
   };
 
