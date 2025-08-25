@@ -47,7 +47,7 @@ export default RoutineSuggestionItem;
 
 const Container = styled.TouchableOpacity`
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   background-color: ${theme.colors.white};
   padding: 16px;
   margin-bottom: 8px;
@@ -80,7 +80,7 @@ const TitleText = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.gray800};
-  margin-bottom: 4px;
+  /* margin-bottom: 4px; */
 `;
 
 const DescriptionText = styled.Text`

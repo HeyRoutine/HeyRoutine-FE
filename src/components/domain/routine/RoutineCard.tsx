@@ -3,9 +3,10 @@ import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 
 interface RoutineCardProps {
-  category: string;
   progress: number;
   title: string;
+  description?: string;
+  category?: string;
   timeRange: string;
   selectedDays: string[];
   completedDays: string[];
@@ -16,9 +17,10 @@ interface RoutineCardProps {
 }
 
 const RoutineCard = ({
-  category,
   progress,
   title,
+  description,
+  category,
   timeRange,
   selectedDays,
   completedDays,
@@ -39,22 +41,31 @@ const RoutineCard = ({
     });
   };
 
-  const isDayCompleted = (day: string) => completedDays.includes(day);
+  // 오늘 날짜에 해당하는 요일 계산
+  const getTodayDay = () => {
+    const today = new Date();
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    return dayNames[today.getDay()];
+  };
+
+  const isDayCompleted = (day: string) => {
+    const today = getTodayDay();
+    // 오늘에 해당하는 요일이고 completedDays에 포함된 경우에만 완료로 표시
+    return day === today && completedDays.includes(day);
+  };
 
   return (
     <Container onPress={onPress} isSelected={isSelected}>
+      {category && <CategoryText>[{category}]</CategoryText>}
       <Header>
-        <CategoryText>[{category}]</CategoryText>
-        <RightHeader>
-          {showProgress && <ProgressText>{progress}%</ProgressText>}
-          {onMorePress && (
-            <MoreButton onPress={onMorePress}>
-              <MoreIcon>⋯</MoreIcon>
-            </MoreButton>
-          )}
-        </RightHeader>
+        <Title>{title}</Title>
+        {onMorePress && (
+          <MoreButton onPress={onMorePress}>
+            <MoreIcon>⋯</MoreIcon>
+          </MoreButton>
+        )}
       </Header>
-      <Title>{title}</Title>
+      {description && <Description>{description}</Description>}
       <TimeText>{timeRange}</TimeText>
       <DayContainer>
         {sortDaysByOrder(selectedDays).map((day) => {
@@ -85,7 +96,7 @@ const Header = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  /* margin-bottom: 4px; */
+  margin-bottom: 4px;
 `;
 
 const CategoryText = styled.Text`
@@ -95,30 +106,27 @@ const CategoryText = styled.Text`
 `;
 
 const MoreButton = styled.TouchableOpacity`
-  padding: 4px;
+  padding: 8px;
+  margin-left: 8px;
 `;
 
 const MoreIcon = styled.Text`
-  font-size: 16px;
+  font-size: 20px;
   color: ${theme.colors.gray500};
-`;
-
-const RightHeader = styled.View`
-  flex-direction: row;
-  align-items: center;
-`;
-
-const ProgressText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 12px;
-  color: ${theme.colors.primary};
-  margin-right: 8px;
+  line-height: 20px;
 `;
 
 const Title = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
   color: ${theme.colors.gray800};
+  flex: 1;
+`;
+
+const Description = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray600};
   margin-bottom: 4px;
 `;
 

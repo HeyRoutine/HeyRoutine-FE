@@ -62,9 +62,7 @@ const EmojiPickerModal = ({
       </CategoryContainer>
 
       <EmojiGrid>
-        {isLoadingEmojis ? (
-          <LoadingText>이모지를 불러오는 중...</LoadingText>
-        ) : emojis.length === 0 ? (
+        {isLoadingEmojis ? null : emojis.length === 0 ? (
           <EmptyText>이모지가 없습니다.</EmptyText>
         ) : (
           emojis.slice(0, 24).map((emoji, index) => (

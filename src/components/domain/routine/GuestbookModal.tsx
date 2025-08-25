@@ -1,5 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import {
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  View,
+  Alert,
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 
@@ -24,18 +30,13 @@ const GuestbookModal = ({
   groupRoutineListId,
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
+  const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
 
-  // 방명록 조회
   const { data: guestbookData, isLoading } =
     useGroupGuestbooks(groupRoutineListId);
-
-  // 방명록 작성
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
-
-  // 방명록 삭제
-  const { mutate: deleteGuestbook, isPending: isDeleting } =
-    useDeleteGroupGuestbook();
+  const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
 
   const handleSend = () => {
     if (message.trim()) {
@@ -45,9 +46,9 @@ const GuestbookModal = ({
           data: { content: message.trim() },
         },
         {
-          onSuccess: (newGuestbook) => {
+          onSuccess: () => {
             setMessage('');
-            console.log('🔍 방명록 작성 성공:', newGuestbook);
+            console.log('🔍 방명록 작성 성공');
           },
           onError: (error) => {
             console.error('🔍 방명록 작성 실패:', error);
@@ -62,24 +63,42 @@ const GuestbookModal = ({
     const messageTime = new Date(timestamp);
     const diffInMs = now.getTime() - messageTime.getTime();
 
-    // 미래 시간이거나 잘못된 시간인 경우
-    if (diffInMs < 0) {
-      return '방금 전';
-    }
+    if (diffInMs < 0) return '방금 전';
 
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-    if (diffInMinutes < 1) {
-      return '방금 전';
-    } else if (diffInMinutes < 60) {
-      return `${diffInMinutes}분 전`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}시간 전`;
-    } else {
-      return `${diffInDays}일 전`;
-    }
+    if (diffInMinutes < 1) return '방금 전';
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+    return `${diffInDays}일 전`;
+  };
+
+  const handleDelete = (guestbookId: number) => {
+    Alert.alert('방명록 삭제', '정말로 이 방명록을 삭제하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제',
+        style: 'destructive',
+        onPress: () => {
+          deleteGuestbook(
+            {
+              groupRoutineListId,
+              guestbookId: guestbookId.toString(),
+            },
+            {
+              onSuccess: () => {
+                console.log('🔍 방명록 삭제 성공');
+              },
+              onError: (error) => {
+                console.error('🔍 방명록 삭제 실패:', error);
+              },
+            },
+          );
+        },
+      },
+    ]);
   };
 
   const renderRightActions = (guestbookId: number) => {
@@ -92,24 +111,6 @@ const GuestbookModal = ({
     );
   };
 
-  const handleDelete = (guestbookId: number) => {
-    // 바로 삭제 실행
-    deleteGuestbook(
-      {
-        groupRoutineListId,
-        guestbookId: guestbookId.toString(),
-      },
-      {
-        onSuccess: () => {
-          console.log('🔍 방명록 삭제 성공');
-        },
-        onError: (error) => {
-          console.error('🔍 방명록 삭제 실패:', error);
-        },
-      },
-    );
-  };
-
   return (
     <BottomSheetDialog
       visible={isVisible}
@@ -117,28 +118,26 @@ const GuestbookModal = ({
       dismissible={false}
       showHandle={true}
     >
-      <GuestbookContainer>
-        <Container>
-          {/* Header */}
-          <Header>
-            <Title>단체 루틴 방명록</Title>
-            <CloseButton onPress={onClose}>
-              <MaterialIcons
-                name="close"
-                size={24}
-                color={theme.colors.gray600}
-              />
-            </CloseButton>
-          </Header>
+      <Container>
+        <Header>
+          <Title>단체 루틴 방명록</Title>
+          <CloseButton onPress={onClose}>
+            <MaterialIcons
+              name="close"
+              size={24}
+              color={theme.colors.gray600}
+            />
+          </CloseButton>
+        </Header>
 
-          {/* Guestbook List */}
+        <ContentContainer>
           <ScrollView
-            style={{ flex: 1, maxHeight: '70%' }}
+            style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            nestedScrollEnabled={true}
           >
-            {isLoading ? (
-              <LoadingText>방명록을 불러오는 중...</LoadingText>
-            ) : guestbookData?.result?.items &&
+            {isLoading ? null : guestbookData?.result?.items &&
               guestbookData.result.items.length > 0 ? (
               <GuestbookList>
                 {guestbookData.result.items
@@ -147,6 +146,9 @@ const GuestbookModal = ({
                   .map((item) => (
                     <Swipeable
                       key={item.id}
+                      ref={(ref) => {
+                        swipeableRefs.current[item.id] = ref;
+                      }}
                       renderRightActions={
                         item.isWriter
                           ? () => renderRightActions(item.id)
@@ -179,113 +181,118 @@ const GuestbookModal = ({
               <EmptyText>아직 방명록이 없어요.</EmptyText>
             )}
           </ScrollView>
+        </ContentContainer>
 
-          {/* Input Section */}
-          <InputSection>
-            <InputContainer>
-              <MessageInput
-                placeholder="팀원들에게 응원을 해봐요."
-                value={message}
-                onChangeText={setMessage}
-                multiline
-                maxLength={200}
-                placeholderTextColor={theme.colors.gray400}
+        <InputSection>
+          <InputContainer>
+            <MessageInput
+              placeholder="팀원들에게 응원을 해봐요."
+              value={message}
+              onChangeText={setMessage}
+              multiline
+              maxLength={200}
+              placeholderTextColor={theme.colors.gray400}
+            />
+            <SendButton
+              onPress={handleSend}
+              disabled={!message.trim() || isCreating}
+            >
+              <MaterialIcons
+                name="send"
+                size={20}
+                color={
+                  message.trim() && !isCreating
+                    ? theme.colors.primary
+                    : theme.colors.gray400
+                }
               />
-              <SendButton
-                onPress={handleSend}
-                disabled={!message.trim() || isCreating}
-              >
-                <MaterialIcons
-                  name="send"
-                  size={20}
-                  color={
-                    message.trim() && !isCreating
-                      ? theme.colors.primary
-                      : theme.colors.gray400
-                  }
-                />
-              </SendButton>
-            </InputContainer>
-          </InputSection>
-        </Container>
-      </GuestbookContainer>
+            </SendButton>
+          </InputContainer>
+        </InputSection>
+      </Container>
     </BottomSheetDialog>
   );
 };
 
 export default GuestbookModal;
 
-const GuestbookContainer = styled.View`
-  height: 50%;
-  width: 100%;
-`;
-
 const Container = styled.View`
+  height: 50%;
   background-color: ${theme.colors.white};
-  flex: 1;
-  flex-direction: column;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 `;
 
 const Header = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 20px 16px 16px;
+  padding: 20px 20px 16px;
   border-bottom-width: 1px;
   border-bottom-color: ${theme.colors.gray100};
   position: relative;
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 18px;
-  color: ${theme.colors.gray900};
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
 `;
 
 const CloseButton = styled.TouchableOpacity`
   position: absolute;
-  right: 16px;
-  top: 20px;
+  right: 20px;
   padding: 4px;
 `;
 
+const ContentContainer = styled.View`
+  flex: 1;
+`;
+
 const GuestbookList = styled.View`
-  padding: 16px;
+  padding: 16px 20px;
   gap: 16px;
 `;
 
 const GuestbookItem = styled.View`
-  gap: 8px;
+  background-color: ${theme.colors.white};
+  border-radius: 12px;
+  padding: 16px;
+  gap: 12px;
+  shadow-color: ${theme.colors.gray900};
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 4px;
+  elevation: 2;
 `;
 
 const ProfileSection = styled.View`
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
 `;
 
 const UserInfo = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  flex: 1;
+  gap: 4px;
 `;
 
 const UserName = styled.Text`
   font-family: ${theme.fonts.Medium};
-  font-size: 13px;
-  color: ${theme.colors.gray600};
+  font-size: 14px;
+  color: ${theme.colors.gray800};
 `;
 
 const TimeText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 12px;
-  color: ${theme.colors.gray400};
+  color: ${theme.colors.gray500};
 `;
 
 const MessageText = styled.Text`
@@ -293,15 +300,11 @@ const MessageText = styled.Text`
   font-size: 15px;
   color: ${theme.colors.gray800};
   line-height: 22px;
-  margin-left: 56px;
+  margin-left: 52px;
 `;
 
 const InputSection = styled.View`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px;
+  padding: 16px 20px 24px;
   border-top-width: 1px;
   border-top-color: ${theme.colors.gray100};
   background-color: ${theme.colors.white};
@@ -309,30 +312,35 @@ const InputSection = styled.View`
 
 const InputContainer = styled.View`
   flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 12px;
   background-color: ${theme.colors.gray50};
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 8px 12px;
 `;
 
 const MessageInput = styled.TextInput`
   flex: 1;
+  min-height: 36px;
+  max-height: 80px;
+  padding: 8px 0;
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
-  color: ${theme.colors.gray900};
-  max-height: 80px;
-  padding: 0;
-  text-align-vertical: center;
+  color: ${theme.colors.gray800};
 `;
 
 const SendButton = styled.TouchableOpacity`
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   background-color: ${theme.colors.white};
   justify-content: center;
   align-items: center;
+  shadow-color: ${theme.colors.gray900};
+  shadow-offset: 0px 1px;
+  shadow-opacity: 0.1;
+  shadow-radius: 2px;
+  elevation: 1;
 `;
 
 const LoadingText = styled.Text`
@@ -340,7 +348,7 @@ const LoadingText = styled.Text`
   font-size: 14px;
   color: ${theme.colors.gray600};
   text-align: center;
-  padding: 40px 16px;
+  padding: 40px 20px;
 `;
 
 const EmptyText = styled.Text`
@@ -348,12 +356,7 @@ const EmptyText = styled.Text`
   font-size: 14px;
   color: ${theme.colors.gray600};
   text-align: center;
-  padding: 40px 16px;
-`;
-
-const DeleteButton = styled.TouchableOpacity`
-  margin-left: auto;
-  padding: 4px;
+  padding: 40px 20px;
 `;
 
 const DeleteActionContainer = styled.View`

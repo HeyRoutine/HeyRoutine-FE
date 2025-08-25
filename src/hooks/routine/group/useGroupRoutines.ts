@@ -18,6 +18,7 @@ import {
   deleteGroupRoutineDetail,
   getGroupRoutineDetail,
   updateGroupRoutineStatus,
+  updateGroupRoutineRecord,
 } from '../../../api/routine/group/routineDetails';
 import {
   getGroupGuestbooks,
@@ -209,9 +210,14 @@ export const useDeleteGroupRoutineDetail = () => {
 
 // 단체루틴 상세 조회 훅
 export const useGroupRoutineDetail = (groupRoutineListId: string) => {
+  console.log('🔍 useGroupRoutineDetail 호출:', groupRoutineListId);
+
   return useQuery({
     queryKey: ['groupRoutineDetail', groupRoutineListId],
-    queryFn: () => getGroupRoutineDetail(groupRoutineListId),
+    queryFn: () => {
+      console.log('🔍 getGroupRoutineDetail API 호출:', groupRoutineListId);
+      return getGroupRoutineDetail(groupRoutineListId);
+    },
     enabled: !!groupRoutineListId,
   });
 };
@@ -233,6 +239,26 @@ export const useUpdateGroupRoutineStatus = () => {
     onSuccess: () => {
       // 상태 업데이트 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
+    },
+  });
+};
+
+// 단체루틴 기록 성공/실패 훅
+export const useUpdateGroupRoutineRecord = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      groupRoutineListId,
+      data,
+    }: {
+      groupRoutineListId: string;
+      data: UpdateGroupRoutineStatusRequest;
+    }) => updateGroupRoutineRecord(groupRoutineListId, data),
+    onSuccess: () => {
+      // 기록 업데이트 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };

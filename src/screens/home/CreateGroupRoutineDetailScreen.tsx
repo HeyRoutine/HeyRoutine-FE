@@ -312,7 +312,10 @@ const CreateGroupRoutineDetailScreen = ({
               type: 'success',
               title: '그룹 루틴 상세 수정 완료',
               description: '그룹 루틴 상세가 성공적으로 수정되었습니다.',
-              nextScreen: 'HomeMain',
+              nextScreen: 'GroupRoutineDetail',
+              updatedRoutineData: {
+                routineId: routineData.groupRoutineListId || routineData.id,
+              },
             });
           },
           onError: (error) => {
@@ -523,6 +526,7 @@ const CreateGroupRoutineDetailScreen = ({
         onPlusPress={() => setRoutineSuggestionVisible(true)}
         onClockPress={handleClockPress}
         onTextChange={handleTextChange}
+        onTimeChange={setSelectedTime}
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}

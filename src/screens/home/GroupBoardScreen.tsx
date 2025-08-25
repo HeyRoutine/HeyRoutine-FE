@@ -1,54 +1,14 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
-import { RoutineCard, AddRoutineButton } from '../../components/domain/routine';
+import { AddRoutineButton } from '../../components/domain/routine';
+import RoutineCard from '../../components/domain/routine/RoutineCard';
 import { useGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
-
-const MOCK_ROUTINES = [
-  {
-    id: '1',
-    category: '지식/관심사',
-    progress: 82,
-    title: '티끌모아 태산',
-    timeRange: '오후 8:00 - 오후 9:00',
-    selectedDays: ['월', '화', '수', '목', '금'],
-    completedDays: ['화', '수'],
-  },
-  {
-    id: '2',
-    category: '운동/헬스',
-    progress: 67,
-    title: '운동 러버',
-    timeRange: '오후 8:00 - 오후 9:00',
-    selectedDays: ['월', '수', '금'],
-    completedDays: ['월', '금'],
-  },
-  {
-    id: '3',
-    category: '자기개발',
-    progress: 45,
-    title: '아이고 종강이야',
-    timeRange: '오전 7:00 - 오전 9:00',
-    selectedDays: ['토', '일'],
-    completedDays: ['토'],
-  },
-  {
-    id: '4',
-    category: '자기개발',
-    progress: 45,
-    title: '넌 독서를 하게 될거시야',
-    timeRange: '오전 7:00 - 오전 9:00',
-    selectedDays: ['월', '화', '수', '목', '금', '토', '일'],
-    completedDays: ['월', '화', '수', '목'],
-  },
-];
-
-// 댓글 목업 제거
 
 const GroupBoardScreen = ({ navigation }: any) => {
   // 그룹 루틴 API 훅 사용
@@ -93,50 +53,54 @@ const GroupBoardScreen = ({ navigation }: any) => {
     groupRoutinesData?.result?.items?.map((item) => {
       const formattedItem = {
         id: item.id.toString(),
-        category: item.routineType === 'DAILY' ? '생활' : '소비',
-        progress: 0, // API에서 제공하지 않는 경우 기본값
         title: item.title,
-        description: item.description,
+        description: item.description || '루틴 설명이 없습니다.',
         startTime: item.startTime,
         endTime: item.endTime,
-        timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-        selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
-        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
-        peopleNums: item.peopleNums,
-        routineNums: item.routineNums,
+        timeRange: `${formatTimeForDisplay(item.startTime)} - ${formatTimeForDisplay(item.endTime)}`,
+        itemCount: item.routineNums || 0,
+        participantCount: item.peopleNums || 0,
+        selectedDays: item.dayOfWeek || [],
         routineType: item.routineType,
         joined: item.joined,
       };
 
       return formattedItem;
-    }) || [];
+    }) || []; // API 데이터가 없으면 목업 데이터 사용
 
   const renderRoutine = ({ item }: any) => (
-    <RoutineCard
-      category={item.category}
-      progress={item.progress}
-      title={item.title}
-      timeRange={item.timeRange}
-      selectedDays={item.selectedDays}
-      completedDays={item.completedDays}
-      onPress={() =>
-        navigation.navigate('GroupRoutineDetail', {
-          routineId: item.id,
-          routineData: {
-            id: item.id,
-            title: item.title,
-            description: item.description || '',
-            startTime: item.startTime,
-            endTime: item.endTime,
-            dayOfWeek: item.selectedDays,
-            peopleNums: item.peopleNums || 0,
-            routineNums: item.routineNums || 0,
-            routineType: item.routineType,
-            joined: item.joined || false,
-          },
-        })
-      }
-    />
+    <RoutineCardWrapper>
+      <RoutineCard
+        progress={0}
+        title={item.title}
+        description={item.description}
+        category={item.routineType === 'DAILY' ? '생활' : '소비'}
+        timeRange={item.timeRange}
+        selectedDays={item.selectedDays}
+        completedDays={[]}
+        onPress={() =>
+          navigation.navigate('GroupRoutineDetail', {
+            routineId: item.id,
+            routineData: {
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              startTime: item.startTime,
+              endTime: item.endTime,
+              dayOfWeek: item.selectedDays,
+              peopleNums: item.participantCount,
+              routineNums: item.itemCount,
+              routineType: item.routineType,
+              joined: item.joined,
+            },
+          })
+        }
+      />
+      <ParticipantInfo>
+        <ParticipantIcon>👥</ParticipantIcon>
+        <ParticipantCount>{item.participantCount}</ParticipantCount>
+      </ParticipantInfo>
+    </RoutineCardWrapper>
   );
 
   return (
@@ -213,4 +177,28 @@ const ListWrapper = styled.View`
   flex: 1;
 `;
 
-// Footer 제거 (댓글 목업 제거에 따라 불필요)
+const RoutineCardWrapper = styled.View`
+  position: relative;
+  margin-bottom: 12px;
+`;
+
+const ParticipantInfo = styled.View`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  align-items: center;
+  background-color: #f7f8fa;
+  padding: 6px 8px;
+  border-radius: 12px;
+`;
+
+const ParticipantIcon = styled.Text`
+  font-size: 16px;
+  margin-bottom: 2px;
+`;
+
+const ParticipantCount = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 14px;
+  color: ${theme.colors.primary};
+`;

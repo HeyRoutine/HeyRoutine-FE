@@ -33,17 +33,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
   const swipeableRef = useRef<Swipeable>(null);
 
   const handleDelete = () => {
-    Alert.alert('루틴 삭제', '이 루틴을 삭제하시겠습니까?', [
-      {
-        text: '취소',
-        style: 'cancel',
-      },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => onDelete(index),
-      },
-    ]);
+    onDelete(index);
   };
 
   const handleEmojiClick = () => {
@@ -129,6 +119,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           onRequestClose={() => setTimePickerVisible(false)}
           onTimeSelect={handleTimeSelect}
           type="minutes"
+          initialMinutes={parseInt(item.time.replace('분', ''))}
         />
       )}
     </>

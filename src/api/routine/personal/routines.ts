@@ -118,6 +118,8 @@ export const showMyRoutineList = async (
 ): Promise<ApiResponse<PersonalRoutineListResponse>> => {
   const { day, date, page = 0, size = 10 } = params;
 
+  console.log('🔍 showMyRoutineList API 호출 파라미터:', params);
+
   const requestParams = {
     ...(day && { day }),
     ...(date && { date }), // date를 yyyy-mm-dd 형식 그대로 사용
@@ -126,27 +128,38 @@ export const showMyRoutineList = async (
   };
 
   const queryString = new URLSearchParams(requestParams).toString();
+  console.log('🔍 showMyRoutineList 요청 URL:', '/api/v1/my-routine/list');
+  console.log('🔍 showMyRoutineList 요청 파라미터:', requestParams);
 
-  const response = await apiClient.get<
-    ApiResponse<PersonalRoutineListResponse>
-  >('/api/v1/my-routine/list', {
-    params: {
-      ...(day && { day }),
-      ...(date && { date }), // date를 yyyy-mm-dd 형식 그대로 사용
-      page,
-      size,
-    },
-  });
+  try {
+    const response = await apiClient.get<
+      ApiResponse<PersonalRoutineListResponse>
+    >('/api/v1/my-routine/list', {
+      params: {
+        ...(day && { day }),
+        ...(date && { date }), // date를 yyyy-mm-dd 형식 그대로 사용
+        page,
+        size,
+      },
+    });
 
-  console.log('🔍 showMyRoutineList 응답:', {
-    status: response.status,
-    data: response.data,
-    isSuccess: response.data?.isSuccess,
-    result: response.data?.result,
-    items: response.data?.result?.items,
-    itemsCount: response.data?.result?.items?.length || 0,
-  });
-  return response.data;
+    console.log('🔍 showMyRoutineList 응답:', {
+      status: response.status,
+      data: response.data,
+      isSuccess: response.data?.isSuccess,
+      result: response.data?.result,
+      items: response.data?.result?.items,
+      itemsCount: response.data?.result?.items?.length || 0,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('🔍 showMyRoutineList API 에러:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    throw error;
+  }
 };
 
 // 개인루틴 리스트 수행 API

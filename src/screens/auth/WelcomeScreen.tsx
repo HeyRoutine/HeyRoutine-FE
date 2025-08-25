@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
-import { useAuthStore, useOnboardingStore } from '../../store';
+import { useAuthStore, useOnboardingStore, useUserStore } from '../../store';
 import { useSignUp, useSignIn } from '../../hooks/user/useUser';
 
 // 모든 회원가입 데이터를 route.params로 받기
@@ -12,6 +12,7 @@ const WelcomeScreen = ({ navigation, route }: any) => {
   const { nickname, email, password, profileImage } = route.params || {};
   const { login } = useAuthStore();
   const { resetOnboarding } = useOnboardingStore();
+  const { setUserInfo } = useUserStore();
 
   // 디버깅용 로그
   console.log('🔍 WelcomeScreen route.params:', route.params);
@@ -58,6 +59,14 @@ const WelcomeScreen = ({ navigation, route }: any) => {
 
                   // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
                   resetOnboarding();
+
+                  // 사용자 정보 저장 (회원가입 정보로 설정)
+                  setUserInfo({
+                    nickname: nickname,
+                    email: email,
+                    profileImage: profileImage || undefined,
+                    points: 0,
+                  });
 
                   // 로그인 상태 변경
                   login();

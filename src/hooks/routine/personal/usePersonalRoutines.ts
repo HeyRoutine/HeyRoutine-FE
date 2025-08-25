@@ -39,7 +39,12 @@ export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
 
   return useQuery({
     queryKey: ['personalRoutines', params],
-    queryFn: () => showMyRoutineList(params),
+    queryFn: async () => {
+      console.log('🔍 showMyRoutineList API 호출 시작');
+      const result = await showMyRoutineList(params);
+      console.log('🔍 showMyRoutineList API 응답:', result);
+      return result;
+    },
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
@@ -173,6 +178,8 @@ export const useCreatePersonalRoutineDetailArray = () => {
       console.log('🔍 개인루틴 상세 생성 성공 (배열):', data);
       // 생성 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
     },
     onError: (error) => {
       console.error('🔍 개인루틴 상세 생성 실패 (배열):', error);
@@ -224,8 +231,7 @@ export const useDeletePersonalRoutineDetail = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (myRoutineListId: string) =>
-      deleteRoutineInMyRoutineList(myRoutineListId),
+    mutationFn: (routineId: string) => deleteRoutineInMyRoutineList(routineId),
     onSuccess: () => {
       // 삭제 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });

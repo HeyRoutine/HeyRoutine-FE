@@ -16,6 +16,7 @@ import {
   useCreatePersonalRoutineDetailArray,
   usePersonalRoutineDetails,
 } from '../../hooks/routine/personal/usePersonalRoutines';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useRoutineTemplates,
   useRoutineEmojis,
@@ -55,6 +56,9 @@ const CreateRoutineDetailScreen = ({
   // 루틴 추천 모달 상태
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
+
+  // QueryClient 훅
+  const queryClient = useQueryClient();
 
   // 개인루틴 상세 생성 훅 (배열)
   const { mutate: createRoutineDetail, isPending } =
@@ -289,6 +293,16 @@ const CreateRoutineDetailScreen = ({
       {
         onSuccess: (data) => {
           console.log('🔍 루틴 상세 생성 성공:', data);
+
+          // 캐시 무효화 후 바로 홈으로 이동
+          queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+          queryClient.invalidateQueries({
+            queryKey: ['infinitePersonalRoutines'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['personalRoutineDetails'],
+          });
+
           navigation.navigate('Result', {
             type: 'success',
             title: '루틴 생성 완료',
@@ -324,9 +338,7 @@ const CreateRoutineDetailScreen = ({
 
           {/* 기존 루틴 로딩 중 표시 */}
           {isLoadingExistingRoutines && (
-            <LoadingContainer>
-              <LoadingText>기존 루틴을 불러오는 중...</LoadingText>
-            </LoadingContainer>
+            <LoadingContainer>{null}</LoadingContainer>
           )}
 
           {/* 새로운 루틴 추가 */}

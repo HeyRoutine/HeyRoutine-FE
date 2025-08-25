@@ -37,8 +37,18 @@ apiClient.interceptors.request.use(
     // 토큰이 필요 없는 API가 아니면 토큰 추가
     if (!isAuthNotRequired) {
       const token = getAuthToken();
+      console.log('🔍 API 요청 URL:', config.url);
+      console.log(
+        '🔍 현재 토큰:',
+        token ? `${token.substring(0, 20)}...` : 'null',
+      );
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('🔍 Authorization 헤더 설정됨');
+      } else {
+        console.log('🔍 토큰이 없어서 Authorization 헤더 설정 안됨');
+        console.log('🔍 전체 스토어 상태:', useAuthStore.getState());
       }
     }
 

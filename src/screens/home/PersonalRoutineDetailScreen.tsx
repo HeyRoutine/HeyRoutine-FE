@@ -10,7 +10,6 @@ import CustomButton from '../../components/common/CustomButton';
 import {
   DayButton,
   RoutineItemAdder,
-  TimePickerModal,
   DayOfWeekSelector,
   EmojiPickerModal,
   RoutineSuggestionModal,
@@ -27,6 +26,7 @@ import {
   usePersonalRoutineDetails,
   useDeletePersonalRoutineList,
   useUpdatePersonalRoutineDetail,
+  useDeletePersonalRoutineDetail,
 } from '../../hooks/routine/personal/usePersonalRoutines';
 
 interface PersonalRoutineDetailScreenProps {
@@ -55,7 +55,6 @@ const PersonalRoutineDetailScreen = ({
       isCompleted: boolean;
     }>
   >([]);
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
@@ -88,6 +87,9 @@ const PersonalRoutineDetailScreen = ({
   const { mutate: updateRoutineDetail, isPending: isUpdating } =
     useUpdatePersonalRoutineDetail();
 
+  // 개인루틴 상세 삭제 훅
+  const { mutate: deleteRoutineDetail } = useDeletePersonalRoutineDetail();
+
   // 루틴 템플릿 조회 훅
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useRoutineTemplates();
@@ -108,15 +110,15 @@ const PersonalRoutineDetailScreen = ({
       return;
     }
 
-    console.log('🔍 루틴 삭제 시작:', routineData.id);
+    console.log('🔍 전체 루틴 삭제 시작:', routineData.id);
     deleteRoutine(routineData.id.toString(), {
       onSuccess: () => {
-        console.log('🔍 루틴 삭제 성공');
+        console.log('🔍 전체 루틴 삭제 성공');
         setDeleteConfirmVisible(false);
         setDeleteSuccessVisible(true);
       },
       onError: (error) => {
-        console.error('🔍 루틴 삭제 실패:', error);
+        console.error('🔍 전체 루틴 삭제 실패:', error);
         Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
       },
     });
@@ -196,24 +198,13 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
+    // 시간 선택 시 현재 선택된 시간을 RoutineSuggestionModal에 전달
     setRoutineSuggestionVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
     console.log('선택된 이모지:', emoji);
     setSelectedEmoji(emoji);
-  };
-
-  const handleTimeSelect = (time: string | number) => {
-    console.log('시간 선택됨:', time, typeof time);
-    if (typeof time === 'number') {
-      const timeString = `${time}분`;
-      setSelectedTime(timeString);
-      console.log('분 설정됨:', timeString);
-    } else {
-      setSelectedTime(time);
-      console.log('시간 설정됨:', time);
-    }
   };
 
   const handleTextChange = (text: string) => {
@@ -274,8 +265,38 @@ const PersonalRoutineDetailScreen = ({
   }, [selectedEmoji, currentText, selectedTime]);
 
   const handleDeleteItem = (index: number) => {
-    const updatedItems = routineItems.filter((_, i) => i !== index);
-    setRoutineItems(updatedItems);
+    // 삭제할 아이템이 기존 루틴인지 확인
+    const itemToDelete = routineItems[index];
+    const existingRoutines = existingRoutinesData?.result || [];
+
+    const existingRoutine = existingRoutines.find(
+      (existing: any) =>
+        existing.routineName === itemToDelete.text &&
+        existing.time === parseInt(itemToDelete.time.replace('분', '')) &&
+        existing.emojiUrl === itemToDelete.emoji,
+    );
+
+    if (existingRoutine) {
+      // 기존 루틴인 경우 API 호출로 삭제
+      console.log('🔍 기존 루틴 삭제 시작:', existingRoutine.routineId);
+      deleteRoutineDetail(existingRoutine.routineId.toString(), {
+        onSuccess: () => {
+          console.log('🔍 기존 루틴 삭제 성공');
+          // 로컬 상태에서도 제거
+          const updatedItems = routineItems.filter((_, i) => i !== index);
+          setRoutineItems(updatedItems);
+        },
+        onError: (error) => {
+          console.error('🔍 기존 루틴 삭제 실패:', error);
+          Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
+        },
+      });
+    } else {
+      // 새로 추가된 루틴인 경우 로컬에서만 제거
+      console.log('🔍 새로 추가된 루틴 로컬 삭제:', itemToDelete.text);
+      const updatedItems = routineItems.filter((_, i) => i !== index);
+      setRoutineItems(updatedItems);
+    }
   };
 
   // 루틴 추천 선택 핸들러 (완료 버튼 클릭 시 호출)
@@ -308,34 +329,89 @@ const PersonalRoutineDetailScreen = ({
 
     // 기존 루틴 데이터와 새로운 루틴 데이터를 비교하여 업데이트할 데이터 준비
     const existingRoutines = existingRoutinesData?.result || [];
-    const newRoutines = routineItems.map((item) => {
-      // 이모지 URL을 emojiId로 매핑
+
+    // 이모지 URL을 emojiId로 매핑하는 함수
+    const getEmojiId = (emojiUrl: string) => {
       let emojiId = 1; // 기본값
       if (emojisData?.result?.items) {
         const matchedEmoji = emojisData.result.items.find(
-          (emoji: any) => emoji.emojiUrl === item.emoji,
+          (emoji: any) => emoji.emojiUrl === emojiUrl,
         );
         if (matchedEmoji) {
           emojiId = matchedEmoji.emojiId;
         }
       }
+      return emojiId;
+    };
 
-      return {
-        routineName: item.text,
-        emojiId: emojiId,
-        time: parseInt(item.time.replace('분', '')),
-      };
+    // 수정된 루틴과 새로 추가된 루틴을 구분
+    const updateRoutine: Array<{
+      id: number;
+      routineName: string;
+      emojiId: number;
+      time: number;
+    }> = [];
+
+    const makeRoutine: Array<{
+      routineName: string;
+      emojiId: number;
+      time: number;
+    }> = [];
+
+    // 기존 루틴과 새로운 루틴을 비교하여 실제로 변경된 것만 처리
+    const processedExistingRoutines = new Set(); // 이미 처리된 기존 루틴 추적
+
+    routineItems.forEach((item, index) => {
+      const existingRoutine = existingRoutines[index];
+
+      if (existingRoutine) {
+        // 기존 루틴이 있는 경우 - 수정 여부 확인
+        const isModified =
+          existingRoutine.routineName !== item.text ||
+          existingRoutine.time !== parseInt(item.time.replace('분', '')) ||
+          existingRoutine.emojiUrl !== item.emoji;
+
+        if (isModified) {
+          // 수정된 경우 updateRoutine에 추가
+          console.log('🔍 기존 루틴 수정:', item.text);
+          updateRoutine.push({
+            id: existingRoutine.routineId,
+            routineName: item.text,
+            emojiId: getEmojiId(item.emoji),
+            time: parseInt(item.time.replace('분', '')),
+          });
+        } else {
+          // 수정되지 않은 경우
+          console.log('🔍 기존 루틴과 동일 (변경 없음):', item.text);
+        }
+      } else {
+        // 기존 루틴이 없는 경우 - 새로 추가된 루틴
+        console.log('🔍 새로 추가된 루틴:', item.text);
+        makeRoutine.push({
+          routineName: item.text,
+          emojiId: getEmojiId(item.emoji),
+          time: parseInt(item.time.replace('분', '')),
+        });
+      }
     });
+
+    console.log('🔍 기존 루틴 개수:', existingRoutines.length);
+    console.log('🔍 새로운 루틴 개수:', routineItems.length);
+    console.log('🔍 추가될 루틴 개수:', makeRoutine.length);
 
     // updateRoutineInMyRoutineListV2 API 호출
     const updateData = {
-      updateRoutine: [], // 기존 루틴 수정 (필요시 구현)
-      makeRoutine: newRoutines, // 새로운 루틴 생성
+      updateRoutine,
+      makeRoutine,
     };
 
     console.log('🔍 루틴 상세 수정 API 호출:', {
       myRoutineListId: routineData.id,
       updateData,
+      existingRoutinesCount: existingRoutines.length,
+      newRoutinesCount: routineItems.length,
+      updateRoutineCount: updateRoutine.length,
+      makeRoutineCount: makeRoutine.length,
     });
 
     updateRoutineDetail(
@@ -348,16 +424,14 @@ const PersonalRoutineDetailScreen = ({
           console.log('🔍 루틴 상세 수정 성공');
           setEditMode(false);
 
-          // 성공 메시지 표시 후 현재 화면에서 데이터 새로고침
-          Alert.alert('수정 완료', '루틴 상세가 성공적으로 수정되었습니다.', [
-            {
-              text: '확인',
-              onPress: () => {
-                // 데이터 새로고침
-                refetchRoutineDetails();
-              },
-            },
-          ]);
+          // ResultScreen으로 이동
+          navigation.navigate('Result', {
+            type: 'success',
+            title: '루틴 상세 수정 완료',
+            description: '루틴 상세가 성공적으로 수정되었습니다.',
+            nextScreen: 'PersonalRoutineDetail',
+            updatedRoutineData: routineData,
+          });
         },
         onError: (error) => {
           console.error('🔍 루틴 상세 수정 실패:', error);
@@ -366,7 +440,21 @@ const PersonalRoutineDetailScreen = ({
     );
   };
 
+  // 오늘 날짜가 루틴의 선택된 요일에 포함되는지 확인하는 함수
+  const isTodayInSelectedDays = () => {
+    const today = new Date();
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const todayDay = dayNames[today.getDay()];
+    return selectedDays.includes(todayDay);
+  };
+
   const handleStartRoutine = () => {
+    // 오늘 날짜가 선택된 요일에 포함되지 않으면 실행하지 않음
+    if (!isTodayInSelectedDays()) {
+      Alert.alert('알림', '오늘 날짜에 해당하는 루틴이 아닙니다.');
+      return;
+    }
+
     // 일반 모드일 때는 루틴 실행
     const routineName = routineData?.name;
     const tasks = routineItems.map((item) => ({
@@ -512,19 +600,29 @@ const PersonalRoutineDetailScreen = ({
         </RoutineCard>
 
         {/* 루틴 실행/수정 완료 버튼 */}
-        <CreateButton onPress={isEditMode ? handleSave : handleStartRoutine}>
-          <CreateButtonText>
+        <CreateButton
+          onPress={isEditMode ? handleSave : handleStartRoutine}
+          disabled={!isEditMode && !isTodayInSelectedDays()}
+          style={{
+            opacity: !isEditMode && !isTodayInSelectedDays() ? 0.5 : 1,
+            backgroundColor:
+              !isEditMode && !isTodayInSelectedDays()
+                ? theme.colors.gray200
+                : theme.colors.primary,
+          }}
+        >
+          <CreateButtonText
+            style={{
+              color:
+                !isEditMode && !isTodayInSelectedDays()
+                  ? theme.colors.gray400
+                  : theme.colors.white,
+            }}
+          >
             {isEditMode ? '수정 완료' : '루틴 실행하기'}
           </CreateButtonText>
         </CreateButton>
       </Content>
-
-      <TimePickerModal
-        visible={timePickerVisible}
-        onRequestClose={() => setTimePickerVisible(false)}
-        onTimeSelect={handleTimeSelect}
-        type="minutes"
-      />
 
       <EmojiPickerModal
         visible={emojiPickerVisible}
@@ -539,6 +637,7 @@ const PersonalRoutineDetailScreen = ({
         onPlusPress={() => setRoutineSuggestionVisible(true)}
         onClockPress={handleClockPress}
         onTextChange={handleTextChange}
+        onTimeChange={setSelectedTime}
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}

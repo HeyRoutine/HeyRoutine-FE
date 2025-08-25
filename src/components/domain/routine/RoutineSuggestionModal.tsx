@@ -16,6 +16,7 @@ interface RoutineSuggestionModalProps {
   onPlusPress?: () => void;
   onClockPress?: () => void;
   onTextChange?: (text: string) => void;
+  onTimeChange?: (time: string) => void;
   selectedTime?: string;
   selectedEmoji?: string;
   currentText?: string;
@@ -98,6 +99,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   onPlusPress,
   onClockPress,
   onTextChange,
+  onTimeChange,
   selectedTime,
   selectedEmoji,
   currentText,
@@ -115,14 +117,20 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
     selectedTime || '',
   );
 
-  // selectedTimeLocal 변경 추적
-  useEffect(() => {}, [selectedTimeLocal]);
-
-  // selectedTime prop 변경 시 selectedTimeLocal 업데이트 (초기화 시에만)
+  // 모달이 열릴 때마다 시간 초기화
   useEffect(() => {
-    if (selectedTime && selectedTime !== selectedTimeLocal) {
-      setSelectedTimeLocal(selectedTime);
+    if (visible) {
+      setSelectedTimeLocal('');
     }
+  }, [visible]);
+
+  // selectedTime prop 변경 시 selectedTimeLocal 즉시 업데이트
+  useEffect(() => {
+    console.log(
+      '🔍 RoutineSuggestionModal - selectedTime 변경됨:',
+      selectedTime,
+    );
+    setSelectedTimeLocal(selectedTime || '');
   }, [selectedTime]);
   const [currentTextLocal, setCurrentTextLocal] = useState(currentText || '');
 
@@ -149,7 +157,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
     templates && templates.length > 0
       ? templates.map((template) => ({
           id: template.templateId.toString(),
-          title: template.name,
+          title: template.name?.trim() || '', // 타이틀 앞뒤 공백 제거
           description: template.content,
           icon: getEmojiUrl(template.emojiId), // 템플릿의 emojiId에 해당하는 이모지 URL 사용
           category: template.category || 'template', // 템플릿에 카테고리 정보가 있으면 사용
@@ -171,7 +179,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   const handleRoutineSelect = (routine: RoutineItem) => {
     // 루틴 추천 아이템 선택 시 모달의 입력 필드들에 반영 (시간은 제외)
     setSelectedEmojiLocal(routine.icon);
-    setCurrentTextLocal(routine.title);
+    setCurrentTextLocal(routine.title.trim()); // 타이틀 앞뒤 공백 제거
     // 시간은 선택되지 않은 상태로 유지
   };
 
@@ -195,6 +203,14 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   const handleTimeSelect = (time: string | number) => {
     const timeString = time.toString();
 
+    console.log('🔍 RoutineSuggestionModal - 시간 선택됨:', timeString);
+
+    // 부모 컴포넌트에 즉시 시간 변경을 알림
+    if (onTimeChange) {
+      onTimeChange(timeString);
+    }
+
+    // 로컬 상태도 즉시 업데이트
     setSelectedTimeLocal(timeString);
 
     setTimePickerVisible(false);
@@ -211,7 +227,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
       onRoutineSelect({
         id: Date.now().toString(),
         icon: selectedEmojiLocal,
-        title: currentTextLocal,
+        title: currentTextLocal.trim(), // 타이틀 앞뒤 공백 제거
         description: '',
         category: categoryTabs[selectedCategoryIndex],
       });
@@ -276,9 +292,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
             <RoutineList>
               <ScrollView showsVerticalScrollIndicator={false}>
                 {isLoading ? (
-                  <LoadingContainer>
-                    <LoadingText>루틴 템플릿을 불러오는 중...</LoadingText>
-                  </LoadingContainer>
+                  <LoadingContainer>{null}</LoadingContainer>
                 ) : filteredRoutines.length > 0 ? (
                   filteredRoutines.map((routine) => (
                     <RoutineSuggestionItem
@@ -323,7 +337,11 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         onRequestClose={() => setTimePickerVisible(false)}
         onTimeSelect={handleTimeSelect}
         type="minutes"
-        initialMinutes={40}
+        initialMinutes={
+          selectedTimeLocal
+            ? parseInt(selectedTimeLocal.replace('분', ''))
+            : undefined
+        }
       />
     </BottomSheetDialog>
   );

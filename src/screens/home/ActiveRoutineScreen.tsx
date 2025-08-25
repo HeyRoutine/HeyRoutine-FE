@@ -203,7 +203,23 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                   reverse
                 />
                 <TimerContent>
-                  <BreadIcon>{tasks[activeTaskIndex]?.icon || '⏰'}</BreadIcon>
+                  {tasks[activeTaskIndex]?.icon?.startsWith('http') ? (
+                    <BreadIconImage
+                      source={{ uri: tasks[activeTaskIndex].icon }}
+                      resizeMode="contain"
+                      defaultSource={require('../../assets/images/robot.png')}
+                      onError={() =>
+                        console.log(
+                          '이모지 이미지 로드 실패:',
+                          tasks[activeTaskIndex].icon,
+                        )
+                      }
+                    />
+                  ) : (
+                    <BreadIcon>
+                      {tasks[activeTaskIndex]?.icon || '⏰'}
+                    </BreadIcon>
+                  )}
                   <TimeLeft>{formatTime(timeLeft)}</TimeLeft>
                   <TotalTime>
                     {tasks[activeTaskIndex]?.duration || '10분'}
@@ -367,6 +383,12 @@ const TimerContent = styled.View`
 
 const BreadIcon = styled.Text`
   font-size: 48px;
+  margin-bottom: 16px;
+`;
+
+const BreadIconImage = styled.Image`
+  width: 48px;
+  height: 48px;
   margin-bottom: 16px;
 `;
 
