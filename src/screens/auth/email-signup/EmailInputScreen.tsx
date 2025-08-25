@@ -38,14 +38,9 @@ const EmailInputScreen = ({ navigation }: any) => {
     }
   }, [email, isEmailValid]);
 
-  // 이메일 입력 시 실시간 중복 확인 실행
+  // 이메일 입력 시 상태 초기화
   useEffect(() => {
-    if (email.length > 0 && validateEmail(email)) {
-      // 이메일이 유효할 때 useCheckEmailDuplicate의 enabled가 자동으로 true가 되어 API 호출
-      console.log('🔍 이메일 중복 확인 트리거:', email);
-      console.log('🔍 이메일 유효성:', validateEmail(email));
-      console.log('🔍 enabled 조건:', email.length > 0 && validateEmail(email));
-    } else if (email.length === 0) {
+    if (email.length === 0) {
       // 이메일이 비어있을 때 상태 초기화
       setIsEmailAvailable(null);
       setErrorMessage('');
