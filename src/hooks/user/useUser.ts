@@ -31,12 +31,19 @@ export const useCheckEmailDuplicate = (
   email: string,
   enabled: boolean = false,
 ) => {
+  console.log('🔍 useCheckEmailDuplicate 호출:', {
+    email,
+    enabled,
+    emailLength: email.length,
+  });
+
   return useQuery({
     queryKey: ['checkEmailDuplicate', email],
     queryFn: () => checkEmailDuplicate(email),
     enabled: enabled && email.length > 0, // 이메일이 있을 때만 실행
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 재호출 방지
   });
 };
 
