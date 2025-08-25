@@ -129,6 +129,7 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
           onRequestClose={() => setTimePickerVisible(false)}
           onTimeSelect={handleTimeSelect}
           type="minutes"
+          initialMinutes={parseInt(item.time.replace('분', ''))}
         />
       )}
     </>

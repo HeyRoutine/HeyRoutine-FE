@@ -10,7 +10,6 @@ import CustomButton from '../../components/common/CustomButton';
 import {
   DayButton,
   RoutineItemAdder,
-  TimePickerModal,
   DayOfWeekSelector,
   EmojiPickerModal,
   RoutineSuggestionModal,
@@ -55,7 +54,6 @@ const PersonalRoutineDetailScreen = ({
       isCompleted: boolean;
     }>
   >([]);
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
@@ -196,24 +194,13 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
+    // 시간 선택 시 현재 선택된 시간을 RoutineSuggestionModal에 전달
     setRoutineSuggestionVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
     console.log('선택된 이모지:', emoji);
     setSelectedEmoji(emoji);
-  };
-
-  const handleTimeSelect = (time: string | number) => {
-    console.log('시간 선택됨:', time, typeof time);
-    if (typeof time === 'number') {
-      const timeString = `${time}분`;
-      setSelectedTime(timeString);
-      console.log('분 설정됨:', timeString);
-    } else {
-      setSelectedTime(time);
-      console.log('시간 설정됨:', time);
-    }
   };
 
   const handleTextChange = (text: string) => {
@@ -519,13 +506,6 @@ const PersonalRoutineDetailScreen = ({
         </CreateButton>
       </Content>
 
-      <TimePickerModal
-        visible={timePickerVisible}
-        onRequestClose={() => setTimePickerVisible(false)}
-        onTimeSelect={handleTimeSelect}
-        type="minutes"
-      />
-
       <EmojiPickerModal
         visible={emojiPickerVisible}
         onRequestClose={() => setEmojiPickerVisible(false)}
@@ -539,6 +519,7 @@ const PersonalRoutineDetailScreen = ({
         onPlusPress={() => setRoutineSuggestionVisible(true)}
         onClockPress={handleClockPress}
         onTextChange={handleTextChange}
+        onTimeChange={setSelectedTime}
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}

@@ -523,6 +523,7 @@ const CreateGroupRoutineDetailScreen = ({
         onPlusPress={() => setRoutineSuggestionVisible(true)}
         onClockPress={handleClockPress}
         onTextChange={handleTextChange}
+        onTimeChange={setSelectedTime}
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}

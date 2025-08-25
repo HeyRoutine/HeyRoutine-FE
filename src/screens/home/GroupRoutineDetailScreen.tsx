@@ -7,17 +7,21 @@ import {
   TouchableWithoutFeedback,
   View,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
+import RoutineCard from '../../components/domain/routine/RoutineCard';
 import {
   useDeleteGroupRoutine,
   useJoinGroupRoutine,
   useLeaveGroupRoutine,
   useGroupRoutineDetail,
+  useUpdateGroupRoutineStatus,
+  useUpdateGroupRoutineRecord,
 } from '../../hooks/routine/group/useGroupRoutines';
 import GuestbookModal from '../../components/domain/routine/GuestbookModal';
 import RoutineSuggestionModal from '../../components/domain/routine/RoutineSuggestionModal';
@@ -53,6 +57,7 @@ const GroupRoutineDetailScreen = ({
         timeRange: '',
         progressText: '',
         selectedDays: [],
+        completedDays: [],
         isJoined: false,
         routineType: 'DAILY',
         routineNums: 0,
@@ -72,12 +77,25 @@ const GroupRoutineDetailScreen = ({
     const memberInfo = result.groupRoutineMemberInfo;
 
     // 완료/미달성 참여자 계산
-    const completedParticipants =
-      memberInfo?.successPeopleProfileImageUrl || [];
-    const unachievedParticipants =
-      memberInfo?.failedPeopleProfileImageUrl || [];
+    const completedParticipants = memberInfo?.successPeopleProfileImageUrl || [
+      '',
+      '',
+      '',
+    ]; // 테스트용 더미 데이터
+    const unachievedParticipants = memberInfo?.failedPeopleProfileImageUrl || [
+      '',
+      '',
+      '',
+    ]; // 테스트용 더미 데이터
     const completedCount = completedParticipants.length;
     const unachievedCount = unachievedParticipants.length;
+
+    // 모든 루틴이 완료되었는지 확인
+    const allCompleted =
+      routineInfos.length > 0 && routineInfos.every((r: any) => r.isCompleted);
+
+    // 모든 루틴이 완료되었다면 선택된 요일을 완료된 요일로 설정
+    const completedDays = allCompleted ? groupRoutineInfo?.dayOfWeek || [] : [];
 
     const routineObject = {
       id: routineId,
@@ -90,6 +108,7 @@ const GroupRoutineDetailScreen = ({
           ? `[${groupRoutineInfo?.routineType === 'DAILY' ? '생활' : '소비'}] ${Math.round((routineInfos.filter((r: any) => r.isCompleted).length / routineInfos.length) * 100)}%`
           : '0%',
       selectedDays: groupRoutineInfo?.dayOfWeek || [],
+      completedDays,
       isJoined: groupRoutineInfo?.joined || false,
       routineType: groupRoutineInfo?.routineType || 'DAILY',
       routineNums: groupRoutineInfo?.routineNums || 0,
@@ -97,13 +116,14 @@ const GroupRoutineDetailScreen = ({
         icon: '☕', // 이모지는 별도로 처리 필요
         title: r.name,
         duration: `${r.time}분`,
+        isCompleted: r.isCompleted,
       })),
       participants: [...completedParticipants, ...unachievedParticipants],
       completedParticipants,
       unachievedParticipants,
       completedCount,
       unachievedCount,
-      isAdmin: result.admin === true, // isAdmin → admin으로 수정
+      isAdmin: result.admin === true,
     };
 
     return routineObject;
@@ -126,11 +146,12 @@ const GroupRoutineDetailScreen = ({
   useEffect(() => {
     if (routineDetailData?.result) {
       const result = routineDetailData.result;
+      const isUserJoined = result.groupRoutineInfo?.joined || false;
+
       if (result.admin) {
-        // isAdmin → admin으로 수정
         setUserRole('host');
-        setIsJoined(true); // 방장은 가입된 상태로 간주
-      } else if (result.groupRoutineInfo?.joined) {
+        setIsJoined(isUserJoined);
+      } else if (isUserJoined) {
         setUserRole('member');
         setIsJoined(true);
       } else {
@@ -148,35 +169,35 @@ const GroupRoutineDetailScreen = ({
   const { mutate: leaveGroupRoutine, isPending: isLeaving } =
     useLeaveGroupRoutine();
 
+  // 루틴 상태 업데이트 훅
+  const updateGroupRoutineStatus = useUpdateGroupRoutineStatus();
+
+  // 단체루틴 기록 업데이트 훅
+  const updateGroupRoutineRecord = useUpdateGroupRoutineRecord();
+
   const handleBack = () => navigation.goBack();
   const handleJoin = () => setJoinModalVisible(true);
   const handleCloseJoinModal = () => setJoinModalVisible(false);
   const handleConfirmJoin = () => {
-    // 이미 가입된 상태인지 확인
     if (isJoined) {
       console.log('🔍 이미 가입된 그룹 루틴입니다');
       setJoinModalVisible(false);
       return;
     }
 
-    // isAdmin이 false일 때만 가입 가능
     if (routine.isAdmin) {
       console.log('🔍 방장은 가입할 수 없습니다');
       setJoinModalVisible(false);
       return;
     }
 
-    // 그룹 루틴 가입 API 호출
     joinGroupRoutine(routine.id, {
       onSuccess: () => {
         console.log('🔍 그룹 루틴 가입 성공');
-
-        // 상태 즉시 업데이트
         setIsJoined(true);
         setUserRole('member');
         setJoinModalVisible(false);
 
-        // 캐시 무효화로 데이터 새로고침
         queryClient.invalidateQueries({
           queryKey: ['groupRoutineDetail', routineId],
         });
@@ -184,12 +205,10 @@ const GroupRoutineDetailScreen = ({
           queryKey: ['infiniteGroupRoutines'],
         });
 
-        // 성공 메시지 표시
         Alert.alert('가입 완료', '그룹 루틴에 성공적으로 가입되었습니다.', [
           {
             text: '확인',
             onPress: () => {
-              // 홈 화면으로 돌아가기
               navigation.navigate('HomeMain');
             },
           },
@@ -208,7 +227,6 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleEditRoutine = () => {
-    // 그룹 루틴 기본 정보 수정 (제목, 설명, 시간, 요일 등)
     setIsMenuVisible(false);
     setIsEditRoutineModalVisible(true);
   };
@@ -224,7 +242,7 @@ const GroupRoutineDetailScreen = ({
         routineType: routine.routineType,
         startTime: routine.timeRange.split(' - ')[0],
         endTime: routine.timeRange.split(' - ')[1],
-        dayTypes: routine.selectedDays, // dayOfWeek → dayTypes로 수정 (API 요청 형식에 맞춤)
+        dayTypes: routine.selectedDays,
       },
     });
   };
@@ -234,29 +252,26 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleEditRoutineDetail = () => {
-    // 그룹 루틴 상세 루틴 수정 (개별 루틴 아이템들)
     setIsMenuVisible(false);
     setIsEditRoutineDetailModalVisible(true);
   };
 
   const handleConfirmEditRoutineDetail = () => {
     setIsEditRoutineDetailModalVisible(false);
-
-    // 실제 API 데이터에서 routineInfos 사용
     const routineInfos = routineDetailData?.result?.routineInfos || [];
 
     navigation.navigate('CreateGroupRoutineDetail', {
       mode: 'edit',
       routineData: {
-        groupRoutineListId: routine.id, // 그룹 루틴 ID를 명확한 이름으로 전달
-        id: routine.id, // 기존 호환성을 위해 유지
+        groupRoutineListId: routine.id,
+        id: routine.id,
         title: routine.title,
         description: routine.description,
         routineType: routine.routineType,
         startTime: routine.timeRange.split(' - ')[0],
         endTime: routine.timeRange.split(' - ')[1],
         dayTypes: routine.selectedDays,
-        routines: routineInfos, // 원본 데이터 그대로 전달
+        routines: routineInfos,
       },
     });
   };
@@ -266,19 +281,15 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleSaveRoutineDetail = () => {
-    // 상세 루틴 수정 저장
-    // TODO: updateGroupRoutineDetail API 호출
     console.log('🔍 상세 루틴 수정 저장');
     setIsEditMode(false);
   };
 
   const handleCancelEdit = () => {
-    // 상세 루틴 수정 취소
     setIsEditMode(false);
   };
 
   const handleDeleteRoutine = () => {
-    // 루틴 삭제 로직
     setIsMenuVisible(false);
     setIsDeleteModalVisible(true);
   };
@@ -298,7 +309,6 @@ const GroupRoutineDetailScreen = ({
       onError: (error) => {
         console.error('🔍 그룹 루틴 삭제 실패:', error);
         setIsDeleteModalVisible(false);
-        // 에러 처리 (나중에 토스트나 알림 추가)
       },
     });
   };
@@ -310,35 +320,28 @@ const GroupRoutineDetailScreen = ({
   const [isLeaveModalVisible, setIsLeaveModalVisible] = useState(false);
 
   const handleLeaveRoutine = () => {
-    // isAdmin이 true일 때는 나가기 불가
     if (routine.isAdmin) {
       setIsMenuVisible(false);
       return;
     }
 
-    // 이미 나간 상태인지 확인
     if (!isJoined) {
       setIsMenuVisible(false);
       return;
     }
 
-    // 나가기 확인 모달 표시
     setIsMenuVisible(false);
     setIsLeaveModalVisible(true);
   };
 
   const handleConfirmLeave = () => {
-    // 그룹 루틴 나가기 API 호출
     leaveGroupRoutine(routine.id, {
       onSuccess: () => {
         console.log('🔍 그룹 루틴 나가기 성공');
-
-        // 상태 즉시 업데이트
         setIsJoined(false);
         setUserRole(null);
         setIsLeaveModalVisible(false);
 
-        // 캐시 무효화로 데이터 새로고침
         queryClient.invalidateQueries({
           queryKey: ['groupRoutineDetail', routineId],
         });
@@ -346,12 +349,10 @@ const GroupRoutineDetailScreen = ({
           queryKey: ['infiniteGroupRoutines'],
         });
 
-        // 성공 메시지 표시
         Alert.alert('나가기 완료', '그룹 루틴에서 성공적으로 나갔습니다.', [
           {
             text: '확인',
             onPress: () => {
-              // 홈 화면으로 돌아가기
               navigation.navigate('HomeMain');
             },
           },
@@ -359,19 +360,8 @@ const GroupRoutineDetailScreen = ({
       },
       onError: (error: any) => {
         console.error('🔍 그룹 루틴 나가기 실패:', error);
-
-        // 에러 상세 정보 로깅
-        if (error.response) {
-          console.error('🔍 에러 응답:', {
-            status: error.response.status,
-            data: error.response.data,
-            headers: error.response.headers,
-          });
-        }
-
         setIsLeaveModalVisible(false);
 
-        // 에러 상태에 따른 메시지
         let errorMessage = '그룹 루틴 나가기에 실패했습니다.';
         if (error.response?.status === 403) {
           errorMessage = '권한이 없습니다. 방장은 나갈 수 없습니다.';
@@ -386,6 +376,66 @@ const GroupRoutineDetailScreen = ({
 
   const handleCancelLeave = () => {
     setIsLeaveModalVisible(false);
+  };
+
+  // 루틴 아이템 토글 함수
+  const handleTaskToggle = (index: number) => {
+    const routineInfos = routineDetailData?.result?.routineInfos || [];
+    const task = routineInfos[index];
+
+    if (!task) {
+      console.error('🔍 루틴 아이템을 찾을 수 없습니다:', index);
+      return;
+    }
+
+    // 현재 상태의 반대값으로 업데이트
+    const newStatus = !task.isCompleted;
+
+    updateGroupRoutineStatus.mutate(
+      {
+        groupRoutineListId: routineId,
+        routineId: task.id.toString(),
+        data: { status: newStatus },
+      },
+      {
+        onSuccess: () => {
+          console.log('🔍 루틴 상태 업데이트 성공:', task.name, newStatus);
+
+          // 모든 루틴이 완료되었는지 확인
+          const updatedRoutineInfos = routineInfos.map((r, i) =>
+            i === index ? { ...r, isCompleted: newStatus } : r,
+          );
+
+          const allCompleted = updatedRoutineInfos.every((r) => r.isCompleted);
+
+          if (allCompleted && updatedRoutineInfos.length > 0) {
+            console.log(
+              '🔍 모든 루틴이 완료되었습니다. 단체루틴 기록을 업데이트합니다.',
+            );
+
+            // 단체루틴 기록 성공 API 호출
+            updateGroupRoutineRecord.mutate(
+              {
+                groupRoutineListId: routineId,
+                data: { status: true },
+              },
+              {
+                onSuccess: () => {
+                  console.log('🔍 단체루틴 기록 업데이트 성공');
+                },
+                onError: (error) => {
+                  console.error('🔍 단체루틴 기록 업데이트 실패:', error);
+                },
+              },
+            );
+          }
+        },
+        onError: (error) => {
+          console.error('🔍 루틴 상태 업데이트 실패:', error);
+          Alert.alert('오류', '루틴 상태 업데이트에 실패했습니다.');
+        },
+      },
+    );
   };
 
   // 로딩 상태 처리
@@ -429,46 +479,50 @@ const GroupRoutineDetailScreen = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
       >
-        <SummaryCard>
-          <SummaryHeader>
-            <SummaryTitle>{routine.title}</SummaryTitle>
-            {!isJoined && (
-              <MemberCountRow>
-                <MemberIcon>👥</MemberIcon>
-                <MemberCountText>{routine.membersCount}</MemberCountText>
-              </MemberCountRow>
-            )}
-            {/* 메뉴 버튼: 방장이거나 참여한 팀원만 표시 */}
-            {(routine.isAdmin || (isJoined && !routine.isAdmin)) && (
-              <MenuButton onPress={handleMenuPress}>
-                <MenuIcon>⋯</MenuIcon>
-              </MenuButton>
-            )}
-          </SummaryHeader>
-          <SummaryDescription numberOfLines={2}>
-            {routine.description}
-          </SummaryDescription>
-          <SummaryMetaRow>
-            <MetaText>{routine.timeRange}</MetaText>
-            <MetaDot>•</MetaDot>
-            <MetaText>{routine.selectedDays.join(' ')}</MetaText>
-          </SummaryMetaRow>
-          <ProgressBadge>
-            <ProgressText>{routine.progressText}</ProgressText>
-          </ProgressBadge>
-        </SummaryCard>
+        {/* 루틴 헤더 카드 - RoutineCard 활용 */}
+        <RoutineCardContainer>
+          <RoutineCard
+            progress={
+              routine.tasks.length > 0
+                ? Math.round(
+                    (routine.tasks.filter((t) => t.isCompleted).length /
+                      routine.tasks.length) *
+                      100,
+                  )
+                : 0
+            }
+            title={routine.title}
+            description={routine.description}
+            timeRange={routine.timeRange}
+            selectedDays={routine.selectedDays}
+            completedDays={routine.completedDays}
+            onPress={() => {}}
+            onMorePress={handleMenuPress}
+            showProgress={false}
+          />
+        </RoutineCardContainer>
 
+        {/* 해야할 루틴 섹션 */}
         <SectionCard>
-          <SectionHeader>해야할 루틴</SectionHeader>
-          <ItemList>
-            {routine.tasks.map((t) => (
-              <ItemRow key={t.title}>
-                <TaskIcon>{t.icon}</TaskIcon>
+          <RoutineListContainer>
+            <SectionHeader>해야할 루틴</SectionHeader>
+            {routine.tasks.map((task, index) => (
+              <RoutineItemRow key={index}>
+                <TaskIcon>{task.icon}</TaskIcon>
                 <TaskContent>
-                  <TaskTitle>{t.title}</TaskTitle>
-                  <TaskDuration>{t.duration}</TaskDuration>
+                  <TaskTitle>{task.title}</TaskTitle>
                 </TaskContent>
-              </ItemRow>
+                <TaskDuration>{task.duration}</TaskDuration>
+                <TaskStatus onPress={() => handleTaskToggle(index)}>
+                  {task.isCompleted ? (
+                    <CompletedCheckbox>
+                      <CompletedCheckmark>✓</CompletedCheckmark>
+                    </CompletedCheckbox>
+                  ) : (
+                    <UncompletedCheckbox />
+                  )}
+                </TaskStatus>
+              </RoutineItemRow>
             ))}
             {isEditMode && (
               <AddTemplateButton
@@ -477,78 +531,75 @@ const GroupRoutineDetailScreen = ({
                 <AddTemplateText>+ 템플릿 추가</AddTemplateText>
               </AddTemplateButton>
             )}
-          </ItemList>
+          </RoutineListContainer>
         </SectionCard>
 
-        <ParticipantsCard>
-          <SectionHeader>참여자</SectionHeader>
-
-          {!isJoined ? (
-            // 참여하기 전: 일반 참여자 목록
-            <AvatarRow horizontal showsHorizontalScrollIndicator={false}>
-              {routine.participants.slice(0, 8).map((uri, idx) => (
-                <AvatarWrapper key={`participant-${idx}`}>
-                  <Avatar
-                    source={{ uri }}
-                    defaultSource={require('../../assets/images/default_profile.png')}
-                    onError={() => console.log('프로필 이미지 로드 실패:', uri)}
-                  />
-                </AvatarWrapper>
-              ))}
-            </AvatarRow>
-          ) : (
-            // 참여한 후: 완료자와 미달성자로 분류
-            <ParticipantsContainer>
-              {/* 완료된 참여자 */}
-              <CompletedSection>
-                <CompletedHeader>
-                  <CompletedTitle>완료</CompletedTitle>
-                  <CompletedCountContainer>
-                    <CompletedIcon>👥</CompletedIcon>
-                    <CompletedCountText>
-                      {routine.completedCount}
-                    </CompletedCountText>
-                  </CompletedCountContainer>
-                </CompletedHeader>
+        {/* 완료/미달성 섹션 */}
+        <SectionCard>
+          <ParticipantsContainer>
+            {/* 완료 섹션 */}
+            <CompletedSection>
+              <CompletedHeader>
+                <CompletedTitle>완료</CompletedTitle>
+                <CompletedCountContainer>
+                  <CompletedIcon>👥</CompletedIcon>
+                  <CompletedCountText>
+                    {routine.completedCount}
+                  </CompletedCountText>
+                </CompletedCountContainer>
+              </CompletedHeader>
+              <CompletedAvatarContainer>
                 <CompletedAvatarRow
                   horizontal
                   showsHorizontalScrollIndicator={false}
                 >
-                  {routine.completedParticipants.slice(0, 6).map((uri, idx) => (
-                    <AvatarWrapper key={`completed-${idx}`}>
-                      <Avatar
-                        source={{ uri }}
-                        defaultSource={require('../../assets/images/default_profile.png')}
-                        onError={() =>
-                          console.log('프로필 이미지 로드 실패:', uri)
-                        }
-                      />
-                    </AvatarWrapper>
-                  ))}
+                  {routine.completedParticipants
+                    .slice(0, 12)
+                    .map((uri, idx) => (
+                      <AvatarWrapper key={`completed-${idx}`}>
+                        <Avatar
+                          source={
+                            uri
+                              ? { uri }
+                              : require('../../assets/images/default_profile.png')
+                          }
+                          defaultSource={require('../../assets/images/default_profile.png')}
+                          onError={() =>
+                            console.log('프로필 이미지 로드 실패:', uri)
+                          }
+                        />
+                      </AvatarWrapper>
+                    ))}
                 </CompletedAvatarRow>
-              </CompletedSection>
+              </CompletedAvatarContainer>
+            </CompletedSection>
 
-              {/* 미달성 참여자 */}
-              <UnachievedSection>
-                <UnachievedHeader>
-                  <UnachievedTitle>미달성</UnachievedTitle>
-                  <UnachievedCountContainer>
-                    <UnachievedIcon>👥</UnachievedIcon>
-                    <UnachievedCountText>
-                      {routine.unachievedCount}
-                    </UnachievedCountText>
-                  </UnachievedCountContainer>
-                </UnachievedHeader>
+            {/* 미달성 섹션 */}
+            <UnachievedSection>
+              <UnachievedHeader>
+                <UnachievedTitle>미달성</UnachievedTitle>
+                <UnachievedCountContainer>
+                  <UnachievedIcon>👥</UnachievedIcon>
+                  <UnachievedCountText>
+                    {routine.unachievedCount}
+                  </UnachievedCountText>
+                </UnachievedCountContainer>
+              </UnachievedHeader>
+              <UnachievedAvatarContainer>
                 <UnachievedAvatarRow
                   horizontal
                   showsHorizontalScrollIndicator={false}
                 >
                   {routine.unachievedParticipants
-                    .slice(0, 6)
+                    .slice(0, 12)
                     .map((uri, idx) => (
                       <AvatarWrapper key={`unachieved-${idx}`}>
                         <Avatar
-                          source={{ uri }}
+                          source={
+                            uri
+                              ? { uri }
+                              : require('../../assets/images/default_profile.png')
+                          }
                           defaultSource={require('../../assets/images/default_profile.png')}
                           onError={() =>
                             console.log('프로필 이미지 로드 실패:', uri)
@@ -557,10 +608,10 @@ const GroupRoutineDetailScreen = ({
                       </AvatarWrapper>
                     ))}
                 </UnachievedAvatarRow>
-              </UnachievedSection>
-            </ParticipantsContainer>
-          )}
-        </ParticipantsCard>
+              </UnachievedAvatarContainer>
+            </UnachievedSection>
+          </ParticipantsContainer>
+        </SectionCard>
       </ScrollContent>
 
       {/* 하단 고정 버튼 */}
@@ -614,47 +665,53 @@ const GroupRoutineDetailScreen = ({
         visible={isMenuVisible}
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        {routine.isAdmin ? (
-          // 방장 메뉴: 루틴 수정, 상세 루틴 수정, 삭제
-          <SheetActions>
-            <CustomButton
-              text="루틴 수정"
-              onPress={handleEditRoutine}
-              backgroundColor={theme.colors.white}
-              textColor={theme.colors.gray800}
-              borderColor={theme.colors.gray300}
-              borderWidth={1}
-            />
-            <CustomButton
-              text="상세 루틴 수정"
-              onPress={handleEditRoutineDetail}
-              backgroundColor={theme.colors.white}
-              textColor={theme.colors.gray800}
-              borderColor={theme.colors.gray300}
-              borderWidth={1}
-            />
-            <CustomButton
-              text="삭제"
-              onPress={handleDeleteRoutine}
-              backgroundColor={theme.colors.white}
-              textColor={theme.colors.error}
-              borderColor={theme.colors.error}
-              borderWidth={1}
-            />
-          </SheetActions>
-        ) : (
-          // 팀원 메뉴: 단체 루틴 나가기
-          <SheetActions>
-            <CustomButton
-              text="단체 루틴 나가기"
-              onPress={handleLeaveRoutine}
-              backgroundColor={theme.colors.white}
-              textColor={theme.colors.error}
-              borderColor={theme.colors.error}
-              borderWidth={1}
-            />
-          </SheetActions>
-        )}
+        <ModalContainer>
+          {routine.isAdmin ? (
+            <>
+              <ModalButtonWrapper>
+                <CustomButton
+                  text="루틴 수정"
+                  onPress={handleEditRoutine}
+                  backgroundColor={theme.colors.white}
+                  textColor={theme.colors.gray800}
+                  borderColor={theme.colors.gray300}
+                  borderWidth={1}
+                />
+              </ModalButtonWrapper>
+              <ModalButtonWrapper>
+                <CustomButton
+                  text="상세 루틴 수정"
+                  onPress={handleEditRoutineDetail}
+                  backgroundColor={theme.colors.white}
+                  textColor={theme.colors.gray800}
+                  borderColor={theme.colors.gray300}
+                  borderWidth={1}
+                />
+              </ModalButtonWrapper>
+              <ModalButtonWrapper>
+                <CustomButton
+                  text="삭제"
+                  onPress={handleDeleteRoutine}
+                  backgroundColor={theme.colors.white}
+                  textColor={theme.colors.error}
+                  borderColor={theme.colors.error}
+                  borderWidth={1}
+                />
+              </ModalButtonWrapper>
+            </>
+          ) : (
+            <ModalButtonWrapper>
+              <CustomButton
+                text="단체 루틴 나가기"
+                onPress={handleLeaveRoutine}
+                backgroundColor={theme.colors.white}
+                textColor={theme.colors.error}
+                borderColor={theme.colors.error}
+                borderWidth={1}
+              />
+            </ModalButtonWrapper>
+          )}
+        </ModalContainer>
       </BottomSheetDialog>
 
       {/* 삭제 확인 모달 */}
@@ -806,7 +863,6 @@ const GroupRoutineDetailScreen = ({
         onRoutineSelect={(template) => {
           console.log('🔍 선택된 템플릿:', template);
           setIsTemplateModalVisible(false);
-          // TODO: 선택된 템플릿을 루틴 목록에 추가
         }}
       />
     </Container>
@@ -824,77 +880,114 @@ const ScrollContent = styled.ScrollView`
   flex: 1;
 `;
 
-const SummaryCard = styled.View`
+const RoutineCardContainer = styled.View`
+  /* margin-bottom: 16px; */
+`;
+
+const SectionCard = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 12px;
-  padding: 16px;
   margin-bottom: 16px;
 `;
 
-const SummaryHeader = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const SummaryTitle = styled.Text`
+const SectionHeader = styled.Text`
   font-family: ${theme.fonts.Bold};
-  font-size: 18px;
+  font-size: 16px;
   color: ${theme.colors.gray800};
+  margin-bottom: 16px;
 `;
 
-const MemberCountRow = styled.View`
-  flex-direction: row;
-  align-items: center;
-`;
-
-const MemberIcon = styled.Text`
-  font-size: 14px;
-  margin-right: 4px;
-`;
-
-const MemberCountText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${theme.colors.primary};
-`;
-
-const SummaryDescription = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 13px;
-  color: ${theme.colors.gray600};
-  margin-bottom: 8px;
-`;
-
-const SummaryMetaRow = styled.View`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const MetaText = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 12px;
-  color: ${theme.colors.gray600};
-`;
-
-const MetaDot = styled.Text`
-  margin: 0 6px;
-  color: ${theme.colors.gray400};
-`;
-
-const ProgressBadge = styled.View`
-  align-self: flex-start;
+const RoutineListContainer = styled.View`
   background-color: ${theme.colors.gray50};
-  padding: 6px 10px;
+  border-radius: 8px;
+  padding: 12px;
+  gap: 8px;
+`;
+
+const RoutineItemRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px;
+  background-color: ${theme.colors.white};
+  border-radius: 8px;
+  /* min-height: 48px; */
+`;
+
+const ItemList = styled.View`
+  gap: 8px;
+`;
+
+const ItemRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px;
+  background-color: ${theme.colors.gray50};
   border-radius: 8px;
 `;
 
-const ProgressText = styled.Text`
+const TaskIcon = styled.Text`
+  font-size: 20px;
+  margin-right: 12px;
+  align-self: center;
+`;
+
+const TaskContent = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+`;
+
+const TaskTitle = styled.Text`
   font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray800};
+  line-height: 20px;
+`;
+
+const TaskDuration = styled.Text`
+  font-family: ${theme.fonts.Regular};
   font-size: 12px;
-  color: ${theme.colors.gray700};
+  color: ${theme.colors.gray600};
+  margin-left: 8px;
+  align-self: center;
+`;
+
+const TaskStatus = styled.TouchableOpacity`
+  margin-left: 8px;
+  align-self: center;
+`;
+
+const CompletedCheckbox = styled.View`
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: ${theme.colors.primary};
+  align-items: center;
+  justify-content: center;
+`;
+
+const CompletedCheckmark = styled.Text`
+  font-size: 12px;
+  color: ${theme.colors.white};
+  font-weight: bold;
+`;
+
+const UncompletedCheckbox = styled.View`
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  border: 2px solid ${theme.colors.gray300};
+  background-color: ${theme.colors.white};
+`;
+
+const CompletedIcon = styled.Text`
+  font-size: 16px;
+  color: ${theme.colors.primary};
+`;
+
+const UncompletedIcon = styled.Text`
+  font-size: 16px;
+  color: ${theme.colors.gray400};
 `;
 
 const LoadingContainer = styled.View`
@@ -923,15 +1016,6 @@ const ErrorText = styled.Text`
   color: ${theme.colors.error};
 `;
 
-const SheetActions = styled.View`
-  gap: 12px;
-  padding: 16px;
-  width: 100%;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-`;
-
 const SaveButton = styled.TouchableOpacity`
   padding: 8px 16px;
   background-color: ${theme.colors.primary};
@@ -944,99 +1028,98 @@ const SaveText = styled.Text`
   color: ${theme.colors.white};
 `;
 
-const SectionCard = styled.View`
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+const ParticipantsContainer = styled.View`
+  flex-direction: column;
+  gap: 16px;
 `;
 
-const SectionHeader = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-  margin-bottom: 16px;
-`;
-
-const ItemList = styled.View`
-  gap: 8px;
-`;
-
-const ParticipantsCard = styled.View`
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-`;
-
-const AvatarRow = styled.ScrollView``;
-
-// Completed Participants Styles
 const CompletedSection = styled.View`
-  margin-bottom: 20px;
+  background-color: ${theme.colors.gray50};
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 120px;
+`;
+
+const UnachievedSection = styled.View`
+  background-color: ${theme.colors.gray50};
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 120px;
+`;
+
+const CompletedHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 `;
 
 const CompletedTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
   font-size: 16px;
   color: ${theme.colors.gray800};
-  margin-bottom: 8px;
 `;
 
 const CompletedCountContainer = styled.View`
-  align-items: flex-start;
-  margin-bottom: 12px;
-`;
-
-const CompletedIcon = styled.Text`
-  font-size: 20px;
-  margin-bottom: 4px;
-  color: ${theme.colors.gray400};
+  flex-direction: row;
+  align-items: center;
 `;
 
 const CompletedCountText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
-  color: ${theme.colors.gray400};
+  color: ${theme.colors.gray600};
+  margin-left: 4px;
 `;
 
 const CompletedAvatarRow = styled.ScrollView``;
 
-// Unachieved Participants Styles
-const UnachievedSection = styled.View`
-  margin-bottom: 20px;
+const CompletedAvatarContainer = styled.View`
+  border-radius: 8px;
+  padding: 12px;
+`;
+
+const UnachievedHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 `;
 
 const UnachievedTitle = styled.Text`
   font-family: ${theme.fonts.Bold};
   font-size: 16px;
   color: ${theme.colors.gray800};
-  margin-bottom: 8px;
 `;
 
 const UnachievedCountContainer = styled.View`
-  align-items: flex-start;
-  margin-bottom: 12px;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const UnachievedIcon = styled.Text`
-  font-size: 20px;
-  margin-bottom: 4px;
-  color: ${theme.colors.gray400};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
 `;
 
 const UnachievedCountText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
-  color: ${theme.colors.gray400};
+  color: ${theme.colors.gray600};
+  margin-left: 4px;
 `;
 
 const UnachievedAvatarRow = styled.ScrollView``;
 
+const UnachievedAvatarContainer = styled.View`
+  border-radius: 8px;
+  padding: 12px;
+`;
+
 const AvatarWrapper = styled.View`
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   overflow: hidden;
   margin-right: 8px;
 `;
@@ -1044,10 +1127,6 @@ const AvatarWrapper = styled.View`
 const Avatar = styled(Image)`
   width: 100%;
   height: 100%;
-`;
-
-const JoinCta = styled.View`
-  margin-top: 8px;
 `;
 
 const FixedJoinCta = styled.View`
@@ -1073,33 +1152,20 @@ const JoinText = styled.Text`
   color: ${theme.colors.white};
 `;
 
-const ItemRow = styled.View`
+const AddTemplateButton = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
-  padding: 12px;
+  justify-content: center;
+  padding: 16px;
   background-color: ${theme.colors.gray50};
+  border: 2px dashed ${theme.colors.gray300};
   border-radius: 8px;
+  margin-top: 8px;
 `;
 
-const TaskIcon = styled.Text`
-  font-size: 20px;
-  margin-right: 12px;
-`;
-
-const TaskContent = styled.View`
-  flex: 1;
-`;
-
-const TaskTitle = styled.Text`
+const AddTemplateText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
-  color: ${theme.colors.gray800};
-  margin-bottom: 2px;
-`;
-
-const TaskDuration = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 12px;
   color: ${theme.colors.gray600};
 `;
 
@@ -1136,51 +1202,15 @@ const ButtonWrapper = styled.View`
   flex: 1;
 `;
 
-// Menu Styles
-const MenuButton = styled.TouchableOpacity`
-  margin-left: 12px;
-  padding: 4px;
+const ModalContainer = styled.View`
+  padding: 20px;
 `;
 
-const MenuIcon = styled.Text`
-  font-size: 20px;
-  color: ${theme.colors.gray600};
-  font-weight: bold;
-`;
+const ModalButtonWrapper = styled.View`
+  margin-bottom: 12px;
+  height: 48px;
 
-// Template Button Styles
-const AddTemplateButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background-color: ${theme.colors.gray50};
-  border: 2px dashed ${theme.colors.gray300};
-  border-radius: 8px;
-  margin-top: 8px;
-`;
-
-const AddTemplateText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-`;
-
-// Participants Styles
-const ParticipantsContainer = styled.View`
-  gap: 16px;
-`;
-
-const CompletedHeader = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const UnachievedHeader = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;

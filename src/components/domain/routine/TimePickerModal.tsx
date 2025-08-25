@@ -20,12 +20,12 @@ const TimePickerModal = ({
   onTimeSelect,
   type,
   initialTime = '09:00',
-  initialMinutes = 40,
+  initialMinutes,
 }: TimePickerModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
   const [selectedHour, setSelectedHour] = useState(9);
   const [selectedMinute, setSelectedMinute] = useState(0);
-  const [selectedMinutes, setSelectedMinutes] = useState(initialMinutes || 40);
+  const [selectedMinutes, setSelectedMinutes] = useState(30); // 기본값 30분으로 설정 (UI용)
 
   // 데이터 준비 - useMemo로 최적화
   const periodData = useMemo(
@@ -66,8 +66,10 @@ const TimePickerModal = ({
     return data;
   }, []);
 
-  // 초기값 설정
+  // 초기값 설정 - 모달이 열릴 때마다 실행
   useEffect(() => {
+    if (!visible) return; // 모달이 닫혀있으면 실행하지 않음
+
     console.log('🔍 TimePickerModal - useEffect 호출됨');
     console.log('🔍 TimePickerModal - type:', type);
     console.log('🔍 TimePickerModal - initialTime:', initialTime);
@@ -92,16 +94,16 @@ const TimePickerModal = ({
       setSelectedHour(displayHour);
       setSelectedMinute(minute);
     } else if (type === 'minutes') {
-      const minutesToSet = initialMinutes || 40;
-      console.log(
-        '🔍 TimePickerModal - minutes 모드, 설정할 분:',
-        minutesToSet,
-      );
-      if (minutesToSet >= 1 && minutesToSet <= 180) {
-        setSelectedMinutes(minutesToSet);
+      if (initialMinutes && initialMinutes >= 1 && initialMinutes <= 180) {
+        console.log(
+          '🔍 TimePickerModal - minutes 모드, 설정할 분:',
+          initialMinutes,
+        );
+        setSelectedMinutes(initialMinutes);
       }
+      // initialMinutes가 없으면 기본값 30분을 유지 (UI용)
     }
-  }, [initialTime, initialMinutes, type]);
+  }, [visible, type, initialTime, initialMinutes]); // 모든 관련 값들을 의존성에 추가
 
   const handleComplete = () => {
     console.log('🔍 TimePickerModal - handleComplete 호출됨');

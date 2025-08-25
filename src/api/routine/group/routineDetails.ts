@@ -72,3 +72,15 @@ export const updateGroupRoutineStatus = async (
 
   return response.data;
 };
+
+// 단체루틴 기록 성공/실패 API
+export const updateGroupRoutineRecord = async (
+  groupRoutineListId: string,
+  data: UpdateGroupRoutineStatusRequest,
+): Promise<ApiResponse<UpdateGroupRoutineStatusResponse>> => {
+  const response = await apiClient.patch<
+    ApiResponse<UpdateGroupRoutineStatusResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}`, data);
+
+  return response.data;
+};
