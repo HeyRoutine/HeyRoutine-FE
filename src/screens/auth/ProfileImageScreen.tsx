@@ -10,13 +10,13 @@ import CustomButton from '../../components/common/CustomButton';
 import { useAuthStore } from '../../store';
 import { uploadImage } from '../../utils/s3';
 
-const ProfileImageScreen = ({ navigation }: any) => {
+const ProfileImageScreen = ({ navigation, route }: any) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Zustand 스토어에서 프로필 이미지 설정 함수와 회원가입 데이터 가져오기
-  const { setSignupProfileImage, signupData } = useAuthStore();
-  const { nickname, email } = signupData;
+  const { setSignupProfileImage } = useAuthStore();
+  const { nickname, email: userEmail } = route.params || {};
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -40,7 +40,13 @@ const ProfileImageScreen = ({ navigation }: any) => {
     if (!imageUri) {
       // 이미지가 없으면 바로 다음으로
       setSignupProfileImage(null);
-      navigation.navigate('TermsAgreeMent');
+      // route.params로 모든 데이터 전달
+      const { email: routeEmail, password, nickname } = route.params || {};
+      navigation.navigate('TermsAgreeMent', {
+        email: routeEmail,
+        password,
+        nickname,
+      });
       return;
     }
 
@@ -48,10 +54,10 @@ const ProfileImageScreen = ({ navigation }: any) => {
     try {
       // S3에 이미지 업로드
       const fileName = `profile_${Date.now()}.jpg`;
-      console.log('업로드 시작:', { email, fileName });
+      console.log('업로드 시작:', { email: userEmail || '', fileName });
 
       const imageUrl = await uploadImage(
-        email,
+        userEmail || '',
         imageUri,
         fileName,
         'image/jpeg',
@@ -61,7 +67,14 @@ const ProfileImageScreen = ({ navigation }: any) => {
       // Zustand 스토어에 업로드된 이미지 URL 저장
       setSignupProfileImage(imageUrl);
 
-      navigation.navigate('TermsAgreeMent');
+      // route.params로 모든 데이터 전달
+      const { email: routeEmail, password, nickname } = route.params || {};
+      navigation.navigate('TermsAgreeMent', {
+        email: routeEmail,
+        password,
+        nickname,
+        profileImage: imageUrl,
+      });
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
     } finally {

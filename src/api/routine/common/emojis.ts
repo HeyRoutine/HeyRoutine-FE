@@ -11,9 +11,8 @@ export const getRoutineEmoji = async (
 ): Promise<ApiResponse<EmojiListResponse>> => {
   const { category } = params;
 
-  const response = await apiClient.post<ApiResponse<EmojiListResponse>>(
+  const response = await apiClient.get<ApiResponse<EmojiListResponse>>(
     '/api/v1/routines/emoji',
-    {},
     {
       params: {
         ...(category && { category }),
@@ -23,4 +22,3 @@ export const getRoutineEmoji = async (
 
   return response.data;
 };
-

@@ -9,6 +9,9 @@ export interface ApiResponse<T> {
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 
+// 요일 타입 (서버 DayType enum에 맞춤 - 한글 요일)
+export type DayType = '월' | '화' | '수' | '목' | '금' | '토' | '일';
+
 // 단체루틴 상세 정보 타입
 export interface GroupRoutineInfo {
   id: number;
@@ -117,6 +120,9 @@ export type DeleteGroupRoutineResponse = EmptyResponse;
 // 단체루틴 가입 응답 타입
 export type JoinGroupRoutineResponse = EmptyResponse;
 
+// 단체루틴 나가기 응답 타입
+export type LeaveGroupRoutineResponse = EmptyResponse;
+
 // 단체루틴 아이템 타입
 export interface GroupRoutineItem {
   id: number;
@@ -126,13 +132,17 @@ export interface GroupRoutineItem {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  peopleNums: number;
+  pepoleNums: number; // API 응답에서 pepoleNums로 오고 있음
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
   isJoined: boolean;
 }
 
 // 단체루틴 리스트 조회 응답 타입
 export interface GroupRoutineListResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
   items: GroupRoutineItem[];
 }
 
@@ -221,6 +231,31 @@ export interface ResetNicknameRequest {
 
 // 닉네임 재설정 응답 타입
 export type ResetNicknameResponse = string; // "닉네임이 변경되었습니다"
+
+// 회원가입 인증메일 보내기 요청 타입
+export interface MailSendRequest {
+  email: string;
+}
+
+// 회원가입 인증메일 보내기 응답 타입
+export type MailSendResponse = string; // "메일이 전송되었습니다"
+
+// 비밀번호 찾기 인증메일 보내기 요청 타입
+export interface MailSendForPasswordRequest {
+  email: string;
+}
+
+// 비밀번호 찾기 인증메일 보내기 응답 타입
+export type MailSendForPasswordResponse = string; // "메일이 전송되었습니다"
+
+// 인증번호 확인 요청 타입
+export interface AuthCheckRequest {
+  email: string;
+  authNum: string;
+}
+
+// 인증번호 확인 응답 타입
+export type AuthCheckResponse = string; // UUID 형식의 문자열
 
 // ===== 포인트샵 (Point Shop) 타입 =====
 
@@ -414,11 +449,11 @@ export interface EmojiListParams {
 // 개인루틴 리스트 생성 요청 타입
 export interface CreatePersonalRoutineListRequest {
   title: string;
-  startDate: string; // yyyy-MM-dd 형식
-  startTime: string; // HH:mm 형식
-  endTime: string; // HH:mm 형식
+  startDate: string; // yyyy-MM-dd 형식 (LocalDate)
+  startTime: string; // HH:mm 형식 (LocalTime)
+  endTime: string; // HH:mm 형식 (LocalTime)
   routineType: RoutineType; // 'DAILY' | 'FINANCE'
-  dayTypes: string[]; // ['월', '화', '수'] 형식
+  dayTypes: DayType[]; // ['월', '화', '수'] 형식 (서버 DayType enum에 맞춤)
 }
 
 // 개인루틴 리스트 생성 응답 타입
@@ -428,17 +463,17 @@ export interface CreatePersonalRoutineListResponse {
   startTime: string; // HH:mm:ss 형식
   endTime: string; // HH:mm:ss 형식
   routineType: RoutineType;
-  dayTypes: string[]; // ['월', '화', '수'] 형식
+  dayTypes: DayType[]; // ['월', '화', '수'] 형식
 }
 
 // 개인루틴 리스트 수정 요청 타입 (생성과 동일)
 export interface UpdatePersonalRoutineListRequest {
   title: string;
-  startDate: string; // yyyy-MM-dd 형식
-  startTime: string; // HH:mm 형식
-  endTime: string; // HH:mm 형식
+  startDate: string; // yyyy-MM-dd 형식 (LocalDate)
+  startTime: string; // HH:mm 형식 (LocalTime)
+  endTime: string; // HH:mm 형식 (LocalTime)
   routineType: RoutineType; // 'DAILY' | 'FINANCE'
-  dayTypes: string[]; // ['월', '화', '수'] 형식
+  dayTypes: DayType[]; // ['월', '화', '수'] 형식
 }
 
 // 개인루틴 리스트 수정 응답 타입
@@ -454,7 +489,7 @@ export interface PersonalRoutineListItem {
   startTime: string; // HH:mm:ss 형식
   endTime: string; // HH:mm:ss 형식
   routineType: RoutineType;
-  dayTypes: string[]; // ['월', '화', '수'] 형식
+  dayTypes: DayType[]; // ['월', '화', '수'] 형식
 }
 
 // 개인루틴 리스트 조회 응답 타입
@@ -481,6 +516,10 @@ export interface CreatePersonalRoutineDetailRequest {
   time: number; // 루틴 시간
 }
 
+// 개인루틴 상세 생성 요청 타입 (배열)
+export type CreatePersonalRoutineDetailArrayRequest =
+  CreatePersonalRoutineDetailRequest[];
+
 // 개인루틴 상세 생성 응답 타입
 export type CreatePersonalRoutineDetailResponse = EmptyResponse;
 
@@ -494,9 +533,7 @@ export interface PersonalRoutineDetailItem {
 }
 
 // 개인루틴 상세 조회 응답 타입
-export interface PersonalRoutineDetailListResponse {
-  items: PersonalRoutineDetailItem[];
-}
+export type PersonalRoutineDetailListResponse = PersonalRoutineDetailItem[];
 
 // 개인루틴 상세 조회 파라미터 타입
 export interface PersonalRoutineDetailListParams {

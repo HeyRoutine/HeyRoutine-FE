@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import {
-  TextInput,
-  TouchableOpacity,
-  Text,
-  View,
-  BackHandler,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { TextInput, TouchableOpacity, Text, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import RoutineCategorySelector from '../../components/domain/routine/RoutineCategorySelector';
@@ -18,52 +11,150 @@ import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import DatePickerModal from '../../components/domain/routine/DatePickerModal';
 import TimePickerModal from '../../components/domain/routine/TimePickerModal';
+import {
+  useCreateGroupRoutine,
+  useUpdateGroupRoutine,
+} from '../../hooks/routine/group/useGroupRoutines';
+import { RoutineType, DayType } from '../../types/api';
 
-interface EditRoutineScreenProps {
+interface CreateGroupRoutineScreenProps {
   navigation: any;
-  route: { params?: { routineData?: any } };
+  route: { params?: { mode?: 'create' | 'edit'; routineData?: any } };
 }
 
-const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
+const CreateGroupRoutineScreen = ({
+  navigation,
+  route,
+}: CreateGroupRoutineScreenProps) => {
+  const mode = route?.params?.mode || 'create';
   const routineData = route?.params?.routineData;
-  const [routineName, setRoutineName] = useState(routineData?.name || '');
+
+  console.log('🔍 CreateGroupRoutineScreen - 전달받은 데이터:', {
+    mode,
+    routineData,
+  });
+
+  // 기존 데이터로 초기화 (수정 모드인 경우)
+  const [routineName, setRoutineName] = useState(routineData?.title || '');
+  const [description, setDescription] = useState(
+    routineData?.description || '',
+  );
   const [selectedCategory, setSelectedCategory] = useState(
-    routineData?.category || 'life',
+    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
   );
   const [selectedDays, setSelectedDays] = useState<string[]>(
-    routineData?.days || [],
+    routineData?.dayTypes || [],
   );
   const [startTime, setStartTime] = useState(routineData?.startTime || '');
   const [endTime, setEndTime] = useState(routineData?.endTime || '');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState(
-    routineData?.startDate || '2025-01-01',
+    routineData?.startDate || '',
   );
+
+  console.log('🔍 CreateGroupRoutineScreen - 초기화된 상태:', {
+    routineName,
+    description,
+    selectedCategory,
+    selectedDays,
+    startTime,
+    endTime,
+    selectedStartDate,
+  });
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  const [exitConfirmVisible, setExitConfirmVisible] = useState(false);
 
-  const handleEditRoutine = () => {
-    // TODO: 루틴 수정 로직
-    console.log('루틴 수정:', {
+  // 그룹루틴 생성/수정 훅
+  const { mutate: createGroupRoutine, isPending: isCreating } =
+    useCreateGroupRoutine();
+  const { mutate: updateGroupRoutine, isPending: isUpdating } =
+    useUpdateGroupRoutine();
+
+  const isPending = isCreating || isUpdating;
+
+  const handleSubmitRoutine = () => {
+    console.log('🔍 그룹 루틴 처리 시작:', {
+      mode,
       name: routineName,
       category: selectedCategory,
       days: selectedDays,
       startTime,
       endTime,
+      startDate: selectedStartDate,
     });
 
-    // 수정 완료 후 ResultScreen으로 이동
-    navigation.replace('Result', {
-      type: 'success',
-      title: '루틴 수정 완료',
-      description: '루틴이 성공적으로 수정되었습니다.',
-      nextScreen: 'HomeMain',
-    });
+    // API 요청 데이터 준비
+    const submitData = {
+      title: routineName,
+      description: description, // 그룹 루틴은 description 필드가 필요
+      startTime: formatTimeForAPI(startTime), // HH:mm 형식
+      endTime: formatTimeForAPI(endTime), // HH:mm 형식
+      routineType: (selectedCategory === 'life'
+        ? 'DAILY'
+        : 'FINANCE') as RoutineType,
+      daysOfWeek: selectedDays as DayType[],
+    };
+
+    console.log('🔍 그룹 루틴 API 요청 데이터:', submitData);
+
+    if (mode === 'edit') {
+      // 수정 모드
+      if (!routineData?.id) {
+        console.error('🔍 그룹 루틴 ID가 없습니다:', routineData);
+        return;
+      }
+
+      updateGroupRoutine(
+        {
+          groupRoutineListId: routineData.id.toString(),
+          data: submitData,
+        },
+        {
+          onSuccess: (data) => {
+            console.log('🔍 그룹 루틴 수정 성공:', data);
+            navigation.navigate('Result', {
+              type: 'success',
+              title: '그룹 루틴 수정 완료',
+              description: '그룹 루틴이 성공적으로 수정되었습니다.',
+              nextScreen: 'HomeMain',
+            });
+          },
+          onError: (error) => {
+            console.error('🔍 그룹 루틴 수정 실패:', error);
+            // 에러 처리 (나중에 토스트나 알림 추가)
+          },
+        },
+      );
+    } else {
+      // 생성 모드
+      createGroupRoutine(submitData, {
+        onSuccess: (data) => {
+          console.log('🔍 그룹 루틴 생성 성공:', data);
+
+          // CreateGroupRoutineDetailScreen으로 이동
+          navigation.navigate('CreateGroupRoutineDetail', {
+            routineData: {
+              name: routineName,
+              category: selectedCategory,
+              days: selectedDays,
+              startTime,
+              endTime,
+              startDate: selectedStartDate,
+              // 그룹 루틴 생성 후 상세 생성 화면으로 이동
+            },
+          });
+        },
+        onError: (error) => {
+          console.error('🔍 그룹 루틴 생성 실패:', error);
+          // 에러 처리 (나중에 토스트나 알림 추가)
+        },
+      });
+    }
   };
 
-  const isFormValid = routineName.trim() && selectedDays.length > 0;
+  const isFormValid =
+    routineName.trim() && selectedDays.length > 0 && startTime && endTime;
 
   const categories = [
     { id: 'life', name: '생활' },
@@ -76,15 +167,42 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
   };
 
   const handleDateSelect = (date: string) => {
+    // date는 이미 YYYY-MM-DD 형식으로 전달됨
+    console.log('선택된 날짜:', date);
     setSelectedStartDate(date);
     setShowDatePicker(false);
+  };
+
+  // 시간을 HH:mm 형식으로 변환하는 함수 (화면 표시용)
+  const formatTimeForDisplay = (time: string): string => {
+    // "오전 9:00" 또는 "오후 2:30" 형식을 "09:00" 또는 "14:30"으로 변환
+    let hour: string;
+    let minute: string;
+
+    if (time.includes('오전')) {
+      hour = time.replace('오전 ', '').split(':')[0];
+      minute = time.split(':')[1];
+      return `${hour.padStart(2, '0')}:${minute}`;
+    } else if (time.includes('오후')) {
+      const hourNum = parseInt(time.replace('오후 ', '').split(':')[0]) + 12;
+      minute = time.split(':')[1];
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+    }
+    return time; // 이미 HH:mm 형식이면 그대로 반환
+  };
+
+  // 시간을 HH:mm 형식으로 변환하는 함수 (API 요청용)
+  const formatTimeForAPI = (time: string): string => {
+    // HH:mm 형식을 그대로 반환 (그룹 루틴은 HH:mm 형식 사용)
+    return time;
   };
 
   const handleStartTimeSelect = (time: string | number) => {
     console.log('시작 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
-      setStartTime(time);
-      console.log('시작 시간 설정됨:', time);
+      const displayTime = formatTimeForDisplay(time);
+      setStartTime(displayTime);
+      console.log('시작 시간 설정됨:', displayTime);
     }
     setShowStartTimePicker(false);
   };
@@ -92,51 +210,24 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
   const handleEndTimeSelect = (time: string | number) => {
     console.log('종료 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
-      setEndTime(time);
-      console.log('종료 시간 설정됨:', time);
+      const displayTime = formatTimeForDisplay(time);
+      setEndTime(displayTime);
+      console.log('종료 시간 설정됨:', displayTime);
     }
     setShowEndTimePicker(false);
-  };
-
-  // 폰의 뒤로가기 버튼 처리
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        setExitConfirmVisible(true);
-        return true; // 이벤트 소비
-      };
-
-      const subscription = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-
-      return () => subscription.remove();
-    }, []),
-  );
-
-  const handleBack = () => {
-    setExitConfirmVisible(true);
-  };
-
-  const closeExitConfirm = () => setExitConfirmVisible(false);
-
-  const handleConfirmExit = () => {
-    closeExitConfirm();
-    navigation.goBack();
   };
 
   return (
     <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header>
-        <BackButton onPress={handleBack}>
+        <BackButton onPress={() => navigation.goBack()}>
           <Ionicons
             name="chevron-back"
             size={24}
             color={theme.colors.gray800}
           />
         </BackButton>
-        <Title>루틴 수정</Title>
+        <Title>{mode === 'edit' ? '그룹 루틴 수정' : '그룹 루틴 생성'}</Title>
         <Spacer />
       </Header>
 
@@ -152,6 +243,20 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
             />
             <Underline />
           </InputContainer>
+        </InputSection>
+
+        {/* 소개 입력 */}
+        <InputSection>
+          <InputLabel>소개</InputLabel>
+          <DescriptionInput
+            placeholder="해당 루틴에 대한 소개를 해주세요."
+            value={description}
+            onChangeText={setDescription}
+            placeholderTextColor={theme.colors.gray400}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
         </InputSection>
 
         {/* 루틴 카테고리 선택 */}
@@ -181,17 +286,17 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
       </Content>
 
       {/* 하단 버튼 */}
-      <ButtonContainer>
+      <ButtonWrapper>
         <CustomButton
-          text="루틴 수정"
-          onPress={handleEditRoutine}
+          text={mode === 'edit' ? '그룹 루틴 수정' : '그룹 루틴 생성'}
+          onPress={handleSubmitRoutine}
           disabled={!isFormValid}
           backgroundColor={
-            isFormValid ? theme.colors.primary : theme.colors.gray200
+            isFormValid ? theme.colors.primary : theme.colors.gray300
           }
           textColor={isFormValid ? theme.colors.white : theme.colors.gray500}
         />
-      </ButtonContainer>
+      </ButtonWrapper>
 
       {/* 루틴 카테고리 선택 모달 */}
       <BottomSheetDialog
@@ -237,32 +342,11 @@ const EditRoutineScreen = ({ navigation, route }: EditRoutineScreenProps) => {
         type="time"
         initialTime="11:00"
       />
-
-      {/* 나가기 확인 모달 */}
-      <BottomSheetDialog
-        visible={exitConfirmVisible}
-        onRequestClose={closeExitConfirm}
-      >
-        <ModalTitle>정말 나가시겠습니까?</ModalTitle>
-        <ModalSubtitle>변경한 내용은 저장되지 않습니다.</ModalSubtitle>
-        <ButtonRow>
-          <ButtonWrapper>
-            <CancelButton onPress={closeExitConfirm}>
-              <CancelText>취소</CancelText>
-            </CancelButton>
-          </ButtonWrapper>
-          <ButtonWrapper>
-            <ConfirmButton onPress={handleConfirmExit}>
-              <ConfirmText>나가기</ConfirmText>
-            </ConfirmButton>
-          </ButtonWrapper>
-        </ButtonRow>
-      </BottomSheetDialog>
     </Container>
   );
 };
 
-export default EditRoutineScreen;
+export default CreateGroupRoutineScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
@@ -318,6 +402,18 @@ const NameInput = styled(TextInput)`
   text-align: center;
 `;
 
+const DescriptionInput = styled(TextInput)`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  padding: 16px;
+  border: 1px solid ${theme.colors.gray300};
+  border-radius: 12px;
+  min-height: 80px;
+  background-color: ${theme.colors.white};
+  line-height: 24px;
+`;
+
 const Underline = styled.View`
   height: 1px;
   background-color: ${theme.colors.gray300};
@@ -325,21 +421,17 @@ const Underline = styled.View`
 `;
 
 const ButtonWrapper = styled.View`
-  flex: 1;
-`;
-
-const ButtonContainer = styled.View`
-  padding: 24px;
+  padding: 24px 16px;
+  background-color: ${theme.colors.white};
 `;
 
 // 모달 관련 스타일
 const ModalTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 18px;
-  color: ${theme.colors.gray900};
+  color: ${theme.colors.gray800};
   text-align: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 `;
 
 const CategoryButtonsContainer = styled.View`
@@ -361,44 +453,4 @@ const CategoryButtonText = styled(Text)<{ isSelected: boolean }>`
   font-size: 16px;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray600};
-`;
-
-// 나가기 확인 모달 스타일
-const ModalSubtitle = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  margin-bottom: 36px;
-`;
-
-const ButtonRow = styled.View`
-  flex-direction: row;
-  gap: 12px;
-`;
-
-const CancelButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.gray200};
-  border-radius: 12px;
-  padding: 14px;
-  align-items: center;
-`;
-
-const CancelText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray700};
-`;
-
-const ConfirmButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
-  border-radius: 12px;
-  padding: 14px;
-  align-items: center;
-`;
-
-const ConfirmText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.white};
 `;

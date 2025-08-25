@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,6 +13,14 @@ import GroupRoutineCard from '../../components/domain/routine/GroupRoutineCard';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
 import { useRoutineStore } from '../../store';
+import {
+  useInfinitePersonalRoutines,
+  usePersonalRoutines,
+} from '../../hooks/routine/personal/usePersonalRoutines';
+import {
+  useInfiniteGroupRoutines,
+  useGroupRoutines,
+} from '../../hooks/routine/group/useGroupRoutines';
 
 interface HomeScreenProps {
   navigation: any;
@@ -73,84 +81,88 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     completedDays: string[];
   };
 
-  // 샘플 루틴 데이터
-  const personalRoutines: RoutineListItem[] = [
-    {
-      id: '1',
-      category: '생활',
-      progress: 33,
-      title: '빵빵이의 아침 루틴',
-      timeRange: '오전 8:00 ~ 오전 9:00',
-      selectedDays: ['월', '화'],
-      completedDays: ['월', '화'],
-    },
-    {
-      id: '2',
-      category: '생활',
-      progress: 33,
-      title: '빵빵이의 아침 루틴',
-      timeRange: '오전 8:00 ~ 오전 9:00',
-      selectedDays: ['월', '화'],
-      completedDays: ['월'],
-    },
-    {
-      id: '3',
-      category: '운동',
-      progress: 67,
-      title: '저녁 운동 루틴',
-      timeRange: '오후 7:00 ~ 오후 8:00',
-      selectedDays: ['화', '목', '금'],
-      completedDays: ['화', '목', '금'],
-    },
-    {
-      id: '4',
-      category: '학습',
-      progress: 45,
-      title: '독서 시간',
-      timeRange: '오후 9:00 ~ 오후 10:00',
-      selectedDays: ['월', '수', '토', '일'],
-      completedDays: ['월', '수', '토'],
-    },
+  // API 훅 사용
+  const selectedDateString = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
+    selectedDate.getDay()
   ];
 
-  const groupRoutines: RoutineListItem[] = [
-    {
-      id: '5',
-      category: '생활',
-      progress: 67,
-      title: '저축 그룹 루틴',
-      timeRange: '오후 8:00 ~ 오후 9:00',
-      selectedDays: ['화'],
-      completedDays: ['화'],
-    },
-    {
-      id: '6',
-      category: '소비',
-      progress: 67,
-      title: '저축 그룹 루틴',
-      timeRange: '오후 8:00 ~ 오후 9:00',
-      selectedDays: ['화'],
-      completedDays: ['화'],
-    },
-    {
-      id: '7',
-      category: '운동',
-      progress: 89,
-      title: '그룹 헬스 루틴',
-      timeRange: '오후 6:00 ~ 오후 7:00',
-      selectedDays: ['월', '수', '금'],
-      completedDays: ['수', '금'],
-    },
-    {
-      id: '8',
-      category: '학습',
-      progress: 23,
-      title: '스터디 그룹',
-      timeRange: '오후 10:00 ~ 오후 11:00',
-      selectedDays: ['화', '목'],
-      completedDays: ['화', '목'],
-    },
-  ];
+  // 시간을 HH:mm 형식으로 변환하는 함수
+  const formatTimeForDisplay = (time: any): string => {
+    if (!time) return '00:00';
+
+    // [11, 0] 배열 형태로 받아오는 경우
+    if (Array.isArray(time)) {
+      const [hour, minute] = time;
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+
+    // 문자열인 경우
+    if (typeof time === 'string') {
+      // 9,0 형식을 09:00 형식으로 변환
+      if (time.includes(',')) {
+        const [hour, minute] = time.split(',');
+        return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+      }
+
+      // HH:mm:ss 형식을 HH:mm 형식으로 변환
+      if (time.includes(':')) {
+        return time.split(':').slice(0, 2).join(':');
+      }
+    }
+
+    return '00:00';
+  };
+
+  const {
+    data: personalRoutinesData,
+    isLoading: isPersonalRoutinesLoading,
+    error: personalRoutinesError,
+    fetchNextPage: fetchNextPersonalPage,
+    hasNextPage: hasNextPersonalPage,
+    isFetchingNextPage: isFetchingNextPersonalPage,
+  } = useInfinitePersonalRoutines({
+    date: selectedDateString,
+    day: selectedDay,
+  });
+
+  // API 데이터를 화면에 맞는 형태로 변환 (모든 페이지 데이터 합치기)
+  const personalRoutines: RoutineListItem[] =
+    personalRoutinesData?.pages?.flatMap((page) =>
+      page.result.items.map((item) => ({
+        id: item.id.toString(),
+        category: item.routineType === 'DAILY' ? '생활' : '소비',
+        progress: 0, // API에서 제공하지 않는 경우 기본값
+        title: item.title,
+        timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
+        selectedDays: item.dayTypes, // 타입 정의에 따르면 dayTypes
+        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+      })),
+    ) || [];
+
+  // 그룹 루틴 API 훅 사용
+  const {
+    data: groupRoutinesData,
+    isLoading: isGroupRoutinesLoading,
+    error: groupRoutinesError,
+    fetchNextPage: fetchNextGroupPage,
+    hasNextPage: hasNextGroupPage,
+    isFetchingNextPage: isFetchingNextGroupPage,
+  } = useInfiniteGroupRoutines({});
+
+  // 그룹 루틴 데이터를 화면에 맞는 형태로 변환 (모든 페이지 데이터 합치기)
+  const groupRoutines: RoutineListItem[] =
+    groupRoutinesData?.pages?.flatMap((page) =>
+      page.result.items.map((item) => ({
+        id: item.id.toString(),
+        category: item.routineType === 'DAILY' ? '생활' : '소비',
+        progress: 0, // API에서 제공하지 않는 경우 기본값
+        title: item.title,
+        timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
+        selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
+        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+      })),
+    ) || [];
 
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');
@@ -158,16 +170,35 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      navigation.navigate('PersonalRoutineDetail', {
-        routineData: {
-          name: '빵빵이의 점심루틴',
-          startTime: '오후 7:00',
-          endTime: '오후 10:00',
-          days: ['월', '화'],
-        },
-      });
+      // 개인 루틴에서 실제 데이터 찾기
+      const routine = personalRoutines.find((r) => r.id === routineId);
+      if (routine) {
+        navigation.navigate('PersonalRoutineDetail', {
+          routineData: {
+            id: routine.id,
+            name: routine.title,
+            startTime: routine.timeRange.split(' ~ ')[0],
+            endTime: routine.timeRange.split(' ~ ')[1],
+            days: routine.selectedDays,
+            category: routine.category,
+          },
+        });
+      }
     } else {
-      navigation.navigate('GroupRoutineDetail');
+      // 그룹 루틴에서 실제 데이터 찾기
+      const routine = groupRoutines.find((r) => r.id === routineId);
+      if (routine) {
+        navigation.navigate('GroupRoutineDetail', {
+          routineData: {
+            id: routine.id,
+            name: routine.title,
+            startTime: routine.timeRange.split(' ~ ')[0],
+            endTime: routine.timeRange.split(' ~ ')[1],
+            days: routine.selectedDays,
+            category: routine.category,
+          },
+        });
+      }
     }
   };
 
@@ -192,7 +223,24 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     setSelectedDate(newDate);
   };
 
+  // 무한 스크롤 핸들러
+  const handleLoadMore = () => {
+    if (selectedTab === 0) {
+      // 개인 루틴 탭
+      if (hasNextPersonalPage && !isFetchingNextPersonalPage) {
+        fetchNextPersonalPage();
+      }
+    } else {
+      // 그룹 루틴 탭
+      if (hasNextGroupPage && !isFetchingNextGroupPage) {
+        fetchNextGroupPage();
+      }
+    }
+  };
+
   const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
+  const isFetchingNextPage =
+    selectedTab === 0 ? isFetchingNextPersonalPage : isFetchingNextGroupPage;
 
   return (
     <Container edges={['top', 'left', 'right']}>
@@ -207,10 +255,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
               <DayItem key={item.fullDate.toISOString()}>
                 <DayText day={item.day}>{item.day}</DayText>
                 <DateButton
-                  isSelected={isSameDate(item.fullDate, today)}
+                  isSelected={isSameDate(item.fullDate, selectedDate)}
                   onPress={() => handleDateSelect(item.fullDate)}
                 >
-                  <DateText isSelected={isSameDate(item.fullDate, today)}>
+                  <DateText
+                    isSelected={isSameDate(item.fullDate, selectedDate)}
+                  >
                     {item.date}
                   </DateText>
                 </DateButton>
@@ -234,18 +284,29 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
         {/* 루틴 목록 */}
         <RoutineList>
-          {currentRoutines.map((routine) => (
-            <RoutineCard
-              key={routine.id}
-              category={routine.category}
-              progress={routine.progress}
-              title={routine.title}
-              timeRange={routine.timeRange}
-              selectedDays={routine.selectedDays}
-              completedDays={routine.completedDays}
-              onPress={() => handleRoutinePress(routine.id)}
-            />
-          ))}
+          <FlatList
+            data={currentRoutines}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <RoutineCard
+                category={item.category}
+                progress={item.progress}
+                title={item.title}
+                timeRange={item.timeRange}
+                selectedDays={item.selectedDays}
+                completedDays={item.completedDays}
+                onPress={() => handleRoutinePress(item.id)}
+              />
+            )}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <LoadingText>더 많은 루틴을 불러오는 중...</LoadingText>
+              ) : null
+            }
+            showsVerticalScrollIndicator={false}
+          />
         </RoutineList>
       </Content>
 
@@ -288,7 +349,7 @@ const Container = styled(SafeAreaView)`
   padding-bottom: 0;
 `;
 
-const Content = styled.ScrollView`
+const Content = styled.View`
   flex: 1;
   padding: 24px;
 `;
@@ -346,7 +407,38 @@ const RoutineList = styled.View`
   margin-bottom: 36px;
 `;
 
+const GroupRoutineGuide = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const GuideText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 18px;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-bottom: 12px;
+`;
+
+const GuideSubText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  line-height: 20px;
+`;
+
 // 모달 관련 스타일
 const SelectionButtonsContainer = styled.View`
   gap: 12px;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  padding: 16px;
 `;

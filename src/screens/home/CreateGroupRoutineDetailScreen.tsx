@@ -12,24 +12,21 @@ import {
   RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
-import {
-  useCreatePersonalRoutineDetailArray,
-  usePersonalRoutineDetails,
-} from '../../hooks/routine/personal/usePersonalRoutines';
+import { useCreateGroupRoutineDetail } from '../../hooks/routine/group/useGroupRoutines';
 import {
   useRoutineTemplates,
   useRoutineEmojis,
 } from '../../hooks/routine/common/useCommonRoutines';
 
-interface CreateRoutineDetailScreenProps {
+interface CreateGroupRoutineDetailScreenProps {
   navigation: any;
   route: { params?: { routineData?: any } };
 }
 
-const CreateRoutineDetailScreen = ({
+const CreateGroupRoutineDetailScreen = ({
   navigation,
   route,
-}: CreateRoutineDetailScreenProps) => {
+}: CreateGroupRoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || [],
@@ -56,15 +53,9 @@ const CreateRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
-  // 개인루틴 상세 생성 훅 (배열)
-  const { mutate: createRoutineDetail, isPending } =
-    useCreatePersonalRoutineDetailArray();
-
-  // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
-  const { data: existingRoutinesData, isLoading: isLoadingExistingRoutines } =
-    usePersonalRoutineDetails(routineData?.routineListId || '', {
-      date: routineData?.startDate || new Date().toISOString().split('T')[0],
-    });
+  // 그룹루틴 상세 생성 훅
+  const { mutate: createGroupRoutineDetail, isPending } =
+    useCreateGroupRoutineDetail();
 
   // 루틴 템플릿 조회 훅 - 모든 템플릿을 가져오기 위해 카테고리 필터링 제거
   const { data: templateData, isLoading: isLoadingTemplates } =
@@ -74,26 +65,6 @@ const CreateRoutineDetailScreen = ({
 
   // 이모지 조회 훅 - 모든 이모지를 가져오기 위해 카테고리 필터링 제거
   const { data: emojiData, isLoading: isLoadingEmojis } = useRoutineEmojis({});
-
-  // 기존 루틴 데이터를 화면에 로드
-  useEffect(() => {
-    if (
-      existingRoutinesData?.result &&
-      existingRoutinesData.result.length > 0
-    ) {
-      console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
-
-      const existingItems = existingRoutinesData.result.map((routine: any) => ({
-        emoji: routine.emojiUrl,
-        emojiId: routine.emojiId || 1, // 서버에서 emojiId가 없을 경우 기본값
-        text: routine.routineName,
-        time: `${routine.time}분`,
-        isCompleted: routine.completed,
-      }));
-
-      setRoutineItems(existingItems);
-    }
-  }, [existingRoutinesData]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -106,7 +77,7 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handlePlusPress = () => {
-    console.log('🔍 루틴 템플릿 조회 시작');
+    console.log('🔍 그룹 루틴 템플릿 조회 시작');
     console.log('🔍 템플릿 데이터:', templateData);
     console.log('🔍 템플릿 로딩 상태:', isLoadingTemplates);
     console.log('🔍 이모지 데이터:', emojiData);
@@ -198,7 +169,7 @@ const CreateRoutineDetailScreen = ({
           emojiId: emojiId,
           text: currentText,
           time: selectedTime,
-          isCompleted: false, // 생성 화면에서는 미완료 상태로
+          isCompleted: false,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -209,7 +180,7 @@ const CreateRoutineDetailScreen = ({
           emojiId: emojiId,
           text: currentText,
           time: selectedTime,
-          isCompleted: false, // 생성 화면에서는 미완료 상태로
+          isCompleted: false,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -221,6 +192,7 @@ const CreateRoutineDetailScreen = ({
     }
   };
 
+  // 아이템 삭제
   const handleDeleteItem = (index: number) => {
     const updatedItems = routineItems.filter((_, i) => i !== index);
     setRoutineItems(updatedItems);
@@ -255,49 +227,51 @@ const CreateRoutineDetailScreen = ({
   const isFormValid = routineItems.length > 0;
 
   const handleSave = () => {
-    console.log('🔍 루틴 상세 생성 시작:', {
+    console.log('🔍 그룹 루틴 상세 생성 시작:', {
       routineData,
       selectedDays,
       routineItems,
       selectedTime,
     });
 
-    // 루틴 리스트 ID가 없으면 에러
+    // 그룹 루틴 리스트 ID가 없으면 에러
     if (!routineData?.routineListId) {
-      console.error('🔍 루틴 리스트 ID가 없습니다:', routineData);
+      console.error('🔍 그룹 루틴 리스트 ID가 없습니다:', routineData);
       return;
     }
 
-    // 루틴 아이템들을 배열로 변환
-    const routineDetailsArray = routineItems.map((item) => ({
-      routineName: item.text,
-      emojiId: item.emojiId, // 저장된 이모지 ID 사용
-      time: parseInt(item.time.replace('분', '')), // "30분" -> 30
-    }));
+    // API 요청 데이터 준비
+    const submitData = {
+      routines: routineItems.map((item) => ({
+        templateId: null, // 템플릿 연결 안 함
+        emojiId: item.emojiId,
+        name: item.text,
+        time: parseInt(item.time.replace('분', '')), // "30분" -> 30
+      })),
+    };
 
-    console.log('🔍 루틴 상세 생성 요청 데이터 (배열):', {
-      myRoutineListId: routineData.routineListId,
-      data: routineDetailsArray,
+    console.log('🔍 그룹 루틴 상세 생성 요청 데이터:', {
+      groupRoutineListId: routineData.routineListId,
+      data: submitData,
     });
 
-    // 배열로 한 번에 API 호출
-    createRoutineDetail(
+    createGroupRoutineDetail(
       {
-        myRoutineListId: routineData.routineListId,
-        data: routineDetailsArray,
+        groupRoutineListId: routineData.routineListId,
+        data: submitData,
       },
       {
         onSuccess: (data) => {
-          console.log('🔍 루틴 상세 생성 성공:', data);
+          console.log('🔍 그룹 루틴 상세 생성 성공:', data);
           navigation.navigate('Result', {
             type: 'success',
-            title: '루틴 생성 완료',
-            description: '루틴이 성공적으로 생성되었습니다.',
+            title: '그룹 루틴 상세 생성 완료',
+            description: '그룹 루틴 상세가 성공적으로 생성되었습니다.',
             nextScreen: 'HomeMain',
           });
         },
         onError: (error) => {
-          console.error('🔍 루틴 상세 생성 실패:', error);
+          console.error('🔍 그룹 루틴 상세 생성 실패:', error);
           // 에러 처리 (나중에 토스트나 알림 추가)
         },
       },
@@ -306,10 +280,10 @@ const CreateRoutineDetailScreen = ({
 
   return (
     <Container edges={['top', 'left', 'right', 'bottom']}>
-      <Header title="상세 루틴 생성" onBackPress={handleBack} />
+      <Header title="그룹 루틴 상세 생성" onBackPress={handleBack} />
       <Content>
         <RoutineCard>
-          <RoutineTitle>{routineData?.name || '새 루틴'}</RoutineTitle>
+          <RoutineTitle>{routineData?.name || '새 그룹 루틴'}</RoutineTitle>
           <RoutineTime>
             {routineData?.startTime || '오후 7:00'} -{' '}
             {routineData?.endTime || '오후 10:00'}
@@ -321,13 +295,6 @@ const CreateRoutineDetailScreen = ({
             buttonSize={40}
             borderRadius={20}
           />
-
-          {/* 기존 루틴 로딩 중 표시 */}
-          {isLoadingExistingRoutines && (
-            <LoadingContainer>
-              <LoadingText>기존 루틴을 불러오는 중...</LoadingText>
-            </LoadingContainer>
-          )}
 
           {/* 새로운 루틴 추가 */}
           {editingIndex === null && (
@@ -374,7 +341,7 @@ const CreateRoutineDetailScreen = ({
         {/* 루틴 생성 버튼 */}
         <CreateButton onPress={handleSave} disabled={!isFormValid}>
           <CreateButtonText isDisabled={!isFormValid}>
-            루틴 생성
+            그룹 루틴 상세 생성
           </CreateButtonText>
         </CreateButton>
       </Content>
@@ -410,7 +377,7 @@ const CreateRoutineDetailScreen = ({
   );
 };
 
-export default CreateRoutineDetailScreen;
+export default CreateGroupRoutineDetailScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;

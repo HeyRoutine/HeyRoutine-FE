@@ -10,7 +10,7 @@ import { theme } from '../../styles/theme';
 import { useAuthStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
 
-const NicknameScreen = ({ navigation }: any) => {
+const NicknameScreen = ({ navigation, route }: any) => {
   const [nickname, setNickname] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -42,7 +42,15 @@ const NicknameScreen = ({ navigation }: any) => {
   const handleNext = () => {
     // Zustand 스토어에 닉네임 저장
     setSignupNickname(nickname);
-    navigation.navigate('ProfileImage');
+    console.log('🔍 닉네임 저장됨:', nickname);
+
+    // 저장 후 스토어 상태 확인
+    const currentState = useAuthStore.getState();
+    console.log('🔍 닉네임 저장 후 스토어 상태:', currentState.signupData);
+
+    // route.params로 이메일, 비밀번호, 닉네임 전달
+    const { email, password } = route.params || {};
+    navigation.navigate('ProfileImage', { email, password, nickname });
   };
 
   const clearNickname = () => {

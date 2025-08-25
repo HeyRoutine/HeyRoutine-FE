@@ -6,13 +6,19 @@ import {
   SignUpRequest,
   SignUpResponse,
   ReissueRequest,
-  ReissueResponse, 
+  ReissueResponse,
   MyPageResetPasswordRequest,
   MyPageResetPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
   ResetNicknameRequest,
   ResetNicknameResponse,
+  MailSendRequest,
+  MailSendResponse,
+  MailSendForPasswordRequest,
+  MailSendForPasswordResponse,
+  AuthCheckRequest,
+  AuthCheckResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -54,10 +60,27 @@ export const signIn = async (
 export const signUp = async (
   data: SignUpRequest,
 ): Promise<ApiResponse<SignUpResponse>> => {
+  console.log('🔍 회원가입 API 호출:', '/api/v1/user/sign-up');
+  console.log('🔍 회원가입 요청 데이터:', {
+    email: data.email,
+    password: data.password,
+    nickname: data.nickname,
+    profileImage: data.profileImage,
+    roles: data.roles,
+  });
+
   const response = await apiClient.post<ApiResponse<SignUpResponse>>(
     '/api/v1/user/sign-up',
     data,
   );
+
+  console.log('🔍 회원가입 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    message: response.data?.message,
+  });
+
   return response.data;
 };
 
@@ -78,10 +101,16 @@ export const mypageResetPassword = async (
 ): Promise<ApiResponse<MyPageResetPasswordResponse>> => {
   const response = await apiClient.patch<
     ApiResponse<MyPageResetPasswordResponse>
-  >(`/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`);
+  >(
+    `/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`,
+  );
 
   // 일부 서버가 200/204에서 본문을 비우는 경우 대비
-  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+  if (
+    response?.data &&
+    typeof response.data === 'object' &&
+    'isSuccess' in response.data
+  ) {
     return response.data;
   }
 
@@ -113,7 +142,11 @@ export const resetNickname = async (
     `/api/v1/user/mypage-nickname?nickname=${encodeURIComponent(data.nickname)}`,
   );
 
-  if (response?.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
+  if (
+    response?.data &&
+    typeof response.data === 'object' &&
+    'isSuccess' in response.data
+  ) {
     return response.data;
   }
 
@@ -124,6 +157,38 @@ export const resetNickname = async (
     message: isOk ? '성공입니다.' : '실패했습니다.',
     result: isOk ? '닉네임이 변경되었습니다' : '닉네임 변경 실패',
   };
+};
+
+// 회원가입 인증메일 보내기
+export const mailSend = async (
+  data: MailSendRequest,
+): Promise<ApiResponse<MailSendResponse>> => {
+  const response = await apiClient.post<ApiResponse<MailSendResponse>>(
+    '/api/v1/mail/send',
+    data,
+  );
+  return response.data;
+};
+
+// 비밀번호 찾기 인증메일 보내기
+export const mailSendForPassword = async (
+  data: MailSendForPasswordRequest,
+): Promise<ApiResponse<MailSendForPasswordResponse>> => {
+  const response = await apiClient.post<
+    ApiResponse<MailSendForPasswordResponse>
+  >('/api/v1/mail/send-password', data);
+  return response.data;
+};
+
+// 인증번호 확인
+export const authCheck = async (
+  data: AuthCheckRequest,
+): Promise<ApiResponse<AuthCheckResponse>> => {
+  const response = await apiClient.post<ApiResponse<AuthCheckResponse>>(
+    '/api/v1/mail/auth-check',
+    data,
+  );
+  return response.data;
 };
 
 // TODO: 다른 유저 API 함수들 구현 예정

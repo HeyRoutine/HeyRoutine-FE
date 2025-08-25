@@ -14,11 +14,8 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
 
-  // Zustand 스토어에서 회원가입 데이터 가져오기
-  const { signupData } = useAuthStore();
-  const { email } = signupData;
-
-  const { isEmailChange, onSuccess } = route.params || {};
+  // route.params에서 이메일 가져오기
+  const { email, isEmailChange, onSuccess } = route.params || {};
 
   const isButtonEnabled = code.length === 4;
 
@@ -45,8 +42,8 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
         onSuccess: onSuccess,
       });
     } else {
-      // 회원가입 모드일 때
-      navigation.navigate('Password');
+      // 회원가입 모드일 때 - email을 route.params로 전달
+      navigation.navigate('Password', { email });
     }
   };
 

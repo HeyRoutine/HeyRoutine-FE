@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import {
   makeMyRoutineList,
   updateRoutineToMyRoutineList,
@@ -9,6 +14,7 @@ import {
 } from '../../../api/routine/personal/routines';
 import {
   makeRoutineToMyRoutineList,
+  makeRoutinesToMyRoutineList,
   getRoutinesInListByDate,
   updateRoutineInMyRoutineList,
   deleteRoutineInMyRoutineList,
@@ -18,6 +24,7 @@ import {
   CreatePersonalRoutineListRequest,
   UpdatePersonalRoutineListRequest,
   CreatePersonalRoutineDetailRequest,
+  CreatePersonalRoutineDetailArrayRequest,
   UpdatePersonalRoutineDetailRequest,
   DonePersonalRoutineParams,
 } from '../../../types/api';
@@ -26,9 +33,33 @@ import {
 
 // 개인루틴 리스트 조회 훅
 export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
+  console.log('🔍 개인루틴 리스트 조회 훅 호출:', params);
+
   return useQuery({
     queryKey: ['personalRoutines', params],
     queryFn: () => showMyRoutineList(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 무한 스크롤용 개인루틴 리스트 조회 훅
+export const useInfinitePersonalRoutines = (
+  params: Omit<PersonalRoutineListParams, 'page' | 'size'> = {},
+) => {
+  console.log('🔍 무한 스크롤 개인루틴 리스트 조회 훅 호출:', params);
+
+  return useInfiniteQuery({
+    queryKey: ['infinitePersonalRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      showMyRoutineList({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
@@ -39,11 +70,17 @@ export const useCreatePersonalRoutineList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePersonalRoutineListRequest) =>
-      makeMyRoutineList(data),
-    onSuccess: () => {
+    mutationFn: (data: CreatePersonalRoutineListRequest) => {
+      console.log('🔍 개인루틴 생성 훅 호출:', data);
+      return makeMyRoutineList(data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 생성 성공:', data);
       // 생성 성공 시 개인루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 생성 실패:', error);
     },
   });
 };
@@ -94,10 +131,46 @@ export const useCreatePersonalRoutineDetail = () => {
     }: {
       myRoutineListId: string;
       data: CreatePersonalRoutineDetailRequest;
-    }) => makeRoutineToMyRoutineList(myRoutineListId, data),
-    onSuccess: () => {
+    }) => {
+      console.log('🔍 개인루틴 상세 생성 훅 호출:', { myRoutineListId, data });
+      return makeRoutineToMyRoutineList(myRoutineListId, data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 상세 생성 성공:', data);
       // 생성 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 상세 생성 실패:', error);
+    },
+  });
+};
+
+// 개인루틴 상세 생성 훅 (배열)
+export const useCreatePersonalRoutineDetailArray = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      myRoutineListId,
+      data,
+    }: {
+      myRoutineListId: string;
+      data: CreatePersonalRoutineDetailArrayRequest;
+    }) => {
+      console.log('🔍 개인루틴 상세 생성 훅 호출 (배열):', {
+        myRoutineListId,
+        data,
+      });
+      return makeRoutinesToMyRoutineList(myRoutineListId, data);
+    },
+    onSuccess: (data) => {
+      console.log('🔍 개인루틴 상세 생성 성공 (배열):', data);
+      // 생성 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 상세 생성 실패 (배열):', error);
     },
   });
 };
@@ -107,6 +180,8 @@ export const usePersonalRoutineDetails = (
   myRoutineListId: string,
   params: { date: string },
 ) => {
+  console.log('🔍 개인루틴 상세 조회 훅 호출:', { myRoutineListId, params });
+
   return useQuery({
     queryKey: ['personalRoutineDetails', myRoutineListId, params],
     queryFn: () => getRoutinesInListByDate(myRoutineListId, params),
@@ -182,4 +257,3 @@ export const useDonePersonalRoutineList = () => {
     },
   });
 };
-

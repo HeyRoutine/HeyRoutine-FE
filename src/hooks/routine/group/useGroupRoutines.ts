@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import {
   getGroupRoutines,
   createGroupRoutine,
@@ -37,6 +42,26 @@ export const useGroupRoutines = (params: GroupRoutineListParams = {}) => {
   return useQuery({
     queryKey: ['groupRoutines', params],
     queryFn: () => getGroupRoutines(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 무한 스크롤용 단체루틴 리스트 조회 훅
+export const useInfiniteGroupRoutines = (
+  params: Omit<GroupRoutineListParams, 'page' | 'size'> = {},
+) => {
+  return useInfiniteQuery({
+    queryKey: ['infiniteGroupRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      getGroupRoutines({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
@@ -102,14 +127,15 @@ export const useJoinGroupRoutine = () => {
   });
 };
 
-// 단체루틴 탈퇴 훅
+// 단체루틴 나가기 훅
 export const useLeaveGroupRoutine = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (routineId: number) => leaveGroupRoutine(routineId),
+    mutationFn: (groupRoutineListId: string) =>
+      leaveGroupRoutine(groupRoutineListId),
     onSuccess: () => {
-      // 탈퇴 성공 시 단체루틴 리스트 캐시 무효화
+      // 나가기 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
     },
   });

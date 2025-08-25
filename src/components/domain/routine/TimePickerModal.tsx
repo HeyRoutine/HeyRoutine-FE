@@ -25,7 +25,7 @@ const TimePickerModal = ({
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
   const [selectedHour, setSelectedHour] = useState(9);
   const [selectedMinute, setSelectedMinute] = useState(0);
-  const [selectedMinutes, setSelectedMinutes] = useState(40);
+  const [selectedMinutes, setSelectedMinutes] = useState(initialMinutes || 40);
 
   // 데이터 준비 - useMemo로 최적화
   const periodData = useMemo(
@@ -68,6 +68,10 @@ const TimePickerModal = ({
 
   // 초기값 설정
   useEffect(() => {
+    console.log('🔍 TimePickerModal - useEffect 호출됨');
+    console.log('🔍 TimePickerModal - type:', type);
+    console.log('🔍 TimePickerModal - initialMinutes:', initialMinutes);
+
     if (type === 'time' && initialTime) {
       const [hours, minutes] = initialTime.split(':');
       const hour = parseInt(hours);
@@ -78,19 +82,34 @@ const TimePickerModal = ({
       setSelectedPeriod(period);
       setSelectedHour(displayHour);
       setSelectedMinute(minute);
-    } else if (type === 'minutes' && initialMinutes) {
-      if (initialMinutes >= 1 && initialMinutes <= 180) {
-        setSelectedMinutes(initialMinutes);
+    } else if (type === 'minutes') {
+      const minutesToSet = initialMinutes || 40;
+      console.log(
+        '🔍 TimePickerModal - minutes 모드, 설정할 분:',
+        minutesToSet,
+      );
+      if (minutesToSet >= 1 && minutesToSet <= 180) {
+        setSelectedMinutes(minutesToSet);
       }
     }
   }, [initialTime, initialMinutes, type]);
 
   const handleComplete = () => {
+    console.log('🔍 TimePickerModal - handleComplete 호출됨');
+    console.log('🔍 TimePickerModal - type:', type);
+    console.log('🔍 TimePickerModal - selectedMinutes:', selectedMinutes);
+
     if (type === 'time') {
       const timeString = `${selectedPeriod} ${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
+      console.log('🔍 TimePickerModal - time 모드, 전달할 시간:', timeString);
       onTimeSelect(timeString);
     } else {
-      onTimeSelect(`${selectedMinutes}분`);
+      const minutesString = `${selectedMinutes}분`;
+      console.log(
+        '🔍 TimePickerModal - minutes 모드, 전달할 시간:',
+        minutesString,
+      );
+      onTimeSelect(minutesString);
     }
     onRequestClose();
   };

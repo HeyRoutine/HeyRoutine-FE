@@ -9,6 +9,7 @@ import {
   UpdateGroupRoutineResponse,
   DeleteGroupRoutineResponse,
   JoinGroupRoutineResponse,
+  LeaveGroupRoutineResponse,
 } from '../../../types/api';
 
 // 단체루틴 생성 API
@@ -52,6 +53,14 @@ export const getGroupRoutines = async (
 ): Promise<ApiResponse<GroupRoutineListResponse>> => {
   const { page = 0, size = 10 } = params;
 
+  const requestParams = {
+    page: page.toString(),
+    size: size.toString(),
+  };
+
+  const queryString = new URLSearchParams(requestParams).toString();
+  console.log('🔍 API 호출:', `/api/v1/routines/groups?${queryString}`);
+
   const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
     '/api/v1/routines/groups',
     {
@@ -61,6 +70,15 @@ export const getGroupRoutines = async (
       },
     },
   );
+
+  console.log('🔍 getGroupRoutines 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    items: response.data?.result?.items,
+    itemsCount: response.data?.result?.items?.length || 0,
+  });
 
   return response.data;
 };
@@ -75,10 +93,13 @@ export const joinGroupRoutine = async (
   return response.data;
 };
 
-// 단체루틴 탈퇴 API (향후 확장용)
-export const leaveGroupRoutine = async (routineId: number) => {
-  const response = await apiClient.delete(
-    `/api/v1/routines/groups/${routineId}/join`,
-  );
+// 단체루틴 나가기 API
+export const leaveGroupRoutine = async (
+  groupRoutineListId: string,
+): Promise<ApiResponse<LeaveGroupRoutineResponse>> => {
+  const response = await apiClient.delete<
+    ApiResponse<LeaveGroupRoutineResponse>
+  >(`/api/v1/routines/groups/${groupRoutineListId}/leave`);
+
   return response.data;
 };

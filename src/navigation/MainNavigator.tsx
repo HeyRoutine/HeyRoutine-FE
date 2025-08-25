@@ -17,12 +17,13 @@ const MainNavigator = () => {
     'Result',
     'ActiveRoutine',
     'PersonalRoutineDetail',
-    'EditRoutine',
     'Loading',
     'RoutineSuggestion',
     'FinancialProduct',
     'CreateRoutine',
     'CreateRoutineDetail',
+    'CreateGroupRoutine',
+    'CreateGroupRoutineDetail',
   ];
 
   return (

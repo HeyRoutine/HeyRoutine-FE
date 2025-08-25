@@ -39,18 +39,39 @@ const EmailLoginScreen = ({ navigation }: any) => {
       },
       {
         onSuccess: (data) => {
-          console.log('로그인 성공:', data);
+          console.log('🔍 로그인 성공 응답:', data);
 
-          // 토큰 저장
-          if (data.result?.accessToken) {
+          // 토큰 저장 (안전하게 처리)
+          if (
+            data.result &&
+            data.result.accessToken &&
+            data.result.refreshToken
+          ) {
+            console.log('🔍 토큰 추출 성공:', {
+              accessToken: data.result.accessToken,
+              refreshToken: data.result.refreshToken,
+            });
+
             setAccessToken(data.result.accessToken);
-          }
-          if (data.result?.refreshToken) {
             setRefreshToken(data.result.refreshToken);
-          }
+            console.log('🔍 토큰 저장 완료');
 
-          // 로그인 상태 변경
-          login();
+            // 로그인 상태 변경
+            login();
+
+            // 최종 스토어 상태 확인
+            setTimeout(() => {
+              const currentState = useAuthStore.getState();
+              console.log('🔍 최종 스토어 상태:', {
+                accessToken: currentState.accessToken,
+                refreshToken: currentState.refreshToken,
+                isLoggedIn: currentState.isLoggedIn,
+              });
+            }, 100);
+          } else {
+            console.error('🔍 토큰이 응답에 없습니다:', data);
+            setErrorMessage('로그인 응답에 토큰이 없습니다.');
+          }
         },
         onError: (error: any) => {
           console.error('로그인 실패:', error);
