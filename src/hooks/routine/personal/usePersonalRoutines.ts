@@ -17,6 +17,7 @@ import {
   makeRoutinesToMyRoutineList,
   getRoutinesInListByDate,
   updateRoutineInMyRoutineList,
+  updateRoutineInMyRoutineListV2,
   deleteRoutineInMyRoutineList,
 } from '../../../api/routine/personal/routineDetails';
 import {
@@ -26,6 +27,7 @@ import {
   CreatePersonalRoutineDetailRequest,
   CreatePersonalRoutineDetailArrayRequest,
   UpdatePersonalRoutineDetailRequest,
+  UpdateRoutineInMyRoutineListRequest,
   DonePersonalRoutineParams,
 } from '../../../types/api';
 
@@ -98,8 +100,11 @@ export const useUpdatePersonalRoutineList = () => {
       data: UpdatePersonalRoutineListRequest;
     }) => updateRoutineToMyRoutineList(myRoutineListId, data),
     onSuccess: () => {
-      // 수정 성공 시 개인루틴 리스트 캐시 무효화
+      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 시작');
+      // 수정 성공 시 개인루틴 리스트 캐시 무효화 (모든 관련 쿼리)
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 완료');
     },
   });
 };
@@ -190,7 +195,7 @@ export const usePersonalRoutineDetails = (
   });
 };
 
-// 개인루틴 상세 수정 훅
+// 개인루틴 상세 수정 훅 (새로운 스펙 - 전체 루틴 목록을 한 번에 수정)
 export const useUpdatePersonalRoutineDetail = () => {
   const queryClient = useQueryClient();
 
@@ -200,11 +205,16 @@ export const useUpdatePersonalRoutineDetail = () => {
       data,
     }: {
       myRoutineListId: string;
-      data: UpdatePersonalRoutineDetailRequest;
-    }) => updateRoutineInMyRoutineList(myRoutineListId, data),
+      data: UpdateRoutineInMyRoutineListRequest;
+    }) => updateRoutineInMyRoutineListV2(myRoutineListId, data),
     onSuccess: () => {
+      console.log('🔍 개인루틴 상세 수정 성공');
       // 수정 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+    },
+    onError: (error) => {
+      console.error('🔍 개인루틴 상세 수정 실패:', error);
     },
   });
 };

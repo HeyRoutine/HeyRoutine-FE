@@ -21,9 +21,9 @@ export interface GroupRoutineInfo {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  peopleNums: number;
+  peopleNums: number; // pepoleNums에서 수정
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
-  isJoined: boolean;
+  joined: boolean; // isJoined에서 수정
 }
 
 // 루틴 상세 아이템 타입 (생성용)
@@ -100,7 +100,7 @@ export interface UpdateGroupRoutineRequest {
 }
 
 // 단체루틴 생성 응답 타입
-export type CreateGroupRoutineResponse = EmptyResponse;
+export type CreateGroupRoutineResponse = number; // 생성된 그룹 루틴 ID (직접 숫자 값)
 
 // 단체루틴 상세 생성 응답 타입
 export type CreateGroupRoutineDetailResponse = EmptyResponse;
@@ -132,9 +132,9 @@ export interface GroupRoutineItem {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  pepoleNums: number; // API 응답에서 pepoleNums로 오고 있음
+  peopleNums?: number; // API 응답에서 제공되지 않음 (임시로 옵셔널) - pepoleNums에서 수정
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
-  isJoined: boolean;
+  joined?: boolean; // API 응답에서 제공되지 않음 (임시로 옵셔널) - isJoined에서 수정
 }
 
 // 단체루틴 리스트 조회 응답 타입
@@ -150,6 +150,7 @@ export interface GroupRoutineListResponse {
 export interface GroupRoutineListParams {
   page?: number;
   size?: number;
+  joined?: boolean; // 참여 여부 필터링 (true: 참여한 루틴만, false: 참여하지 않은 루틴만, undefined: 전체)
 }
 
 // API 에러 타입
@@ -350,14 +351,17 @@ export interface NonParticipantGroupRoutineDetailResponse {
 export interface ParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
   groupRoutineInfo: GroupRoutineInfo;
-  RoutineInfos: RoutineInfoWithCompletion[]; // isCompleted 포함
+  routineInfos: RoutineInfoWithCompletion[]; // isCompleted 포함 (소문자로 수정)
   groupRoutineMemberInfo: ParticipantMemberInfo;
 }
 
-// 단체루틴 상세 조회 응답 타입 (Union 타입)
-export type GroupRoutineDetailResponse =
-  | NonParticipantGroupRoutineDetailResponse
-  | ParticipantGroupRoutineDetailResponse;
+// 단체루틴 상세 조회 응답 타입 (통합)
+export interface GroupRoutineDetailResponse {
+  admin: boolean; // isAdmin → admin으로 수정
+  groupRoutineInfo: GroupRoutineInfo;
+  routineInfos?: RoutineInfoWithCompletion[]; // 참여자/방장용
+  groupRoutineMemberInfo?: ParticipantMemberInfo; // 참여자/방장용
+}
 
 // 단체루틴 상세루틴 성공/실패 요청 타입
 export interface UpdateGroupRoutineStatusRequest {
@@ -399,7 +403,7 @@ export interface CreateGroupGuestbookRequest {
 }
 
 // 방명록 작성 응답 타입
-export type CreateGroupGuestbookResponse = EmptyResponse;
+export type CreateGroupGuestbookResponse = GuestbookItem;
 
 // 방명록 삭제 응답 타입
 export type DeleteGroupGuestbookResponse = EmptyResponse;
@@ -545,6 +549,21 @@ export interface UpdatePersonalRoutineDetailRequest {
   routineName: string; // 루틴 명
   emojiId: number; // 이모지 Id
   time: number; // 루틴 시간
+}
+
+// 개인루틴 리스트 수정 요청 타입 (새로운 API 스펙)
+export interface UpdateRoutineInMyRoutineListRequest {
+  updateRoutine: Array<{
+    id: number;
+    routineName: string;
+    emojiId: number;
+    time: number;
+  }>;
+  makeRoutine: Array<{
+    routineName: string;
+    emojiId: number;
+    time: number;
+  }>;
 }
 
 // 개인루틴 상세 수정 응답 타입

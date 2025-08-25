@@ -51,23 +51,24 @@ export const deleteGroupRoutine = async (
 export const getGroupRoutines = async (
   params: GroupRoutineListParams = {},
 ): Promise<ApiResponse<GroupRoutineListResponse>> => {
-  const { page = 0, size = 10 } = params;
+  const { page = 0, size = 10, joined } = params;
 
-  const requestParams = {
+  const requestParams: any = {
     page: page.toString(),
     size: size.toString(),
   };
 
+  // joined 파라미터가 있으면 추가
+  if (joined !== undefined) {
+    requestParams.joined = joined.toString();
+  }
+
   const queryString = new URLSearchParams(requestParams).toString();
-  console.log('🔍 API 호출:', `/api/v1/routines/groups?${queryString}`);
 
   const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
     '/api/v1/routines/groups',
     {
-      params: {
-        page,
-        size,
-      },
+      params: requestParams,
     },
   );
 
@@ -97,9 +98,19 @@ export const joinGroupRoutine = async (
 export const leaveGroupRoutine = async (
   groupRoutineListId: string,
 ): Promise<ApiResponse<LeaveGroupRoutineResponse>> => {
+  console.log('🔍 leaveGroupRoutine API 호출:', {
+    groupRoutineListId,
+    url: `/api/v1/routines/groups/${groupRoutineListId}/leave`,
+  });
+
   const response = await apiClient.delete<
     ApiResponse<LeaveGroupRoutineResponse>
   >(`/api/v1/routines/groups/${groupRoutineListId}/leave`);
+
+  console.log('🔍 leaveGroupRoutine API 응답:', {
+    status: response.status,
+    data: response.data,
+  });
 
   return response.data;
 };

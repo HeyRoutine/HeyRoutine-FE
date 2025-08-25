@@ -9,6 +9,7 @@ import {
   UpdatePersonalRoutineDetailRequest,
   UpdatePersonalRoutineDetailResponse,
   DeletePersonalRoutineDetailResponse,
+  UpdateRoutineInMyRoutineListRequest,
 } from '../../../types/api';
 
 // 개인루틴 리스트 안 루틴 만들기 API
@@ -99,6 +100,32 @@ export const updateRoutineInMyRoutineList = async (
   const response = await apiClient.patch<
     ApiResponse<UpdatePersonalRoutineDetailResponse>
   >(`/api/v1/my-routine/list/routine/${myRoutineListId}`, data);
+  return response.data;
+};
+
+// 개인루틴 리스트 안 루틴 수정 API (새로운 스펙)
+export const updateRoutineInMyRoutineListV2 = async (
+  myRoutineListId: string,
+  data: UpdateRoutineInMyRoutineListRequest,
+): Promise<ApiResponse<string>> => {
+  console.log(
+    '🔍 개인루틴 리스트 수정 API 호출:',
+    `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+  );
+  console.log('🔍 개인루틴 리스트 수정 요청 데이터:', data);
+
+  const response = await apiClient.patch<ApiResponse<string>>(
+    `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+    data,
+  );
+
+  console.log('🔍 개인루틴 리스트 수정 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    message: response.data?.message,
+  });
+
   return response.data;
 };
 

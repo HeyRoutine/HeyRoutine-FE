@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -55,8 +56,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     );
   };
 
-  // 요일 문자열
-  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'] as const;
+  // 요일 문자열 (월화수목금토일 순서)
+  const dayLabels = ['월', '화', '수', '목', '금', '토', '일'] as const;
 
   // 선택된 날짜가 속한 주(월~일) 데이터 생성
   const startOfWeek = getStartOfWeekMonday(selectedDate);
@@ -64,7 +65,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     const d = new Date(startOfWeek);
     d.setDate(startOfWeek.getDate() + idx);
     return {
-      day: dayLabels[d.getDay()],
+      day: dayLabels[idx], // 인덱스를 직접 사용하여 월화수목금토일 순서 보장
       date: d.getDate(),
       fullDate: d,
     };
@@ -86,6 +87,42 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
     selectedDate.getDay()
   ];
+
+  // 개인 루틴 API 훅
+  const {
+    data: personalRoutinesData,
+    isLoading: isPersonalRoutinesLoading,
+    error: personalRoutinesError,
+    fetchNextPage: fetchNextPersonalPage,
+    hasNextPage: hasNextPersonalPage,
+    isFetchingNextPage: isFetchingNextPersonalPage,
+    refetch: refetchPersonalRoutines,
+  } = useInfinitePersonalRoutines({
+    date: selectedDateString,
+    day: selectedDay,
+  });
+
+  // 그룹 루틴 API 훅 (joined 필드 사용)
+  const {
+    data: groupRoutinesData,
+    isLoading: isGroupRoutinesLoading,
+    error: groupRoutinesError,
+    fetchNextPage: fetchNextGroupPage,
+    hasNextPage: hasNextGroupPage,
+    isFetchingNextPage: isFetchingNextGroupPage,
+    refetch: refetchGroupRoutines,
+  } = useInfiniteGroupRoutines({
+    joined: true, // 참여한 그룹 루틴만 필터링
+  });
+
+  // 화면이 포커스될 때마다 데이터 새로고침
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('🔍 HomeScreen - 화면 포커스됨, 데이터 새로고침 시작');
+      refetchPersonalRoutines();
+      refetchGroupRoutines();
+    }, [refetchPersonalRoutines, refetchGroupRoutines]),
+  );
 
   // 시간을 HH:mm 형식으로 변환하는 함수
   const formatTimeForDisplay = (time: any): string => {
@@ -114,18 +151,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     return '00:00';
   };
 
-  const {
-    data: personalRoutinesData,
-    isLoading: isPersonalRoutinesLoading,
-    error: personalRoutinesError,
-    fetchNextPage: fetchNextPersonalPage,
-    hasNextPage: hasNextPersonalPage,
-    isFetchingNextPage: isFetchingNextPersonalPage,
-  } = useInfinitePersonalRoutines({
-    date: selectedDateString,
-    day: selectedDay,
-  });
-
   // API 데이터를 화면에 맞는 형태로 변환 (모든 페이지 데이터 합치기)
   const personalRoutines: RoutineListItem[] =
     personalRoutinesData?.pages?.flatMap((page) =>
@@ -140,29 +165,35 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       })),
     ) || [];
 
-  // 그룹 루틴 API 훅 사용
-  const {
-    data: groupRoutinesData,
-    isLoading: isGroupRoutinesLoading,
-    error: groupRoutinesError,
-    fetchNextPage: fetchNextGroupPage,
-    hasNextPage: hasNextGroupPage,
-    isFetchingNextPage: isFetchingNextGroupPage,
-  } = useInfiniteGroupRoutines({});
-
-  // 그룹 루틴 데이터를 화면에 맞는 형태로 변환 (모든 페이지 데이터 합치기)
+  // 그룹 루틴 데이터를 화면에 맞는 형태로 변환 (joined 필드 사용)
   const groupRoutines: RoutineListItem[] =
-    groupRoutinesData?.pages?.flatMap((page) =>
-      page.result.items.map((item) => ({
-        id: item.id.toString(),
-        category: item.routineType === 'DAILY' ? '생활' : '소비',
-        progress: 0, // API에서 제공하지 않는 경우 기본값
-        title: item.title,
-        timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-        selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
-        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
-      })),
+    groupRoutinesData?.pages?.flatMap(
+      (page) =>
+        page.result?.items?.map((item) => {
+          return {
+            id: item.id.toString(),
+            category: item.routineType === 'DAILY' ? '생활' : '소비',
+            progress: 0, // API에서 제공하지 않는 경우 기본값
+            title: item.title,
+            timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
+            selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
+            completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+          };
+        }) || [],
     ) || [];
+
+  // 선택된 날짜의 요일
+  const selectedDayLabel = ['일', '월', '화', '수', '목', '금', '토'][
+    selectedDate.getDay()
+  ];
+
+  // 선택된 요일의 루틴만 필터링
+  const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
+    routine.selectedDays.includes(selectedDayLabel),
+  );
+  const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
+    routine.selectedDays.includes(selectedDayLabel),
+  );
 
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');
@@ -238,7 +269,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     }
   };
 
-  const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
   const isFetchingNextPage =
     selectedTab === 0 ? isFetchingNextPersonalPage : isFetchingNextGroupPage;
 
@@ -285,7 +315,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         {/* 루틴 목록 */}
         <RoutineList>
           <FlatList
-            data={currentRoutines}
+            data={
+              selectedTab === 0
+                ? selectedDayPersonalRoutines
+                : selectedDayGroupRoutines
+            }
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <RoutineCard

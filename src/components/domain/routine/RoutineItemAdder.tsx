@@ -43,9 +43,7 @@ const RoutineItemAdder = ({
   }, [currentText]);
 
   // 디버깅용 로그
-  useEffect(() => {
-    console.log('🔍 RoutineItemAdder - selectedTime prop:', selectedTime);
-  }, [selectedTime]);
+  useEffect(() => {}, [selectedTime]);
 
   return (
     <Container>

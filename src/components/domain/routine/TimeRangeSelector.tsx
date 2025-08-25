@@ -22,11 +22,11 @@ const TimeRangeSelector = ({
       <TimeContainer>
         <TimeButton onPress={onStartTimePress}>
           <TimeLabel>시작 시간</TimeLabel>
-          <TimeValue>{startTime || '시간 선택'}</TimeValue>
+          <TimeValue>{startTime ? `${startTime}` : '시간 선택'}</TimeValue>
         </TimeButton>
         <TimeButton onPress={onEndTimePress}>
           <TimeLabel>완료 시간</TimeLabel>
-          <TimeValue>{endTime || '시간 선택'}</TimeValue>
+          <TimeValue>{endTime ? `${endTime}` : '시간 선택'}</TimeValue>
         </TimeButton>
       </TimeContainer>
     </Container>
@@ -72,5 +72,5 @@ const TimeLabel = styled.Text`
 const TimeValue = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 20px;
-  color: ${theme.colors.gray400};
+  color: ${theme.colors.gray900};
 `;

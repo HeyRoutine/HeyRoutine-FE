@@ -5,7 +5,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { theme } from '../../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 
-// 한국어 설정
+// 한국어 기본 설정
 LocaleConfig.locales['ko'] = {
   monthNames: [
     '1월',
@@ -60,17 +60,24 @@ const DatePickerModal = ({
   onRequestClose,
   onDateSelect,
 }: DatePickerModalProps) => {
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0],
-  );
+  // 한국 시간대로 현재 날짜 가져오기
+  const getKoreanDate = () => {
+    const now = new Date();
+    const koreanTime = new Date(now.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+    return koreanTime.toISOString().split('T')[0];
+  };
+
+  const [selectedDate, setSelectedDate] = useState(getKoreanDate());
 
   const handleDateSelect = (date: string) => {
     const selectedDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 한국 시간대로 오늘 날짜 설정
+    const koreanToday = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    koreanToday.setHours(0, 0, 0, 0);
 
     // 오늘 날짜 이전은 선택 불가
-    if (selectedDate >= today) {
+    if (selectedDate >= koreanToday) {
       setSelectedDate(date);
     }
   };
@@ -101,6 +108,11 @@ const DatePickerModal = ({
               selected: true,
               selectedColor: theme.colors.primary,
             },
+          }}
+          renderHeader={(date) => {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            return <HeaderText>{`${year}년 ${month}월`}</HeaderText>;
           }}
           theme={{
             backgroundColor: 'transparent',
@@ -187,4 +199,11 @@ const CompleteButtonText = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
   color: ${theme.colors.white};
+`;
+
+const HeaderText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 18px;
+  color: ${theme.colors.gray800};
+  text-align: center;
 `;

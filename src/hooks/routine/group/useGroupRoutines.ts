@@ -76,6 +76,7 @@ export const useCreateGroupRoutine = () => {
     onSuccess: () => {
       // 생성 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -95,6 +96,7 @@ export const useUpdateGroupRoutine = () => {
     onSuccess: () => {
       // 수정 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -109,6 +111,7 @@ export const useDeleteGroupRoutine = () => {
     onSuccess: () => {
       // 삭제 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -123,6 +126,7 @@ export const useJoinGroupRoutine = () => {
     onSuccess: () => {
       // 참여 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -137,6 +141,7 @@ export const useLeaveGroupRoutine = () => {
     onSuccess: () => {
       // 나가기 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -158,6 +163,8 @@ export const useCreateGroupRoutineDetail = () => {
     onSuccess: () => {
       // 생성 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
+      queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
     },
   });
 };
@@ -201,15 +208,11 @@ export const useDeleteGroupRoutineDetail = () => {
 };
 
 // 단체루틴 상세 조회 훅
-export const useGroupRoutineDetail = (
-  groupRoutineListId: string,
-  groupRoutineId: string,
-) => {
+export const useGroupRoutineDetail = (groupRoutineListId: string) => {
   return useQuery({
-    queryKey: ['groupRoutineDetail', groupRoutineListId, groupRoutineId],
-    queryFn: () => getGroupRoutineDetail(groupRoutineListId, groupRoutineId),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    queryKey: ['groupRoutineDetail', groupRoutineListId],
+    queryFn: () => getGroupRoutineDetail(groupRoutineListId),
+    enabled: !!groupRoutineListId,
   });
 };
 
@@ -261,9 +264,34 @@ export const useCreateGroupGuestbook = () => {
       groupRoutineListId: string;
       data: CreateGroupGuestbookRequest;
     }) => createGroupGuestbook(groupRoutineListId, data),
-    onSuccess: () => {
-      // 작성 성공 시 방명록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['groupGuestbooks'] });
+    onSuccess: (newGuestbook, variables) => {
+      // 작성 성공 시 방명록 캐시에 즉시 추가 (최신 글이 맨 뒤에 오도록)
+      queryClient.setQueryData(
+        ['groupGuestbooks', variables.groupRoutineListId, {}],
+        (oldData: any) => {
+          if (!oldData?.result?.items) {
+            // 기존 데이터가 없으면 새로 생성
+            return {
+              isSuccess: true,
+              code: 'COMMON200',
+              message: '성공입니다.',
+              result: {
+                items: [newGuestbook.result],
+                totalItems: 1,
+              },
+            };
+          }
+
+          return {
+            ...oldData,
+            result: {
+              ...oldData.result,
+              items: [...oldData.result.items, newGuestbook.result],
+              totalItems: oldData.result.totalItems + 1,
+            },
+          };
+        },
+      );
     },
   });
 };
@@ -280,9 +308,25 @@ export const useDeleteGroupGuestbook = () => {
       groupRoutineListId: string;
       guestbookId: string;
     }) => deleteGroupGuestbook(groupRoutineListId, guestbookId),
-    onSuccess: () => {
-      // 삭제 성공 시 방명록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['groupGuestbooks'] });
+    onSuccess: (_, variables) => {
+      // 삭제 성공 시 방명록 캐시에서 즉시 제거
+      queryClient.setQueryData(
+        ['groupGuestbooks', variables.groupRoutineListId, {}],
+        (oldData: any) => {
+          if (!oldData?.result?.items) return oldData;
+
+          return {
+            ...oldData,
+            result: {
+              ...oldData.result,
+              items: oldData.result.items.filter(
+                (item: any) => item.id.toString() !== variables.guestbookId,
+              ),
+              totalItems: oldData.result.totalItems - 1,
+            },
+          };
+        },
+      );
     },
   });
 };
