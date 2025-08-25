@@ -52,12 +52,20 @@ export const useCheckNicknameDuplicate = (
   nickname: string,
   enabled: boolean = false,
 ) => {
+  console.log('🔍 useCheckNicknameDuplicate 호출:', {
+    nickname,
+    enabled,
+    nicknameLength: nickname.length,
+  });
+
   return useQuery({
     queryKey: ['checkNicknameDuplicate', nickname],
     queryFn: () => checkNicknameDuplicate(nickname),
-    enabled: enabled && nickname.length > 0, // 닉네임이 있을 때만 실행
-    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
-    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    enabled: enabled && nickname.length >= 2, // 닉네임이 2자 이상일 때만 실행
+    staleTime: 2 * 60 * 1000, // 2분간 fresh 상태 유지 (더 빠른 갱신)
+    gcTime: 5 * 60 * 1000, // 5분간 캐시 유지
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 재호출 방지
+    retry: 1, // 재시도 횟수 제한 (더 빠른 실패 처리)
   });
 };
 

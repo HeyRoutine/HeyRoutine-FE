@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,14 +9,28 @@ import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useAuthStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
+import { useCheckNicknameDuplicate } from '../../hooks/user/useUser';
 
 const NicknameScreen = ({ navigation, route }: any) => {
   const [nickname, setNickname] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState<
+    boolean | null
+  >(null);
 
   // Zustand 회원가입 스토어에서 닉네임 설정 함수 가져오기
   const { setSignupNickname } = useAuthStore();
+
+  // 닉네임 중복 확인 API hook - 실시간으로 호출
+  const {
+    data: duplicateCheckData,
+    isLoading: isCheckingDuplicate,
+    error: duplicateCheckError,
+  } = useCheckNicknameDuplicate(
+    nickname,
+    nickname.length >= 2 && validateNickname(nickname),
+  );
 
   // 닉네임 유효성 검사 (한글, 영어, 숫자만 허용, 2~10자)
   useEffect(() => {
@@ -39,18 +53,68 @@ const NicknameScreen = ({ navigation, route }: any) => {
     }
   }, [nickname]);
 
+  // 닉네임 입력 시 상태 초기화
+  useEffect(() => {
+    if (nickname.length === 0) {
+      // 닉네임이 비어있을 때 상태 초기화
+      setIsNicknameAvailable(null);
+      setErrorMessage('');
+    }
+  }, [nickname]);
+
+  // 닉네임 중복 확인 결과 처리 - 실시간
+  useEffect(() => {
+    if (
+      nickname.length > 0 &&
+      validateNickname(nickname) &&
+      !isCheckingDuplicate
+    ) {
+      if (duplicateCheckError) {
+        // API 에러 처리
+        console.log('🔍 닉네임 중복 확인 에러:', duplicateCheckError);
+        setErrorMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
+        setIsNicknameAvailable(false);
+      } else if (duplicateCheckData) {
+        // API 응답 확인
+        console.log('🔍 닉네임 중복 확인 응답:', duplicateCheckData);
+        if (
+          duplicateCheckData.isSuccess &&
+          duplicateCheckData.code === 'COMMON200'
+        ) {
+          // 중복 확인 성공 - 사용 가능한 닉네임
+          console.log('🔍 닉네임 중복 확인 성공:', duplicateCheckData.result);
+          setErrorMessage('');
+          setIsNicknameAvailable(true);
+        } else {
+          // API는 성공했지만 비즈니스 로직 실패 (중복된 닉네임)
+          console.log('🔍 닉네임 중복 확인 실패:', duplicateCheckData.message);
+          setErrorMessage(
+            duplicateCheckData.message || '이미 사용 중인 닉네임입니다.',
+          );
+          setIsNicknameAvailable(false);
+        }
+      }
+    } else if (nickname.length === 0) {
+      // 닉네임이 비어있을 때
+      setErrorMessage('');
+      setIsNicknameAvailable(null);
+    }
+  }, [nickname, isCheckingDuplicate, duplicateCheckData, duplicateCheckError]);
+
   const handleNext = () => {
-    // Zustand 스토어에 닉네임 저장
-    setSignupNickname(nickname);
-    console.log('🔍 닉네임 저장됨:', nickname);
+    if (isNicknameValid && isNicknameAvailable === true) {
+      // Zustand 스토어에 닉네임 저장
+      setSignupNickname(nickname);
+      console.log('🔍 닉네임 저장됨:', nickname);
 
-    // 저장 후 스토어 상태 확인
-    const currentState = useAuthStore.getState();
-    console.log('🔍 닉네임 저장 후 스토어 상태:', currentState.signupData);
+      // 저장 후 스토어 상태 확인
+      const currentState = useAuthStore.getState();
+      console.log('🔍 닉네임 저장 후 스토어 상태:', currentState.signupData);
 
-    // route.params로 이메일, 비밀번호, 닉네임 전달
-    const { email, password } = route.params || {};
-    navigation.navigate('ProfileImage', { email, password, nickname });
+      // route.params로 이메일, 비밀번호, 닉네임 전달
+      const { email, password } = route.params || {};
+      navigation.navigate('ProfileImage', { email, password, nickname });
+    }
   };
 
   const clearNickname = () => {
@@ -88,14 +152,26 @@ const NicknameScreen = ({ navigation, route }: any) => {
 
       <ButtonWrapper>
         <CustomButton
-          text="다음"
+          text={isCheckingDuplicate ? '확인 중...' : '다음'}
           onPress={handleNext}
-          disabled={!isNicknameValid}
+          disabled={
+            !isNicknameValid ||
+            isCheckingDuplicate ||
+            isNicknameAvailable !== true
+          }
           backgroundColor={
-            isNicknameValid ? theme.colors.primary : theme.colors.gray200
+            isNicknameValid &&
+            !isCheckingDuplicate &&
+            isNicknameAvailable === true
+              ? theme.colors.primary
+              : theme.colors.gray200
           }
           textColor={
-            isNicknameValid ? theme.colors.white : theme.colors.gray500
+            isNicknameValid &&
+            !isCheckingDuplicate &&
+            isNicknameAvailable === true
+              ? theme.colors.white
+              : theme.colors.gray500
           }
         />
       </ButtonWrapper>
