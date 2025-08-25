@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import CustomButton from '../../components/common/CustomButton';
 import { useUserStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
 import { useResetNickname } from '../../hooks/user';
+import { checkNicknameDuplicate } from '../../api/user';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -20,6 +21,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
   const { mutateAsync: resetNicknameMutate } = useResetNickname();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
@@ -32,7 +34,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     }
   }, [userInfo?.nickname]);
 
-  const validateNicknameInput = (text: string) => {
+  const validateNicknameInput = async (text: string) => {
+    console.log('🔍 닉네임 검증 시작:', text);
+
     // 빈 문자열 체크
     if (text.length === 0) {
       setValidationMessage('');
@@ -61,15 +65,79 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       return;
     }
 
-    // 모든 검증 통과
-    setValidationMessage('');
-    setIsValidNickname(true);
+    // 중복 검사 API 호출
+    try {
+      console.log('🔍 중복 검사 API 호출 시작');
+      const response = await checkNicknameDuplicate(text);
+      console.log('🔍 중복 검사 API 응답:', response);
+
+      if (response.isSuccess) {
+        // 중복되지 않음
+        setValidationMessage('');
+        setIsValidNickname(true);
+        console.log('🔍 닉네임 사용 가능');
+      } else {
+        // 이미 사용 중인 닉네임
+        setValidationMessage('이미 사용 중인 닉네임입니다.');
+        setIsValidNickname(false);
+        console.log('🔍 닉네임 중복됨');
+      }
+    } catch (error: any) {
+      console.error('🔍 중복 검사 API 에러:', error);
+      // API 호출 실패 시 에러 메시지
+      // setValidationMessage('닉네임 중복 확인에 실패했습니다.');
+      // setIsValidNickname(false);
+
+      if (error.response.data.message == '사용중인 닉네임 입니다.') {
+        setValidationMessage('이미 사용 중인 닉네임입니다.');
+        setIsValidNickname(false);
+      }
+      // else if (error.response.data.message == ) {
+
+      // }
+      else {
+        setValidationMessage('닉네임 중복 확인에 실패했습니다.');
+        setIsValidNickname(false);
+      }
+    }
   };
 
   const handleNicknameChange = (text: string) => {
     setNickname(text);
-    validateNicknameInput(text);
+
+    // 이전 타이머가 있다면 클리어
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // 빈 문자열이거나 2글자 미만인 경우 즉시 검증
+    if (text.length === 0 || text.length < 2) {
+      validateNicknameInput(text);
+      return;
+    }
+
+    // 2글자 이상인 경우 디바운싱 적용
+    timeoutRef.current = setTimeout(() => {
+      validateNicknameInput(text);
+    }, 500);
   };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 닉네임이 변경될 때마다 검증 상태 초기화
+  useEffect(() => {
+    if (nickname !== currentNickname) {
+      setIsValidNickname(false);
+      setValidationMessage('');
+    }
+  }, [nickname, currentNickname]);
 
   const handleComplete = async () => {
     if (!isValidNickname) return;
@@ -98,7 +166,8 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       navigation.replace('Result', {
         type: 'failure',
         title: '변경 실패',
-        description: error?.response?.data?.message || '닉네임 변경에 실패했어요',
+        description:
+          error?.response?.data?.message || '닉네임 변경에 실패했어요',
         nextScreen: 'ProfileEdit',
       });
     }
