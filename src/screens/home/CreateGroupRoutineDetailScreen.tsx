@@ -379,6 +379,15 @@ const CreateGroupRoutineDetailScreen = ({
             onSuccess: (detailData) => {
               console.log('🔍 상세 생성 성공:', detailData);
 
+              // 캐시 무효화로 홈 화면 목록 업데이트
+              console.log('🔍 캐시 무효화 시작');
+              queryClient.invalidateQueries({
+                queryKey: ['infiniteGroupRoutines'],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ['groupRoutineDetail', groupRoutineId.toString()],
+              });
+
               // 3단계: 생성 완료 후 즉시 조회 테스트
               console.log('🔍 3단계: 생성된 루틴 조회 테스트');
 

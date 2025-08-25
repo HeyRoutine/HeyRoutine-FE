@@ -92,7 +92,7 @@ const CreateRoutineDetailScreen = ({
         emojiId: routine.emojiId || 1, // 서버에서 emojiId가 없을 경우 기본값
         text: routine.routineName,
         time: `${routine.time}분`,
-        isCompleted: routine.completed,
+        isCompleted: routine.isCompleted,
       }));
 
       setRoutineItems(existingItems);

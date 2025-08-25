@@ -34,6 +34,15 @@ const GuestbookModal = ({
 
   const { data: guestbookData, isLoading } =
     useGroupGuestbooks(groupRoutineListId);
+
+  // 디버깅을 위한 로그 추가
+  console.log('🔍 GuestbookModal - guestbookData:', guestbookData);
+  console.log('🔍 GuestbookModal - isLoading:', isLoading);
+  console.log('🔍 GuestbookModal - items:', guestbookData?.result?.items);
+  console.log(
+    '🔍 GuestbookModal - items length:',
+    guestbookData?.result?.items?.length,
+  );
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
   const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
@@ -132,12 +141,17 @@ const GuestbookModal = ({
 
         <ContentContainer>
           <ScrollView
-            style={{ flex: 1 }}
+            style={{ flex: 1, minHeight: 200 }}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{
+              paddingBottom: 20,
+              flexGrow: 1,
+            }}
             nestedScrollEnabled={true}
           >
-            {isLoading ? null : guestbookData?.result?.items &&
+            {isLoading ? (
+              <LoadingText>방명록을 불러오는 중...</LoadingText>
+            ) : guestbookData?.result?.items &&
               guestbookData.result.items.length > 0 ? (
               <GuestbookList>
                 {guestbookData.result.items
@@ -217,7 +231,7 @@ const GuestbookModal = ({
 export default GuestbookModal;
 
 const Container = styled.View`
-  height: 50%;
+  height: 70%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -247,11 +261,13 @@ const CloseButton = styled.TouchableOpacity`
 
 const ContentContainer = styled.View`
   flex: 1;
+  min-height: 300px;
 `;
 
 const GuestbookList = styled.View`
   padding: 16px 20px;
   gap: 16px;
+  flex: 1;
 `;
 
 const GuestbookItem = styled.View`

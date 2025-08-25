@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { TextInput, Image } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 
 interface RoutineItemAdderProps {
   onPlusPress: () => void;
@@ -10,12 +11,14 @@ interface RoutineItemAdderProps {
   onTextChange?: (text: string) => void;
   onBlur?: () => void;
   onTextPress?: () => void;
+  onDelete?: () => void; // 삭제 함수 추가
   placeholder?: string;
   selectedTime?: string;
   selectedEmoji?: string;
   currentText?: string;
-  isCompleted?: boolean;
+  completed?: boolean;
   editable?: boolean;
+  showDeleteButton?: boolean; // 삭제 버튼 표시 여부
 }
 
 const RoutineItemAdder = ({
@@ -24,14 +27,17 @@ const RoutineItemAdder = ({
   onTextChange,
   onBlur,
   onTextPress,
+  onDelete,
   placeholder = '루틴을 추가해주세요',
   selectedTime,
   selectedEmoji,
   currentText,
-  isCompleted = false,
+  completed = false,
   editable = true,
+  showDeleteButton = false,
 }: RoutineItemAdderProps) => {
   const [text, setText] = useState(currentText || '');
+  const swipeableRef = useRef<Swipeable>(null);
 
   const handleTextChange = (newText: string) => {
     setText(newText);
@@ -43,12 +49,27 @@ const RoutineItemAdder = ({
   }, [currentText]);
 
   // 디버깅용 로그
-  useEffect(() => {}, [selectedTime]);
+  useEffect(() => {
+    console.log('🔍 RoutineItemAdder - completed:', completed);
+    console.log('🔍 RoutineItemAdder - text:', text);
+    console.log('🔍 RoutineItemAdder - selectedTime:', selectedTime);
+  }, [completed, text, selectedTime]);
 
-  return (
+  // 삭제 액션 렌더링
+  const renderRightActions = () => {
+    if (!showDeleteButton || !onDelete) return null;
+
+    return (
+      <DeleteAction onPress={onDelete}>
+        <Ionicons name="trash-outline" size={24} color={theme.colors.white} />
+      </DeleteAction>
+    );
+  };
+
+  const RoutineContent = () => (
     <Container>
       <PlusSection onPress={onPlusPress}>
-        {isCompleted ? (
+        {completed ? (
           <Ionicons name="checkmark" size={24} color={theme.colors.primary} />
         ) : selectedEmoji ? (
           // 이모지가 URL인지 텍스트 이모지인지 판단
@@ -68,7 +89,7 @@ const RoutineItemAdder = ({
           <Ionicons name="add" size={28} color={theme.colors.gray400} />
         )}
       </PlusSection>
-      {isCompleted ? (
+      {completed ? (
         <TextSectionCompleted onPress={onTextPress}>
           <CompletedText>{text}</CompletedText>
         </TextSectionCompleted>
@@ -93,7 +114,11 @@ const RoutineItemAdder = ({
       )}
       <TimeSection onPress={onClockPress}>
         {selectedTime ? (
-          <TimeText>{selectedTime}</TimeText>
+          completed ? (
+            <CompletedTimeText>{selectedTime}</CompletedTimeText>
+          ) : (
+            <TimeText>{selectedTime}</TimeText>
+          )
         ) : (
           <Ionicons
             name="time-outline"
@@ -104,6 +129,21 @@ const RoutineItemAdder = ({
       </TimeSection>
     </Container>
   );
+
+  // 삭제 버튼이 표시되어야 하는 경우에만 Swipeable 사용
+  if (showDeleteButton && onDelete) {
+    return (
+      <Swipeable
+        ref={swipeableRef}
+        renderRightActions={renderRightActions}
+        rightThreshold={40}
+      >
+        <RoutineContent />
+      </Swipeable>
+    );
+  }
+
+  return <RoutineContent />;
 };
 
 export default RoutineItemAdder;
@@ -170,6 +210,14 @@ const TimeText = styled.Text`
   text-align: center;
 `;
 
+const CompletedTimeText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 12px;
+  color: ${theme.colors.gray400};
+  text-align: center;
+  text-decoration-line: line-through;
+`;
+
 const EmojiText = styled.Text`
   font-size: 24px;
   text-align: center;
@@ -179,4 +227,14 @@ const EmojiText = styled.Text`
 const EmojiImage = styled.Image`
   width: 24px;
   height: 24px;
+`;
+
+const DeleteAction = styled.TouchableOpacity`
+  width: 48px;
+  height: 48px;
+  background-color: ${theme.colors.error};
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  margin-left: 8px;
 `;

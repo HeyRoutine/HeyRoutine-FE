@@ -153,6 +153,22 @@ export interface GroupRoutineListParams {
   joined?: boolean; // 참여 여부 필터링 (true: 참여한 루틴만, false: 참여하지 않은 루틴만, undefined: 전체)
 }
 
+// 단체루틴 검색 파라미터 타입
+export interface SearchGroupRoutinesParams {
+  keyword: string; // 검색할 키워드 명
+  page?: number;
+  size?: number;
+}
+
+// 단체루틴 검색 응답 타입
+export interface SearchGroupRoutinesResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  items: GroupRoutineItem[];
+}
+
 // API 에러 타입
 export interface ApiError {
   isSuccess: false;
@@ -533,7 +549,7 @@ export interface PersonalRoutineDetailItem {
   routineName: string;
   emojiUrl: string;
   time: number;
-  completed: boolean;
+  isCompleted: boolean;
 }
 
 // 개인루틴 상세 조회 응답 타입

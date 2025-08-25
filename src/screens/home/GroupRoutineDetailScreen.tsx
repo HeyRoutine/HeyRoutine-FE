@@ -514,6 +514,7 @@ const GroupRoutineDetailScreen = ({
             onPress={() => {}}
             onMorePress={handleMenuPress}
             showProgress={false}
+            itemCount={routine.tasks.length}
           />
         </RoutineCardContainer>
 
@@ -571,7 +572,7 @@ const GroupRoutineDetailScreen = ({
                   {routine.completedParticipants
                     .slice(0, 12)
                     .map((uri, idx) => (
-                      <AvatarWrapper key={`completed-${idx}`}>
+                      <AvatarWrapper key={`isCompleted-${idx}`}>
                         <Avatar
                           source={
                             uri

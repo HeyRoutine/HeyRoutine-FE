@@ -164,29 +164,44 @@ export const showMyRoutineList = async (
 
 // 개인루틴 리스트 수행 API
 export const doneRoutineToMyRoutineList = async (
-  routineId: string,
+  routineId: number,
   params: DonePersonalRoutineParams,
 ): Promise<ApiResponse<DonePersonalRoutineResponse>> => {
   const { date } = params;
 
+  console.log('🔍 doneRoutineToMyRoutineList API 호출:', { routineId, params });
+
   const response = await apiClient.post<
     ApiResponse<DonePersonalRoutineResponse>
   >(
-    `/api/v1/list/routine/complete/${routineId}`,
+    `/api/v1/my-routine/list/routine/complete/${routineId}`,
     {},
     {
       params: { date },
     },
   );
+
+  console.log('🔍 doneRoutineToMyRoutineList API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    message: response.data?.message,
+  });
+
   return response.data;
 };
 
 // 루틴리스트 기록하기 API
 export const doneMyRoutineList = async (
   myRoutineListId: string,
+  date: string,
 ): Promise<ApiResponse<DoneMyRoutineListResponse>> => {
   const response = await apiClient.post<ApiResponse<DoneMyRoutineListResponse>>(
-    `/api/v1/list/complete/${myRoutineListId}`,
+    `/api/v1/my-routine/list/complete/${myRoutineListId}`,
+    {},
+    {
+      params: { date },
+    },
   );
   return response.data;
 };
@@ -212,6 +227,52 @@ export const makeRoutineToMyRoutineList = async (
     isSuccess: response.data?.isSuccess,
     result: response.data?.result,
   });
+
+  return response.data;
+};
+
+// 개인루틴 리스트 안 루틴 조회 API (날짜별)
+export const getRoutinesInListByDate = async (
+  myRoutineListId: string,
+  date: string,
+): Promise<ApiResponse<any>> => {
+  console.log('🔍 개인루틴 리스트 안 루틴 조회 API 호출:', {
+    myRoutineListId,
+    date,
+    url: `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+  });
+
+  const response = await apiClient.get<ApiResponse<any>>(
+    `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+    {
+      params: { date },
+    },
+  );
+
+  console.log('🔍 개인루틴 리스트 안 루틴 조회 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    routinesCount: response.data?.result?.length || 0,
+  });
+
+  // 각 루틴의 상세 정보 로그
+  if (response.data?.result && Array.isArray(response.data.result)) {
+    response.data.result.forEach((routine: any, index: number) => {
+      console.log(`🔍 루틴 ${index + 1}:`, {
+        id: routine.id,
+        routineId: routine.routineId,
+        routineName: routine.routineName,
+        emojiUrl: routine.emojiUrl,
+        time: routine.time,
+        isCompleted: routine.isCompleted,
+        // isCompleted: routine.isCompleted,
+        createdAt: routine.createdAt,
+        updatedAt: routine.updatedAt,
+      });
+    });
+  }
 
   return response.data;
 };

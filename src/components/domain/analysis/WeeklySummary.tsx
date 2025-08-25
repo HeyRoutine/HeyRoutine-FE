@@ -9,7 +9,7 @@ import RoutineStatusRow from './RoutineStatusRow';
 /**
  * 루틴 완료 상태 타입
  */
-type RoutineStatus = 'completed' | 'incomplete' | 'future' | 'optional';
+type RoutineStatus = 'isCompleted' | 'incomplete' | 'future' | 'optional';
 
 /**
  * WeeklySummary의 props 인터페이스

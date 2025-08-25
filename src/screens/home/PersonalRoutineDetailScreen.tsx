@@ -13,6 +13,7 @@ import {
   DayOfWeekSelector,
   EmojiPickerModal,
   RoutineSuggestionModal,
+  TimePickerModal,
 } from '../../components/domain/routine';
 import {
   useRoutineTemplates,
@@ -52,7 +53,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: string;
       text: string;
       time: string;
-      isCompleted: boolean;
+      completed: boolean;
     }>
   >([]);
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -70,6 +71,9 @@ const PersonalRoutineDetailScreen = ({
   // 루틴 추천 모달 상태
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
+
+  // 시간 선택 모달 상태
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
 
   // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
   const {
@@ -150,7 +154,7 @@ const PersonalRoutineDetailScreen = ({
         emoji: routine.emojiUrl,
         text: routine.routineName,
         time: `${routine.time}분`,
-        isCompleted: routine.completed,
+        completed: routine.completed,
       }));
 
       setRoutineItems(existingItems);
@@ -198,8 +202,8 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
-    // 시간 선택 시 현재 선택된 시간을 RoutineSuggestionModal에 전달
-    setRoutineSuggestionVisible(true);
+    // 시간 선택 시 시간 선택 모달 열기
+    setTimePickerVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -235,7 +239,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: false,
+          completed: false,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -245,7 +249,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          isCompleted: false,
+          completed: false,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -306,7 +310,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: routine.icon,
       text: routine.title,
       time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
-      isCompleted: false,
+      completed: false,
     };
     setRoutineItems([...routineItems, newItem]);
 
@@ -579,22 +583,95 @@ const PersonalRoutineDetailScreen = ({
           {/* 완성된 루틴 아이템들 */}
           {routineItems.map((item, index) => (
             <AdderContainer key={index}>
-              <CompletedRoutineItem
-                item={item}
-                index={index}
-                onEdit={(index, emoji, text, time) => {
-                  const updatedItems = [...routineItems];
-                  updatedItems[index] = {
-                    emoji,
-                    text,
-                    time,
-                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
-                  };
-                  setRoutineItems(updatedItems);
-                }}
-                onDelete={handleDeleteItem}
-                isEditMode={isEditMode}
-              />
+              {item.completed ? (
+                <CompletedRoutineItem
+                  item={item}
+                  index={index}
+                  onEdit={(index, emoji, text, time) => {
+                    if (isEditMode) {
+                      // 수정 모드에서는 완료된 루틴도 수정 가능
+                      // CompletedRoutineItem에서 자체 모달을 사용하므로 여기서는 바로 업데이트
+                      const updatedItems = [...routineItems];
+                      updatedItems[index] = {
+                        emoji,
+                        text,
+                        time,
+                        completed: updatedItems[index].completed, // 기존 완료 상태 유지
+                      };
+                      setRoutineItems(updatedItems);
+                    } else {
+                      // 일반 모드에서는 체크 해제만 가능
+                      const updatedItems = [...routineItems];
+                      updatedItems[index] = {
+                        emoji,
+                        text,
+                        time,
+                        completed: false, // 체크 해제
+                      };
+                      setRoutineItems(updatedItems);
+                    }
+                  }}
+                  onDelete={handleDeleteItem}
+                  isEditMode={isEditMode}
+                  onClockPress={
+                    isEditMode
+                      ? () => {
+                          setEditingIndex(index);
+                          setSelectedEmoji(item.emoji);
+                          setCurrentText(item.text);
+                          setSelectedTime(item.time);
+                          setRoutineSuggestionVisible(true);
+                        }
+                      : () => {}
+                  }
+                />
+              ) : (
+                <RoutineItemAdder
+                  onPlusPress={
+                    isEditMode
+                      ? () => {
+                          setEditingIndex(index);
+                          setSelectedEmoji(item.emoji);
+                          setCurrentText(item.text);
+                          setSelectedTime(item.time);
+                          setEmojiPickerVisible(true);
+                        }
+                      : () => {}
+                  }
+                  onClockPress={
+                    isEditMode
+                      ? () => {
+                          setEditingIndex(index);
+                          setSelectedEmoji(item.emoji);
+                          setCurrentText(item.text);
+                          setSelectedTime(item.time);
+                          setRoutineSuggestionVisible(true);
+                        }
+                      : () => {}
+                  }
+                  onTextChange={isEditMode ? handleTextChange : () => {}}
+                  onTextPress={
+                    isEditMode
+                      ? () => {
+                          setEditingIndex(index);
+                          setSelectedEmoji(item.emoji);
+                          setCurrentText(item.text);
+                          setSelectedTime(item.time);
+                          setRoutineSuggestionVisible(true);
+                        }
+                      : () => {}
+                  }
+                  selectedTime={item.time}
+                  selectedEmoji={item.emoji}
+                  currentText={item.text}
+                  completed={item.completed}
+                  editable={isEditMode}
+                  onDelete={
+                    isEditMode ? () => handleDeleteItem(index) : () => {}
+                  }
+                  showDeleteButton={isEditMode}
+                />
+              )}
             </AdderContainer>
           ))}
         </RoutineCard>
@@ -628,6 +705,23 @@ const PersonalRoutineDetailScreen = ({
         visible={emojiPickerVisible}
         onRequestClose={() => setEmojiPickerVisible(false)}
         onEmojiSelect={handleEmojiSelect}
+      />
+
+      <TimePickerModal
+        visible={timePickerVisible}
+        onRequestClose={() => setTimePickerVisible(false)}
+        onTimeSelect={(time) => {
+          if (typeof time === 'number') {
+            setSelectedTime(`${time}분`);
+          } else {
+            setSelectedTime(time);
+          }
+          setTimePickerVisible(false);
+        }}
+        type="minutes"
+        initialMinutes={
+          selectedTime ? parseInt(selectedTime.replace('분', '')) : 30
+        }
       />
 
       <RoutineSuggestionModal
@@ -852,7 +946,7 @@ const ButtonWrapper = styled.View`
 const CancelButton = styled.TouchableOpacity`
   background-color: ${theme.colors.gray200};
   border-radius: 12px;
-  padding: 18px;
+  padding: 14px;
   align-items: center;
 `;
 

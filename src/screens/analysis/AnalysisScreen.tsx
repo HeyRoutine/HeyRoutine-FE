@@ -48,79 +48,192 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   const currentDate = new Date();
   const selectedDayIndex = currentDate.getDay(); // 0: 일요일, 1: 월요일, ...
 
-  // 일상 루틴 데이터
-  const dailyRoutines: Array<{
-    name: string;
-    status: ('completed' | 'incomplete' | 'future' | 'optional')[];
-  }> = [
-    {
-      name: '아침루틴',
-      status: [
-        'optional',
-        'completed',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'optional',
-      ],
-    },
-    {
-      name: '저녁루틴',
-      status: [
-        'completed',
-        'completed',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'optional',
-      ],
-    },
-    {
-      name: '그룹루틴',
-      status: [
-        'optional',
-        'optional',
-        'optional',
-        'optional',
-        'optional',
-        'optional',
-        'optional',
-      ],
-    },
-  ];
+  // 주간 범위 계산 (일요일 시작 ~ 토요일 끝 기준)
+  const { startDateStr, endDateStr, dateRangeLabel } = useMemo(() => {
+    // getDay(): 0(일)~6(토)
+    const dayOfWeek = weekAnchorDate.getDay();
+    const sunday = new Date(weekAnchorDate);
+    sunday.setDate(weekAnchorDate.getDate() - dayOfWeek);
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
 
-  // 금융 루틴 데이터
-  const financialRoutines: Array<{
-    name: string;
-    status: ('completed' | 'incomplete' | 'future' | 'optional')[];
-  }> = [
-    {
-      name: '절약루틴',
-      status: [
-        'optional',
-        'completed',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'optional',
-      ],
-    },
-    {
-      name: '투자루틴',
-      status: [
-        'completed',
-        'completed',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'incomplete',
-        'optional',
-      ],
-    },
-  ];
+    const toYmd = (d: Date) => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+    const toKoreanLabel = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
+
+    return {
+      startDateStr: toYmd(sunday),
+      endDateStr: toYmd(saturday),
+      dateRangeLabel: `${toKoreanLabel(sunday)} - ${toKoreanLabel(saturday)}`,
+    };
+  }, [weekAnchorDate]);
+
+  // 주간 이동 핸들러
+  const handlePreviousWeek = () => {
+    setWeekAnchorDate((prev) => {
+      const next = new Date(prev);
+      next.setDate(prev.getDate() - 7);
+      return next;
+    });
+  };
+
+  const handleNextWeek = () => {
+    setWeekAnchorDate((prev) => {
+      const next = new Date(prev);
+      next.setDate(prev.getDate() + 7);
+      return next;
+    });
+  };
+
+  // API 상태
+  const [loadingWeekly, setLoadingWeekly] = useState(false);
+  const [weeklyError, setWeeklyError] = useState<string | null>(null);
+  const [weeklyData, setWeeklyData] = useState<WeeklySummaryItem[]>([]);
+
+  // 최대 연속 일수 상태
+  const [maxStreak, setMaxStreak] = useState<number>(0);
+  const [loadingStreak, setLoadingStreak] = useState(false);
+  const [streakError, setStreakError] = useState<string | null>(null);
+
+  // 이전 더미 데이터는 API 연동으로 대체합니다.
+  // const dailyRoutines = [...];
+  // const financialRoutines = [...];
+
+  // 서버 불린값 → UI 상태 매핑 함수
+  const booleanToStatus = (value: boolean): 'completed' | 'incomplete' =>
+    value ? 'completed' : 'incomplete';
+
+  // API 데이터 → WeeklySummary 컴포넌트 props로 변환
+  const mappedRoutines = useMemo(() => {
+    const coalesceBool = (...values: Array<any>): boolean => {
+      for (const value of values) {
+        if (typeof value === 'boolean') return value;
+      }
+      return false;
+    };
+
+    const toStatusArray = (raw: WeeklySummaryItem['dailyStatus']) => {
+      const ds = (raw || {}) as unknown as Record<string, any>;
+      // 한글 키(월~일), 영문 키(MONDAY~SUNDAY), 약어(SUN~SAT), 전체 한글(월요일~일요일) 모두 대응
+      const sunday = coalesceBool(
+        ds.SUNDAY,
+        ds.Sun,
+        ds.SUN,
+        ds['일'],
+        ds['일요일'],
+      );
+      const monday = coalesceBool(
+        ds.MONDAY,
+        ds.Mon,
+        ds.MON,
+        ds['월'],
+        ds['월요일'],
+      );
+      const tuesday = coalesceBool(
+        ds.TUESDAY,
+        ds.Tue,
+        ds.TUE,
+        ds['화'],
+        ds['화요일'],
+      );
+      const wednesday = coalesceBool(
+        ds.WEDNESDAY,
+        ds.Wed,
+        ds.WED,
+        ds['수'],
+        ds['수요일'],
+      );
+      const thursday = coalesceBool(
+        ds.THURSDAY,
+        ds.Thu,
+        ds.THU,
+        ds['목'],
+        ds['목요일'],
+      );
+      const friday = coalesceBool(
+        ds.FRIDAY,
+        ds.Fri,
+        ds.FRI,
+        ds['금'],
+        ds['금요일'],
+      );
+      const saturday = coalesceBool(
+        ds.SATURDAY,
+        ds.Sat,
+        ds.SAT,
+        ds['토'],
+        ds['토요일'],
+      );
+
+      const order = [
+        sunday,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+      ];
+      return order.map(booleanToStatus);
+    };
+
+    return weeklyData.map((item) => ({
+      name: item.routineTitle,
+      status: toStatusArray(item.dailyStatus),
+    }));
+  }, [weeklyData]);
+
+  // 탭 변경 및 주간 범위 변경 시 주간 요약 조회
+  useEffect(() => {
+    const fetchWeekly = async () => {
+      setLoadingWeekly(true);
+      setWeeklyError(null);
+      try {
+        const routineType: RoutineType =
+          selectedTab === 0 ? 'DAILY' : 'FINANCE';
+        const res = await getWeeklySummary({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          routineType,
+        });
+        if (res.isSuccess) {
+          setWeeklyData(res.result);
+        } else {
+          setWeeklyError(res.message || '주간 요약 조회 실패');
+        }
+      } catch (e) {
+        setWeeklyError('주간 요약 조회 중 오류가 발생했어요.');
+      } finally {
+        setLoadingWeekly(false);
+      }
+    };
+    fetchWeekly();
+  }, [selectedTab, startDateStr, endDateStr]);
+
+  // 최대 연속 일수 조회
+  useEffect(() => {
+    const fetchMaxStreak = async () => {
+      setLoadingStreak(true);
+      setStreakError(null);
+      try {
+        const res = await getMaxStreak();
+        if (res.isSuccess) {
+          setMaxStreak(res.result.streakDays ?? 0);
+        } else {
+          setStreakError(res.message || '최대 연속 일수 조회 실패');
+        }
+      } catch (e) {
+        setStreakError('최대 연속 일수 조회 중 오류가 발생했어요.');
+      } finally {
+        setLoadingStreak(false);
+      }
+    };
+    fetchMaxStreak();
+  }, []);
 
   // AI 분석 카드 클릭 핸들러
   const handleAIAnalysisPress = () => {

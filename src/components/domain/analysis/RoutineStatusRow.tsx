@@ -7,7 +7,7 @@ import { theme } from '../../../styles/theme';
 /**
  * 루틴 완료 상태 타입
  */
-type RoutineStatus = 'completed' | 'incomplete' | 'future' | 'optional';
+type RoutineStatus = 'isCompleted' | 'incomplete' | 'future' | 'optional';
 
 /**
  * RoutineStatusRow의 props 인터페이스
@@ -34,7 +34,7 @@ const RoutineStatusRow = ({
 }: IRoutineStatusRowProps) => {
   const getStatusStyle = (status: RoutineStatus, dayIndex: number) => {
     switch (status) {
-      case 'completed':
+      case 'isCompleted':
         return {
           backgroundColor: theme.colors.primary,
           borderWidth: 0,

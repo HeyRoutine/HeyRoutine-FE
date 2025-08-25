@@ -11,6 +11,8 @@ import {
   deleteGroupRoutine,
   joinGroupRoutine,
   leaveGroupRoutine,
+  searchGroupRoutines,
+  getMyGroupRoutines,
 } from '../../../api/routine/group/routines';
 import {
   createGroupRoutineDetail,
@@ -34,6 +36,7 @@ import {
   UpdateGroupRoutineStatusRequest,
   GroupGuestbookListParams,
   CreateGroupGuestbookRequest,
+  SearchGroupRoutinesParams,
 } from '../../../types/api';
 
 // ===== 단체루틴 기본 CRUD =====
@@ -68,6 +71,68 @@ export const useInfiniteGroupRoutines = (
   });
 };
 
+// 단체루틴 검색 훅
+export const useSearchGroupRoutines = (params: SearchGroupRoutinesParams) => {
+  return useQuery({
+    queryKey: ['searchGroupRoutines', params],
+    queryFn: () => searchGroupRoutines(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    enabled: !!params.keyword && params.keyword.trim().length > 0, // 키워드가 있을 때만 실행
+  });
+};
+
+// 무한 스크롤용 단체루틴 검색 훅
+export const useInfiniteSearchGroupRoutines = (
+  params: Omit<SearchGroupRoutinesParams, 'page' | 'size'>,
+) => {
+  return useInfiniteQuery({
+    queryKey: ['infiniteSearchGroupRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      searchGroupRoutines({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    enabled: !!params.keyword && params.keyword.trim().length > 0, // 키워드가 있을 때만 실행
+  });
+};
+
+// 내 단체루틴 조회 훅 (최신순 정렬)
+export const useMyGroupRoutines = (params: GroupRoutineListParams = {}) => {
+  return useQuery({
+    queryKey: ['myGroupRoutines', params],
+    queryFn: () => getMyGroupRoutines(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 무한 스크롤용 내 단체루틴 조회 훅 (최신순 정렬)
+export const useInfiniteMyGroupRoutines = (
+  params: Omit<GroupRoutineListParams, 'page' | 'size'> = {},
+) => {
+  return useInfiniteQuery({
+    queryKey: ['infiniteMyGroupRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      getMyGroupRoutines({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
 // 단체루틴 생성 훅
 export const useCreateGroupRoutine = () => {
   const queryClient = useQueryClient();
@@ -78,6 +143,8 @@ export const useCreateGroupRoutine = () => {
       // 생성 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['myGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteMyGroupRoutines'] });
     },
   });
 };
@@ -98,6 +165,8 @@ export const useUpdateGroupRoutine = () => {
       // 수정 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['myGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteMyGroupRoutines'] });
     },
   });
 };
@@ -113,6 +182,8 @@ export const useDeleteGroupRoutine = () => {
       // 삭제 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['myGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteMyGroupRoutines'] });
     },
   });
 };
@@ -128,6 +199,8 @@ export const useJoinGroupRoutine = () => {
       // 참여 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['myGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteMyGroupRoutines'] });
     },
   });
 };
@@ -143,6 +216,8 @@ export const useLeaveGroupRoutine = () => {
       // 나가기 성공 시 단체루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['myGroupRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteMyGroupRoutines'] });
     },
   });
 };
