@@ -116,24 +116,11 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   );
 
   // selectedTimeLocal 변경 추적
-  useEffect(() => {
-    console.log(
-      '🔍 RoutineSuggestionModal - selectedTimeLocal 변경됨:',
-      selectedTimeLocal,
-    );
-  }, [selectedTimeLocal]);
+  useEffect(() => {}, [selectedTimeLocal]);
 
   // selectedTime prop 변경 시 selectedTimeLocal 업데이트 (초기화 시에만)
   useEffect(() => {
-    console.log(
-      '🔍 RoutineSuggestionModal - selectedTime prop 확인:',
-      selectedTime,
-    );
     if (selectedTime && selectedTime !== selectedTimeLocal) {
-      console.log(
-        '🔍 RoutineSuggestionModal - selectedTime prop 변경됨:',
-        selectedTime,
-      );
       setSelectedTimeLocal(selectedTime);
     }
   }, [selectedTime]);
@@ -180,20 +167,6 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   });
 
   // 디버깅용 로그
-  console.log('🔍 RoutineSuggestionModal - templates prop:', templates);
-  console.log(
-    '🔍 RoutineSuggestionModal - availableRoutines:',
-    availableRoutines,
-  );
-  console.log(
-    '🔍 RoutineSuggestionModal - filteredRoutines:',
-    filteredRoutines,
-  );
-  console.log('🔍 RoutineSuggestionModal - isLoading:', isLoading);
-  console.log(
-    '🔍 RoutineSuggestionModal - filteredRoutines.length:',
-    filteredRoutines.length,
-  );
 
   const handleRoutineSelect = (routine: RoutineItem) => {
     // 루틴 추천 아이템 선택 시 모달의 입력 필드들에 반영 (시간은 제외)
@@ -221,14 +194,8 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
 
   const handleTimeSelect = (time: string | number) => {
     const timeString = time.toString();
-    console.log(
-      '🔍 RoutineSuggestionModal - handleTimeSelect 호출됨, 입력값:',
-      time,
-    );
-    console.log('🔍 RoutineSuggestionModal - 변환된 시간 문자열:', timeString);
 
     setSelectedTimeLocal(timeString);
-    console.log('🔍 RoutineSuggestionModal - setSelectedTimeLocal 호출됨');
 
     setTimePickerVisible(false);
     // 시간 선택 완료 후 숨겨진 루틴 추천 모달이 다시 보임
@@ -283,10 +250,6 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
                 placeholder="루틴을 추가해주세요"
               />
               {/* 디버깅용 로그 */}
-              {console.log(
-                '🔍 RoutineSuggestionModal - RoutineItemAdder에 전달되는 selectedTime:',
-                selectedTimeLocal,
-              )}
             </AdderContainer>
 
             {/* 카테고리 선택 */}

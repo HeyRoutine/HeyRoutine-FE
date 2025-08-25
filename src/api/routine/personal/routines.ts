@@ -126,7 +126,6 @@ export const showMyRoutineList = async (
   };
 
   const queryString = new URLSearchParams(requestParams).toString();
-  console.log('🔍 API 호출:', `/api/v1/my-routine/list?${queryString}`);
 
   const response = await apiClient.get<
     ApiResponse<PersonalRoutineListResponse>

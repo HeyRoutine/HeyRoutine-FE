@@ -91,15 +91,6 @@ const GroupBoardScreen = ({ navigation }: any) => {
   // API 데이터를 화면에 맞는 형태로 변환
   const groupRoutines =
     groupRoutinesData?.result?.items?.map((item) => {
-      console.log('🔍 그룹 루틴 API 원본 데이터:', {
-        id: item.id,
-        title: item.title,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        routineType: item.routineType,
-        dayOfWeek: item.dayOfWeek,
-      });
-
       const formattedItem = {
         id: item.id.toString(),
         category: item.routineType === 'DAILY' ? '생활' : '소비',
@@ -111,13 +102,12 @@ const GroupBoardScreen = ({ navigation }: any) => {
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
         selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
         completedDays: [], // API에서 제공하지 않는 경우 빈 배열
-        pepoleNums: item.pepoleNums,
+        peopleNums: item.peopleNums,
         routineNums: item.routineNums,
         routineType: item.routineType,
-        isJoined: item.isJoined,
+        joined: item.joined,
       };
 
-      console.log('🔍 그룹 루틴 변환된 데이터:', formattedItem);
       return formattedItem;
     }) || [];
 
@@ -139,10 +129,10 @@ const GroupBoardScreen = ({ navigation }: any) => {
             startTime: item.startTime,
             endTime: item.endTime,
             dayOfWeek: item.selectedDays,
-            pepoleNums: item.pepoleNums || 0,
+            peopleNums: item.peopleNums || 0,
             routineNums: item.routineNums || 0,
             routineType: item.routineType,
-            isJoined: item.isJoined || false,
+            joined: item.joined || false,
           },
         })
       }

@@ -201,15 +201,11 @@ export const useDeleteGroupRoutineDetail = () => {
 };
 
 // 단체루틴 상세 조회 훅
-export const useGroupRoutineDetail = (
-  groupRoutineListId: string,
-  groupRoutineId: string,
-) => {
+export const useGroupRoutineDetail = (groupRoutineListId: string) => {
   return useQuery({
-    queryKey: ['groupRoutineDetail', groupRoutineListId, groupRoutineId],
-    queryFn: () => getGroupRoutineDetail(groupRoutineListId, groupRoutineId),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    queryKey: ['groupRoutineDetail', groupRoutineListId],
+    queryFn: () => getGroupRoutineDetail(groupRoutineListId),
+    enabled: !!groupRoutineListId,
   });
 };
 

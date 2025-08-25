@@ -70,6 +70,7 @@ const TimePickerModal = ({
   useEffect(() => {
     console.log('🔍 TimePickerModal - useEffect 호출됨');
     console.log('🔍 TimePickerModal - type:', type);
+    console.log('🔍 TimePickerModal - initialTime:', initialTime);
     console.log('🔍 TimePickerModal - initialMinutes:', initialMinutes);
 
     if (type === 'time' && initialTime) {
@@ -78,6 +79,14 @@ const TimePickerModal = ({
       const period = hour < 12 ? '오전' : '오후';
       const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       const minute = parseInt(minutes);
+
+      console.log('🔍 TimePickerModal - 시간 파싱 결과:', {
+        original: initialTime,
+        hour,
+        period,
+        displayHour,
+        minute,
+      });
 
       setSelectedPeriod(period);
       setSelectedHour(displayHour);

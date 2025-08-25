@@ -127,27 +127,19 @@ const CreateGroupRoutineScreen = ({
         },
       );
     } else {
-      // 생성 모드
-      createGroupRoutine(submitData, {
-        onSuccess: (data) => {
-          console.log('🔍 그룹 루틴 생성 성공:', data);
+      // 생성 모드 - API 호출 없이 상세 생성 화면으로 이동
+      console.log('🔍 그룹 루틴 상세 생성 화면으로 이동');
 
-          // CreateGroupRoutineDetailScreen으로 이동
-          navigation.navigate('CreateGroupRoutineDetail', {
-            routineData: {
-              name: routineName,
-              category: selectedCategory,
-              days: selectedDays,
-              startTime,
-              endTime,
-              startDate: selectedStartDate,
-              // 그룹 루틴 생성 후 상세 생성 화면으로 이동
-            },
-          });
-        },
-        onError: (error) => {
-          console.error('🔍 그룹 루틴 생성 실패:', error);
-          // 에러 처리 (나중에 토스트나 알림 추가)
+      // CreateGroupRoutineDetailScreen으로 이동 (API 호출 없이)
+      navigation.navigate('CreateGroupRoutineDetail', {
+        routineData: {
+          name: routineName,
+          category: selectedCategory,
+          days: selectedDays,
+          startTime,
+          endTime,
+          startDate: selectedStartDate,
+          description: description, // 설명도 전달
         },
       });
     }

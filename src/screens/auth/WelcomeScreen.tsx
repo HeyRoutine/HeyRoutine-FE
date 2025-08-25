@@ -5,7 +5,7 @@ import styled from 'styled-components/native';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useAuthStore, useOnboardingStore } from '../../store';
-import { useSignUp } from '../../hooks/user/useUser';
+import { useSignUp, useSignIn } from '../../hooks/user/useUser';
 
 // 모든 회원가입 데이터를 route.params로 받기
 const WelcomeScreen = ({ navigation, route }: any) => {
@@ -18,6 +18,8 @@ const WelcomeScreen = ({ navigation, route }: any) => {
 
   // 회원가입 API hook
   const { mutate: signUp, isPending: isSigningUp } = useSignUp();
+  // 로그인 API hook (자동 로그인용)
+  const { mutate: signIn, isPending: isSigningIn } = useSignIn();
 
   const handleStart = () => {
     // 회원가입 API 호출
@@ -32,10 +34,44 @@ const WelcomeScreen = ({ navigation, route }: any) => {
       {
         onSuccess: (data) => {
           console.log('회원가입 성공:', data);
-          // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
-          resetOnboarding();
-          // Zustand를 통해 로그인 상태 변경
-          login();
+
+          // 회원가입 성공 후 자동 로그인
+          signIn(
+            {
+              email: email,
+              password: password,
+            },
+            {
+              onSuccess: (loginData) => {
+                console.log('🔍 자동 로그인 성공:', loginData);
+
+                // 토큰 저장
+                if (
+                  loginData.result &&
+                  loginData.result.accessToken &&
+                  loginData.result.refreshToken
+                ) {
+                  const { setAccessToken, setRefreshToken } =
+                    useAuthStore.getState();
+                  setAccessToken(loginData.result.accessToken);
+                  setRefreshToken(loginData.result.refreshToken);
+
+                  // 온보딩 상태 초기화 (최초 한번만 온보딩 보여주기 위해)
+                  resetOnboarding();
+
+                  // 로그인 상태 변경
+                  login();
+
+                  console.log('🔍 회원가입 후 자동 로그인 완료');
+                }
+              },
+              onError: (loginError) => {
+                console.error('🔍 자동 로그인 실패:', loginError);
+                // 자동 로그인 실패 시 로그인 화면으로 이동
+                navigation.navigate('EmailLogin');
+              },
+            },
+          );
         },
         onError: (error) => {
           console.error('회원가입 실패:', error);

@@ -51,23 +51,24 @@ export const deleteGroupRoutine = async (
 export const getGroupRoutines = async (
   params: GroupRoutineListParams = {},
 ): Promise<ApiResponse<GroupRoutineListResponse>> => {
-  const { page = 0, size = 10 } = params;
+  const { page = 0, size = 10, joined } = params;
 
-  const requestParams = {
+  const requestParams: any = {
     page: page.toString(),
     size: size.toString(),
   };
 
+  // joined 파라미터가 있으면 추가
+  if (joined !== undefined) {
+    requestParams.joined = joined.toString();
+  }
+
   const queryString = new URLSearchParams(requestParams).toString();
-  console.log('🔍 API 호출:', `/api/v1/routines/groups?${queryString}`);
 
   const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
     '/api/v1/routines/groups',
     {
-      params: {
-        page,
-        size,
-      },
+      params: requestParams,
     },
   );
 
@@ -79,6 +80,21 @@ export const getGroupRoutines = async (
     items: response.data?.result?.items,
     itemsCount: response.data?.result?.items?.length || 0,
   });
+
+  // TODO: 서버에서 joined 필드가 제공되면 아래 로그 활성화
+  // joined 필드 확인을 위한 상세 로그
+  // if (response.data?.result?.items) {
+  //   console.log('🔍 각 루틴의 joined 필드 확인:');
+  //   response.data.result.items.forEach((item, index) => {
+  //     console.log(`  루틴 ${index + 1}:`, {
+  //       id: item.id,
+  //       title: item.title,
+  //       isJoined: item.isJoined,
+  //       joinedType: typeof item.isJoined,
+  //       fullItem: item,
+  //     });
+  //   });
+  // }
 
   return response.data;
 };

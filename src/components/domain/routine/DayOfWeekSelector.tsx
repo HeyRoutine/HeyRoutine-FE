@@ -24,15 +24,31 @@ const DayOfWeekSelector = ({
   buttonSize = 28,
   borderRadius = 14,
 }: DayOfWeekSelectorProps) => {
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+
+  // 요일 순서 정의 (월화수목금토일)
+  const dayOrder = ['월', '화', '수', '목', '금', '토', '일'];
+
+  // 요일을 순서대로 정렬하는 함수
+  const sortDaysByOrder = (days: string[]) => {
+    return days.sort((a, b) => {
+      const indexA = dayOrder.indexOf(a);
+      const indexB = dayOrder.indexOf(b);
+      return indexA - indexB;
+    });
+  };
 
   const handleDayPress = (day: string) => {
     if (readOnly) return; // 읽기 전용일 때는 클릭 무시
 
     if (selectedDays.includes(day)) {
-      onDaysChange(selectedDays.filter((d) => d !== day));
+      // 요일 제거 시에도 정렬 유지
+      const newDays = selectedDays.filter((d) => d !== day);
+      onDaysChange(sortDaysByOrder(newDays));
     } else {
-      onDaysChange([...selectedDays, day]);
+      // 요일 추가 시 정렬
+      const newDays = [...selectedDays, day];
+      onDaysChange(sortDaysByOrder(newDays));
     }
   };
 

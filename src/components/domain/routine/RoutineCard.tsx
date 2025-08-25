@@ -27,6 +27,18 @@ const RoutineCard = ({
   onPress,
   onMorePress,
 }: RoutineCardProps) => {
+  // 요일 순서 정의 (월화수목금토일)
+  const dayOrder = ['월', '화', '수', '목', '금', '토', '일'];
+
+  // 요일을 순서대로 정렬하는 함수
+  const sortDaysByOrder = (days: string[]) => {
+    return days.sort((a, b) => {
+      const indexA = dayOrder.indexOf(a);
+      const indexB = dayOrder.indexOf(b);
+      return indexA - indexB;
+    });
+  };
+
   const isDayCompleted = (day: string) => completedDays.includes(day);
 
   return (
@@ -45,7 +57,7 @@ const RoutineCard = ({
       <Title>{title}</Title>
       <TimeText>{timeRange}</TimeText>
       <DayContainer>
-        {selectedDays.map((day) => {
+        {sortDaysByOrder(selectedDays).map((day) => {
           const done = isDayCompleted(day);
           return (
             <DayBadge key={day} isSelected={done}>

@@ -21,9 +21,9 @@ export interface GroupRoutineInfo {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  peopleNums: number;
+  peopleNums: number; // pepoleNums에서 수정
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
-  isJoined: boolean;
+  joined: boolean; // isJoined에서 수정
 }
 
 // 루틴 상세 아이템 타입 (생성용)
@@ -100,7 +100,7 @@ export interface UpdateGroupRoutineRequest {
 }
 
 // 단체루틴 생성 응답 타입
-export type CreateGroupRoutineResponse = EmptyResponse;
+export type CreateGroupRoutineResponse = number; // 생성된 그룹 루틴 ID (직접 숫자 값)
 
 // 단체루틴 상세 생성 응답 타입
 export type CreateGroupRoutineDetailResponse = EmptyResponse;
@@ -132,9 +132,9 @@ export interface GroupRoutineItem {
   startTime: string; // HH:mm 형식
   endTime: string; // HH:mm 형식
   routineNums: number;
-  pepoleNums: number; // API 응답에서 pepoleNums로 오고 있음
+  peopleNums?: number; // API 응답에서 제공되지 않음 (임시로 옵셔널) - pepoleNums에서 수정
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
-  isJoined: boolean;
+  joined?: boolean; // API 응답에서 제공되지 않음 (임시로 옵셔널) - isJoined에서 수정
 }
 
 // 단체루틴 리스트 조회 응답 타입
@@ -150,6 +150,7 @@ export interface GroupRoutineListResponse {
 export interface GroupRoutineListParams {
   page?: number;
   size?: number;
+  joined?: boolean; // 참여 여부 필터링 (true: 참여한 루틴만, false: 참여하지 않은 루틴만, undefined: 전체)
 }
 
 // API 에러 타입
@@ -350,14 +351,17 @@ export interface NonParticipantGroupRoutineDetailResponse {
 export interface ParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
   groupRoutineInfo: GroupRoutineInfo;
-  RoutineInfos: RoutineInfoWithCompletion[]; // isCompleted 포함
+  routineInfos: RoutineInfoWithCompletion[]; // isCompleted 포함 (소문자로 수정)
   groupRoutineMemberInfo: ParticipantMemberInfo;
 }
 
-// 단체루틴 상세 조회 응답 타입 (Union 타입)
-export type GroupRoutineDetailResponse =
-  | NonParticipantGroupRoutineDetailResponse
-  | ParticipantGroupRoutineDetailResponse;
+// 단체루틴 상세 조회 응답 타입 (통합)
+export interface GroupRoutineDetailResponse {
+  isAdmin: boolean;
+  groupRoutineInfo: GroupRoutineInfo;
+  routineInfos?: RoutineInfoWithCompletion[]; // 참여자/방장용
+  groupRoutineMemberInfo?: ParticipantMemberInfo; // 참여자/방장용
+}
 
 // 단체루틴 상세루틴 성공/실패 요청 타입
 export interface UpdateGroupRoutineStatusRequest {

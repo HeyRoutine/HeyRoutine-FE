@@ -39,8 +39,20 @@ const CreateRoutineScreen = ({
   const [selectedCategory, setSelectedCategory] = useState(
     routineData?.routineType === 'DAILY' ? 'life' : 'finance',
   );
+  // 요일 순서 정의 (월화수목금토일)
+  const dayOrder = ['월', '화', '수', '목', '금', '토', '일'];
+
+  // 요일을 순서대로 정렬하는 함수
+  const sortDaysByOrder = (days: string[]) => {
+    return days.sort((a, b) => {
+      const indexA = dayOrder.indexOf(a);
+      const indexB = dayOrder.indexOf(b);
+      return indexA - indexB;
+    });
+  };
+
   const [selectedDays, setSelectedDays] = useState<string[]>(
-    routineData?.dayTypes || [],
+    sortDaysByOrder(routineData?.dayTypes || []),
   );
   const [startTime, setStartTime] = useState(routineData?.startTime || '');
   const [endTime, setEndTime] = useState(routineData?.endTime || '');
@@ -117,6 +129,7 @@ const CreateRoutineScreen = ({
         {
           onSuccess: (data) => {
             console.log('🔍 루틴 수정 성공:', data);
+            // 홈 화면으로 직접 이동하여 데이터 새로고침
             navigation.navigate('Result', {
               type: 'success',
               title: '루틴 수정 완료',
@@ -183,19 +196,22 @@ const CreateRoutineScreen = ({
 
   // 시간을 HH:mm 형식으로 변환하는 함수 (화면 표시용)
   const formatTimeForDisplay = (time: string): string => {
-    // "오전 9:00" 또는 "오후 2:30" 형식을 "09:00" 또는 "14:30"으로 변환
-    let hour: string;
-    let minute: string;
+    console.log('🔍 formatTimeForDisplay 입력:', time);
 
+    // "오전 09:00" 또는 "오후 02:30" 형식을 "09:00" 또는 "14:30"으로 변환
     if (time.includes('오전')) {
-      hour = time.replace('오전 ', '').split(':')[0];
-      minute = time.split(':')[1];
-      return `${hour.padStart(2, '0')}:${minute}`;
+      const timePart = time.replace('오전 ', '');
+      const [hour, minute] = timePart.split(':');
+      const hourNum = parseInt(hour);
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
     } else if (time.includes('오후')) {
-      const hourNum = parseInt(time.replace('오후 ', '').split(':')[0]) + 12;
-      minute = time.split(':')[1];
+      const timePart = time.replace('오후 ', '');
+      const [hour, minute] = timePart.split(':');
+      const hourNum = parseInt(hour) + 12;
       return `${hourNum.toString().padStart(2, '0')}:${minute}`;
     }
+
+    console.log('🔍 formatTimeForDisplay 출력:', time);
     return time; // 이미 HH:mm 형식이면 그대로 반환
   };
 
@@ -209,21 +225,21 @@ const CreateRoutineScreen = ({
   };
 
   const handleStartTimeSelect = (time: string | number) => {
-    console.log('시작 시간 선택됨:', time, typeof time);
+    console.log('🔍 시작 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
       const displayTime = formatTimeForDisplay(time);
       setStartTime(displayTime);
-      console.log('시작 시간 설정됨:', displayTime);
+      console.log('🔍 시작 시간 설정됨:', displayTime);
     }
     setShowStartTimePicker(false);
   };
 
   const handleEndTimeSelect = (time: string | number) => {
-    console.log('종료 시간 선택됨:', time, typeof time);
+    console.log('🔍 종료 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
       const displayTime = formatTimeForDisplay(time);
       setEndTime(displayTime);
-      console.log('종료 시간 설정됨:', displayTime);
+      console.log('🔍 종료 시간 설정됨:', displayTime);
     }
     setShowEndTimePicker(false);
   };
@@ -265,7 +281,7 @@ const CreateRoutineScreen = ({
         {/* 요일 선택 */}
         <DayOfWeekSelector
           selectedDays={selectedDays}
-          onDaysChange={setSelectedDays}
+          onDaysChange={(days) => setSelectedDays(sortDaysByOrder(days))}
           onStartDatePress={() => setShowDatePicker(true)}
           selectedStartDate={selectedStartDate}
           readOnly={false}

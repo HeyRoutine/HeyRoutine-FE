@@ -12,7 +12,11 @@ import {
   RoutineSuggestionModal,
 } from '../../components/domain/routine';
 import CompletedRoutineItem from '../../components/domain/routine/CompletedRoutineItem';
-import { useCreateGroupRoutineDetail } from '../../hooks/routine/group/useGroupRoutines';
+import {
+  useCreateGroupRoutineDetail,
+  useCreateGroupRoutine,
+} from '../../hooks/routine/group/useGroupRoutines';
+import { getGroupRoutineDetail } from '../../api/routine/group/routineDetails';
 import {
   useRoutineTemplates,
   useRoutineEmojis,
@@ -28,6 +32,7 @@ const CreateGroupRoutineDetailScreen = ({
   route,
 }: CreateGroupRoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
+
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || [],
   );
@@ -53,9 +58,13 @@ const CreateGroupRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
-  // 그룹루틴 상세 생성 훅
-  const { mutate: createGroupRoutineDetail, isPending } =
+  // 그룹루틴 생성 + 상세 생성 훅
+  const { mutate: createGroupRoutine, isPending: isCreatingGroup } =
+    useCreateGroupRoutine();
+  const { mutate: createGroupRoutineDetail, isPending: isCreatingDetail } =
     useCreateGroupRoutineDetail();
+
+  const isPending = isCreatingGroup || isCreatingDetail;
 
   // 루틴 템플릿 조회 훅 - 모든 템플릿을 가져오기 위해 카테고리 필터링 제거
   const { data: templateData, isLoading: isLoadingTemplates } =
@@ -77,29 +86,13 @@ const CreateGroupRoutineDetailScreen = ({
   };
 
   const handlePlusPress = () => {
-    console.log('🔍 그룹 루틴 템플릿 조회 시작');
-    console.log('🔍 템플릿 데이터:', templateData);
-    console.log('🔍 템플릿 로딩 상태:', isLoadingTemplates);
-    console.log('🔍 이모지 데이터:', emojiData);
-    console.log('🔍 이모지 로딩 상태:', isLoadingEmojis);
-
     if (isLoadingTemplates || isLoadingEmojis) {
-      console.log('🔍 템플릿 또는 이모지 로딩 중...');
       return;
     }
 
     if (templateData?.result?.items && templateData.result.items.length > 0) {
-      console.log(
-        '🔍 사용 가능한 템플릿 개수:',
-        templateData.result.items.length,
-      );
-      console.log(
-        '🔍 사용 가능한 이모지 개수:',
-        emojiData?.result?.items?.length || 0,
-      );
       setRoutineSuggestionVisible(true);
     } else {
-      console.log('🔍 사용 가능한 템플릿이 없습니다');
       // 템플릿이 없어도 모달을 열어서 직접 입력할 수 있도록 함
       setRoutineSuggestionVisible(true);
     }
@@ -111,24 +104,19 @@ const CreateGroupRoutineDetailScreen = ({
   };
 
   const handleEmojiSelect = (emoji: string) => {
-    console.log('선택된 이모지:', emoji);
     setSelectedEmoji(emoji);
   };
 
   const handleTimeSelect = (time: string | number) => {
-    console.log('시간 선택됨:', time, typeof time);
     if (typeof time === 'number') {
       const timeString = `${time}분`;
       setSelectedTime(timeString);
-      console.log('분 설정됨:', timeString);
     } else {
       setSelectedTime(time);
-      console.log('시간 설정됨:', time);
     }
   };
 
   const handleTextChange = (text: string) => {
-    console.log('입력된 텍스트:', text);
     // 시간 형식인지 확인 (예: "40분", "30분" 등)
     if (text.includes('분')) {
       setSelectedTime(text);
@@ -227,55 +215,102 @@ const CreateGroupRoutineDetailScreen = ({
   const isFormValid = routineItems.length > 0;
 
   const handleSave = () => {
-    console.log('🔍 그룹 루틴 상세 생성 시작:', {
-      routineData,
-      selectedDays,
-      routineItems,
-      selectedTime,
-    });
-
-    // 그룹 루틴 리스트 ID가 없으면 에러
-    if (!routineData?.routineListId) {
-      console.error('🔍 그룹 루틴 리스트 ID가 없습니다:', routineData);
-      return;
-    }
-
-    // API 요청 데이터 준비
-    const submitData = {
-      routines: routineItems.map((item) => ({
-        templateId: null, // 템플릿 연결 안 함
-        emojiId: item.emojiId,
-        name: item.text,
-        time: parseInt(item.time.replace('분', '')), // "30분" -> 30
-      })),
+    // 그룹 루틴 생성 데이터 준비
+    const groupRoutineData = {
+      title: routineData?.name || '새 그룹 루틴',
+      description: routineData?.description || '그룹 루틴 설명', // 전달받은 설명 사용
+      startTime: routineData?.startTime || '09:00',
+      endTime: routineData?.endTime || '11:00',
+      routineType: (routineData?.category === 'life'
+        ? 'DAILY'
+        : 'FINANCE') as any,
+      daysOfWeek: selectedDays,
     };
 
-    console.log('🔍 그룹 루틴 상세 생성 요청 데이터:', {
-      groupRoutineListId: routineData.routineListId,
-      data: submitData,
-    });
+    console.log('🔍 1단계: 그룹 루틴 생성 시작');
+    console.log('🔍 그룹 루틴 생성 요청 데이터:', groupRoutineData);
 
-    createGroupRoutineDetail(
-      {
-        groupRoutineListId: routineData.routineListId,
-        data: submitData,
+    // 1단계: 그룹 루틴 생성
+    createGroupRoutine(groupRoutineData, {
+      onSuccess: (groupData) => {
+        console.log('🔍 그룹 루틴 생성 성공:', groupData);
+
+        // 생성된 그룹 루틴 ID 추출 (result 자체가 ID 값)
+        const groupRoutineId = groupData.result;
+        console.log('🔍 생성된 그룹 루틴 ID:', groupRoutineId);
+
+        if (!groupRoutineId) {
+          console.error('🔍 그룹 루틴 ID가 반환되지 않았습니다:', groupData);
+          return;
+        }
+
+        // 2단계: 그룹 루틴 상세 생성
+        const detailData = {
+          routines: routineItems.map((item) => ({
+            templateId: null, // 템플릿 연결 안 함
+            emojiId: item.emojiId,
+            name: item.text,
+            time: parseInt(item.time.replace('분', '')), // "30분" -> 30
+          })),
+        };
+
+        console.log('🔍 2단계: 그룹 루틴 상세 생성 시작');
+        console.log('🔍 상세 생성 요청 데이터:', detailData);
+        console.log('🔍 사용할 그룹 루틴 ID:', groupRoutineId);
+
+        createGroupRoutineDetail(
+          {
+            groupRoutineListId: groupRoutineId.toString(),
+            data: detailData,
+          },
+          {
+            onSuccess: (detailData) => {
+              console.log('🔍 상세 생성 성공:', detailData);
+
+              // 3단계: 생성 완료 후 즉시 조회 테스트
+              console.log('🔍 3단계: 생성된 루틴 조회 테스트');
+
+              // 조회 API를 직접 호출해서 확인해보기
+              getGroupRoutineDetail(groupRoutineId.toString())
+                .then((testResponse) => {
+                  console.log('🔍 조회 테스트 응답:', testResponse);
+                  console.log(
+                    '🔍 routineInfos 존재 여부:',
+                    !!testResponse.result?.routineInfos,
+                  );
+                  console.log(
+                    '🔍 routineInfos 길이:',
+                    testResponse.result?.routineInfos?.length || 0,
+                  );
+                  console.log(
+                    '🔍 routineInfos 내용:',
+                    testResponse.result?.routineInfos,
+                  );
+                })
+                .catch((testError) => {
+                  console.error('🔍 조회 테스트 실패:', testError);
+                });
+
+              navigation.navigate('Result', {
+                type: 'success',
+                title: '그룹 루틴 생성 완료',
+                description:
+                  '그룹 루틴과 상세 루틴이 성공적으로 생성되었습니다.',
+                nextScreen: 'HomeMain',
+              });
+            },
+            onError: (error) => {
+              console.error('🔍 상세 생성 실패:', error);
+              // 에러 처리 (나중에 토스트나 알림 추가)
+            },
+          },
+        );
       },
-      {
-        onSuccess: (data) => {
-          console.log('🔍 그룹 루틴 상세 생성 성공:', data);
-          navigation.navigate('Result', {
-            type: 'success',
-            title: '그룹 루틴 상세 생성 완료',
-            description: '그룹 루틴 상세가 성공적으로 생성되었습니다.',
-            nextScreen: 'HomeMain',
-          });
-        },
-        onError: (error) => {
-          console.error('🔍 그룹 루틴 상세 생성 실패:', error);
-          // 에러 처리 (나중에 토스트나 알림 추가)
-        },
+      onError: (error) => {
+        console.error('🔍 그룹 루틴 생성 실패:', error);
+        // 에러 처리 (나중에 토스트나 알림 추가)
       },
-    );
+    });
   };
 
   return (

@@ -98,8 +98,11 @@ export const useUpdatePersonalRoutineList = () => {
       data: UpdatePersonalRoutineListRequest;
     }) => updateRoutineToMyRoutineList(myRoutineListId, data),
     onSuccess: () => {
-      // 수정 성공 시 개인루틴 리스트 캐시 무효화
+      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 시작');
+      // 수정 성공 시 개인루틴 리스트 캐시 무효화 (모든 관련 쿼리)
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 완료');
     },
   });
 };
