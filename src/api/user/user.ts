@@ -53,9 +53,25 @@ export const checkEmailDuplicate = async (
 export const checkNicknameDuplicate = async (
   nickname: string,
 ): Promise<ApiResponse<string>> => {
-  const response = await apiClient.post<ApiResponse<string>>(
-    `/api/v1/user/nickname-duplicate-check?nickname=${nickname}`,
-  );
+  // 닉네임 URL 인코딩
+  const encodedNickname = encodeURIComponent(nickname);
+  const url = `/api/v1/user/nickname-duplicate-check?nickname=${encodedNickname}`;
+
+  console.log('🔍 닉네임 중복 확인 API 호출:', url);
+  console.log('🔍 원본 닉네임:', nickname);
+  console.log('🔍 인코딩된 닉네임:', encodedNickname);
+
+  const response = await apiClient.post<ApiResponse<string>>(url);
+
+  console.log('🔍 닉네임 중복 확인 API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    code: response.data?.code,
+    message: response.data?.message,
+    result: response.data?.result,
+  });
+
   return response.data;
 };
 
