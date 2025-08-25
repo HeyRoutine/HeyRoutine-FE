@@ -563,3 +563,34 @@ export interface DonePersonalRoutineParams {
 
 // 개인루틴 리스트 완료 응답 타입
 export type DoneMyRoutineListResponse = EmptyResponse;
+
+// ===== 분석(Analysis) - 주간 요약 =====
+
+// 주간 요약 요청 파라미터
+export interface GetWeeklySummaryParams {
+  startDate: string; // LocalDate (YYYY-MM-DD)
+  endDate: string; // LocalDate (YYYY-MM-DD)
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+}
+
+// 요일별 상태 (영문 대문자 요일 키)
+export interface WeeklySummaryItem {
+  routineTitle: string;
+  dailyStatus: {
+    MONDAY: boolean;
+    TUESDAY: boolean;
+    WEDNESDAY: boolean;
+    THURSDAY: boolean;
+    FRIDAY: boolean;
+    SATURDAY: boolean;
+    SUNDAY: boolean;
+  };
+}
+
+// 주간 요약 응답 result 타입
+export type GetWeeklySummaryResponse = WeeklySummaryItem[];
+
+// ===== 분석(Analysis) - 최대 연속 일수(Max Streak) =====
+export interface GetMaxStreakResponse {
+  streakDays: number;
+}
