@@ -292,9 +292,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
             <RoutineList>
               <ScrollView showsVerticalScrollIndicator={false}>
                 {isLoading ? (
-                  <LoadingContainer>
-                    <LoadingText>루틴 템플릿을 불러오는 중...</LoadingText>
-                  </LoadingContainer>
+                  <LoadingContainer>{null}</LoadingContainer>
                 ) : filteredRoutines.length > 0 ? (
                   filteredRoutines.map((routine) => (
                     <RoutineSuggestionItem

@@ -47,7 +47,10 @@ export const useUserStore = create<UserState>((set) => ({
   isLoading: false,
 
   // 액션들
-  setUserInfo: (userInfo) => set({ userInfo }),
+  setUserInfo: (userInfo) => {
+    console.log('🔍 setUserInfo 호출:', userInfo);
+    set({ userInfo });
+  },
 
   updateUserInfo: (updates) =>
     set((state) => ({
@@ -89,7 +92,21 @@ export const useUserStore = create<UserState>((set) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
 
-  clearUserInfo: () => set({ userInfo: null }),
+  clearUserInfo: () => {
+    console.log('🔍 clearUserInfo 호출');
+    set({ userInfo: null, isLoading: false });
+
+    // AsyncStorage에서도 제거
+    if (!isWeb) {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage');
+        AsyncStorage.removeItem('user-storage');
+        console.log('🔍 user-storage AsyncStorage에서 제거됨');
+      } catch (error) {
+        console.log('🔍 AsyncStorage 제거 실패:', error);
+      }
+    }
+  },
 }));
 
 // 모바일 환경에서만 persist 적용

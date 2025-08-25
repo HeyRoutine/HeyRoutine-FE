@@ -9,6 +9,7 @@ import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import SuccessIcon from '../../components/common/SuccessIcon';
 import { useRoutineStore } from '../../store';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface IResultScreenProps {
   type: 'success' | 'failure' | 'celebration';
@@ -22,6 +23,7 @@ interface IResultScreenProps {
 
 const ResultScreen = ({ navigation, route }: any) => {
   const { setEditMode } = useRoutineStore();
+  const queryClient = useQueryClient();
   const {
     type = 'celebration',
     title = '등록 성공',
@@ -66,15 +68,43 @@ const ResultScreen = ({ navigation, route }: any) => {
       setLoggedIn(true);
       return;
     } else if (title === '루틴 생성 완료') {
-      // 루틴 생성 완료인 경우 홈으로 이동
+      // 루틴 생성 완료인 경우 캐시 무효화 후 홈으로 이동
+      console.log('🔍 루틴 생성 완료 - 캐시 무효화 실행');
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
       navigation.navigate('HomeMain');
       return;
     } else if (nextScreen === 'PersonalRoutineDetail') {
-      // 편집 모드 해제 후 상세 화면으로 이동
+      // 편집 모드 해제 후 홈으로 이동 (캐시 무효화 포함)
+      console.log('🔍 PersonalRoutineDetail 수정 완료 - 홈으로 이동');
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
       setEditMode(false);
-      navigation.navigate('PersonalRoutineDetail', {
-        routineData: updatedRoutineData,
-      });
+      navigation.navigate('HomeMain');
+      return;
+    } else if (nextScreen === 'HomeMain') {
+      // 홈 화면으로 이동하는 경우 캐시 무효화
+      console.log('🔍 HomeMain으로 이동 - 캐시 무효화 실행');
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+      navigation.navigate(nextScreen);
+      return;
+    } else if (nextScreen === 'GroupRoutineDetail') {
+      // 그룹 루틴 상세로 이동하는 경우 캐시 무효화 후 이동
+      console.log('🔍 GroupRoutineDetail로 이동 - 캐시 무효화 실행');
+      queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
+      queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });
+
+      if (updatedRoutineData?.routineId) {
+        navigation.navigate('GroupRoutineDetail', {
+          routineId: updatedRoutineData.routineId,
+        });
+      } else {
+        navigation.navigate('HomeMain');
+      }
       return;
     } else if (typeof nextScreen === 'string' && nextScreen.length > 0) {
       navigation.navigate(nextScreen);

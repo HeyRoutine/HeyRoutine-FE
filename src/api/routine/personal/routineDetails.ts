@@ -131,10 +131,10 @@ export const updateRoutineInMyRoutineListV2 = async (
 
 // 개인루틴 리스트 안 루틴 삭제 API
 export const deleteRoutineInMyRoutineList = async (
-  myRoutineListId: string,
+  routineId: string,
 ): Promise<ApiResponse<DeletePersonalRoutineDetailResponse>> => {
   const response = await apiClient.delete<
     ApiResponse<DeletePersonalRoutineDetailResponse>
-  >(`/api/v1/my-routine/list/routine/${myRoutineListId}`);
+  >(`/api/v1/my-routine/list/routine/${routineId}`);
   return response.data;
 };

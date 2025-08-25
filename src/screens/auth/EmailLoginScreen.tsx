@@ -11,7 +11,7 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { FormGroup, Label } from '../../components/domain/auth/authFormStyles';
 import { useSignIn } from '../../hooks/user/useUser';
-import { useAuthStore, useOnboardingStore } from '../../store';
+import { useAuthStore, useOnboardingStore, useUserStore } from '../../store';
 
 const EmailLoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -20,6 +20,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
   const { login, setAccessToken, setRefreshToken } = useAuthStore();
   const { completeOnboarding } = useOnboardingStore();
+  const { setUserInfo } = useUserStore();
 
   // 로그인 API hook
   const { mutate: signIn, isPending: isSigningIn } = useSignIn();
@@ -59,6 +60,14 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
             // 온보딩 완료 상태로 설정 (로그인 시 온보딩 비활성화)
             completeOnboarding();
+
+            // 사용자 정보 저장 (로그인 시 기본 정보 설정)
+            setUserInfo({
+              nickname: '사용자', // 기본 닉네임
+              email: email,
+              profileImage: undefined,
+              points: 0,
+            });
 
             // 로그인 상태 변경
             login();

@@ -188,9 +188,22 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   // 선택된 요일의 루틴만 필터링
+  console.log('🔍 개인 루틴 디버깅:', {
+    selectedDayLabel,
+    totalPersonalRoutines: personalRoutines.length,
+    personalRoutines: personalRoutines.map((r) => ({
+      id: r.id,
+      title: r.title,
+      selectedDays: r.selectedDays,
+      isIncluded: r.selectedDays.includes(selectedDayLabel),
+    })),
+  });
+
   const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
   );
+
+  console.log('🔍 필터링된 개인 루틴:', selectedDayPersonalRoutines.length);
   const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
   );
@@ -220,6 +233,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       const routine = groupRoutines.find((r) => r.id === routineId);
       if (routine) {
         navigation.navigate('GroupRoutineDetail', {
+          routineId: routine.id, // routineId로 전달
           routineData: {
             id: routine.id,
             name: routine.title,
@@ -334,11 +348,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             )}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.1}
-            ListFooterComponent={
-              isFetchingNextPage ? (
-                <LoadingText>더 많은 루틴을 불러오는 중...</LoadingText>
-              ) : null
-            }
+            ListFooterComponent={null}
             showsVerticalScrollIndicator={false}
           />
         </RoutineList>

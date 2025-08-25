@@ -10,36 +10,6 @@ import { AddRoutineButton } from '../../components/domain/routine';
 import RoutineCard from '../../components/domain/routine/RoutineCard';
 import { useGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
 
-const MOCK_ROUTINES = [
-  {
-    id: '1',
-    title: '티끌모아 태산',
-    description: '주 1회 가계부 작성, 뉴스 스크랩 관련 루틴',
-    timeRange: '오후 8:00 - 오후 9:00',
-    itemCount: 5,
-    participantCount: 52,
-    selectedDays: ['수', '일'],
-  },
-  {
-    id: '2',
-    title: '운동 러버',
-    description: '매일 운동하기, 건강한 생활 습관 만들기',
-    timeRange: '오후 6:00 - 오후 7:00',
-    itemCount: 3,
-    participantCount: 28,
-    selectedDays: ['월', '수', '금'],
-  },
-  {
-    id: '3',
-    title: '아이고 종강이야',
-    description: '학습 계획 세우기, 시험 준비하기',
-    timeRange: '오전 7:00 - 오전 9:00',
-    itemCount: 4,
-    participantCount: 15,
-    selectedDays: ['토', '일'],
-  },
-];
-
 const GroupBoardScreen = ({ navigation }: any) => {
   // 그룹 루틴 API 훅 사용
   const {
@@ -96,7 +66,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
       };
 
       return formattedItem;
-    }) || MOCK_ROUTINES; // API 데이터가 없으면 목업 데이터 사용
+    }) || []; // API 데이터가 없으면 목업 데이터 사용
 
   const renderRoutine = ({ item }: any) => (
     <RoutineCardWrapper>

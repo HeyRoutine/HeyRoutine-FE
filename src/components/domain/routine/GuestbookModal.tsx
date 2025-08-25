@@ -137,9 +137,7 @@ const GuestbookModal = ({
             contentContainerStyle={{ paddingBottom: 20 }}
             nestedScrollEnabled={true}
           >
-            {isLoading ? (
-              <LoadingText>방명록을 불러오는 중...</LoadingText>
-            ) : guestbookData?.result?.items &&
+            {isLoading ? null : guestbookData?.result?.items &&
               guestbookData.result.items.length > 0 ? (
               <GuestbookList>
                 {guestbookData.result.items
@@ -219,7 +217,7 @@ const GuestbookModal = ({
 export default GuestbookModal;
 
 const Container = styled.View`
-  height: 85%;
+  height: 50%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;

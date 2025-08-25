@@ -77,16 +77,10 @@ const GroupRoutineDetailScreen = ({
     const memberInfo = result.groupRoutineMemberInfo;
 
     // 완료/미달성 참여자 계산
-    const completedParticipants = memberInfo?.successPeopleProfileImageUrl || [
-      '',
-      '',
-      '',
-    ]; // 테스트용 더미 데이터
-    const unachievedParticipants = memberInfo?.failedPeopleProfileImageUrl || [
-      '',
-      '',
-      '',
-    ]; // 테스트용 더미 데이터
+    const completedParticipants =
+      memberInfo?.successPeopleProfileImageUrl || [];
+    const unachievedParticipants =
+      memberInfo?.failedPeopleProfileImageUrl || [];
     const completedCount = completedParticipants.length;
     const unachievedCount = unachievedParticipants.length;
 
@@ -223,6 +217,10 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleMenuPress = () => {
+    // joined가 true가 아닌 경우 아무 동작도 하지 않음
+    if (!isJoined) {
+      return;
+    }
     setIsMenuVisible(!isMenuVisible);
   };
 
@@ -388,6 +386,25 @@ const GroupRoutineDetailScreen = ({
       return;
     }
 
+    // 오늘 날짜인지 확인
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+
+    // 그룹 루틴의 선택된 요일 확인
+    const groupRoutineInfo = routineDetailData?.result?.groupRoutineInfo;
+    const selectedDays = groupRoutineInfo?.dayOfWeek || [];
+
+    // 오늘 요일이 선택된 요일에 포함되는지 확인
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const todayDay = dayNames[today.getDay()];
+
+    const isTodayInSelectedDays = selectedDays.includes(todayDay);
+
+    if (!isTodayInSelectedDays) {
+      Alert.alert('알림', '오늘 날짜에 해당하는 루틴이 아닙니다.');
+      return;
+    }
+
     // 현재 상태의 반대값으로 업데이트
     const newStatus = !task.isCompleted;
 
@@ -443,9 +460,7 @@ const GroupRoutineDetailScreen = ({
     return (
       <Container edges={['top', 'left', 'right']}>
         <Header title="단체 루틴" onBackPress={handleBack} />
-        <LoadingContainer>
-          <LoadingText>로딩 중...</LoadingText>
-        </LoadingContainer>
+        <LoadingContainer></LoadingContainer>
       </Container>
     );
   }

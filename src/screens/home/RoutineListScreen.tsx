@@ -70,6 +70,11 @@ const RoutineListScreen = ({ navigation }: RoutineListScreenProps) => {
 
   const routines = routinesData?.result?.items || [];
 
+  // 디버깅 로그 추가
+  console.log('🔍 RoutineListScreen - routinesData:', routinesData);
+  console.log('🔍 RoutineListScreen - routines:', routines);
+  console.log('🔍 RoutineListScreen - isLoading:', isLoading);
+
   return (
     <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header title="루틴 리스트" onBackPress={handleBack} />
@@ -77,9 +82,7 @@ const RoutineListScreen = ({ navigation }: RoutineListScreenProps) => {
         <Title>내 루틴 목록</Title>
 
         {isLoading ? (
-          <LoadingContainer>
-            <LoadingText>루틴을 불러오는 중...</LoadingText>
-          </LoadingContainer>
+          <LoadingContainer>{null}</LoadingContainer>
         ) : routines.length === 0 ? (
           <EmptyContainer>
             <EmptyText>등록된 루틴이 없습니다.</EmptyText>
@@ -91,7 +94,7 @@ const RoutineListScreen = ({ navigation }: RoutineListScreenProps) => {
                 <RoutineInfo>
                   <RoutineName>{routine.title}</RoutineName>
                   <RoutineTime>
-                    {routine.startTime} - {routine.endTime}
+                    {routine.startTime} ~ {routine.endTime}
                   </RoutineTime>
                   <RoutineType>
                     {routine.routineType === 'DAILY' ? '생활' : '재정'}
