@@ -81,21 +81,6 @@ export const getGroupRoutines = async (
     itemsCount: response.data?.result?.items?.length || 0,
   });
 
-  // TODO: 서버에서 joined 필드가 제공되면 아래 로그 활성화
-  // joined 필드 확인을 위한 상세 로그
-  // if (response.data?.result?.items) {
-  //   console.log('🔍 각 루틴의 joined 필드 확인:');
-  //   response.data.result.items.forEach((item, index) => {
-  //     console.log(`  루틴 ${index + 1}:`, {
-  //       id: item.id,
-  //       title: item.title,
-  //       isJoined: item.isJoined,
-  //       joinedType: typeof item.isJoined,
-  //       fullItem: item,
-  //     });
-  //   });
-  // }
-
   return response.data;
 };
 
@@ -113,9 +98,19 @@ export const joinGroupRoutine = async (
 export const leaveGroupRoutine = async (
   groupRoutineListId: string,
 ): Promise<ApiResponse<LeaveGroupRoutineResponse>> => {
+  console.log('🔍 leaveGroupRoutine API 호출:', {
+    groupRoutineListId,
+    url: `/api/v1/routines/groups/${groupRoutineListId}/leave`,
+  });
+
   const response = await apiClient.delete<
     ApiResponse<LeaveGroupRoutineResponse>
   >(`/api/v1/routines/groups/${groupRoutineListId}/leave`);
+
+  console.log('🔍 leaveGroupRoutine API 응답:', {
+    status: response.status,
+    data: response.data,
+  });
 
   return response.data;
 };

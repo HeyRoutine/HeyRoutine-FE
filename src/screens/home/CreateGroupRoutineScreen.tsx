@@ -9,13 +9,15 @@ import DayOfWeekSelector from '../../components/domain/routine/DayOfWeekSelector
 import TimeRangeSelector from '../../components/domain/routine/TimeRangeSelector';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
-import DatePickerModal from '../../components/domain/routine/DatePickerModal';
+// 그룹 루틴은 시작 날짜가 없으므로 DatePickerModal import 제거
+// import DatePickerModal from '../../components/domain/routine/DatePickerModal';
 import TimePickerModal from '../../components/domain/routine/TimePickerModal';
 import {
   useCreateGroupRoutine,
   useUpdateGroupRoutine,
 } from '../../hooks/routine/group/useGroupRoutines';
 import { RoutineType, DayType } from '../../types/api';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateGroupRoutineScreenProps {
   navigation: any;
@@ -28,6 +30,7 @@ const CreateGroupRoutineScreen = ({
 }: CreateGroupRoutineScreenProps) => {
   const mode = route?.params?.mode || 'create';
   const routineData = route?.params?.routineData;
+  const queryClient = useQueryClient();
 
   console.log('🔍 CreateGroupRoutineScreen - 전달받은 데이터:', {
     mode,
@@ -48,10 +51,11 @@ const CreateGroupRoutineScreen = ({
   const [startTime, setStartTime] = useState(routineData?.startTime || '');
   const [endTime, setEndTime] = useState(routineData?.endTime || '');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedStartDate, setSelectedStartDate] = useState(
-    routineData?.startDate || '',
-  );
+  // 그룹 루틴은 시작 날짜가 없으므로 제거
+  // const [showDatePicker, setShowDatePicker] = useState(false);
+  // const [selectedStartDate, setSelectedStartDate] = useState(
+  //   routineData?.startDate || '',
+  // );
 
   console.log('🔍 CreateGroupRoutineScreen - 초기화된 상태:', {
     routineName,
@@ -60,7 +64,6 @@ const CreateGroupRoutineScreen = ({
     selectedDays,
     startTime,
     endTime,
-    selectedStartDate,
   });
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
@@ -81,7 +84,6 @@ const CreateGroupRoutineScreen = ({
       days: selectedDays,
       startTime,
       endTime,
-      startDate: selectedStartDate,
     });
 
     // API 요청 데이터 준비
@@ -113,6 +115,15 @@ const CreateGroupRoutineScreen = ({
         {
           onSuccess: (data) => {
             console.log('🔍 그룹 루틴 수정 성공:', data);
+
+            // 캐시 무효화로 데이터 새로고침
+            queryClient.invalidateQueries({
+              queryKey: ['groupRoutineDetail', routineData.id],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['infiniteGroupRoutines'],
+            });
+
             navigation.navigate('Result', {
               type: 'success',
               title: '그룹 루틴 수정 완료',
@@ -138,7 +149,6 @@ const CreateGroupRoutineScreen = ({
           days: selectedDays,
           startTime,
           endTime,
-          startDate: selectedStartDate,
           description: description, // 설명도 전달
         },
       });
@@ -158,12 +168,13 @@ const CreateGroupRoutineScreen = ({
     setShowCategoryModal(false);
   };
 
-  const handleDateSelect = (date: string) => {
-    // date는 이미 YYYY-MM-DD 형식으로 전달됨
-    console.log('선택된 날짜:', date);
-    setSelectedStartDate(date);
-    setShowDatePicker(false);
-  };
+  // 그룹 루틴은 시작 날짜가 없으므로 제거
+  // const handleDateSelect = (date: string) => {
+  //   // date는 이미 YYYY-MM-DD 형식으로 전달됨
+  //   console.log('선택된 날짜:', date);
+  //   setSelectedStartDate(date);
+  //   setShowDatePicker(false);
+  // };
 
   // 시간을 HH:mm 형식으로 변환하는 함수 (화면 표시용)
   const formatTimeForDisplay = (time: string): string => {
@@ -261,8 +272,6 @@ const CreateGroupRoutineScreen = ({
         <DayOfWeekSelector
           selectedDays={selectedDays}
           onDaysChange={setSelectedDays}
-          onStartDatePress={() => setShowDatePicker(true)}
-          selectedStartDate={selectedStartDate}
           readOnly={false}
           buttonSize={40}
           borderRadius={20}
@@ -310,12 +319,12 @@ const CreateGroupRoutineScreen = ({
         </CategoryButtonsContainer>
       </BottomSheetDialog>
 
-      {/* 시작 날짜 선택 모달 */}
-      <DatePickerModal
+      {/* 그룹 루틴은 시작 날짜가 없으므로 DatePickerModal 제거 */}
+      {/* <DatePickerModal
         visible={showDatePicker}
         onRequestClose={() => setShowDatePicker(false)}
         onDateSelect={handleDateSelect}
-      />
+      /> */}
 
       {/* 시작 시간 선택 모달 */}
       <TimePickerModal

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import {
@@ -8,6 +8,7 @@ import {
   View,
   Alert,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
@@ -16,7 +17,10 @@ import {
   useDeleteGroupRoutine,
   useJoinGroupRoutine,
   useLeaveGroupRoutine,
+  useGroupRoutineDetail,
 } from '../../hooks/routine/group/useGroupRoutines';
+import GuestbookModal from '../../components/domain/routine/GuestbookModal';
+import RoutineSuggestionModal from '../../components/domain/routine/RoutineSuggestionModal';
 
 interface GroupRoutineDetailScreenProps {
   navigation: any;
@@ -27,47 +31,114 @@ const GroupRoutineDetailScreen = ({
   navigation,
   route,
 }: GroupRoutineDetailScreenProps) => {
-  const routine = useMemo(
-    () => ({
-      id: route?.params?.routineId ?? '1',
-      title: route?.params?.routineData?.title || '아이고 종강이야',
-      description:
-        route?.params?.routineData?.description ||
-        '중깟까지 아침 갓생 루틴 필요하신 분 들어오셈 교수는 출입금지이긴한데 들어오면 환영하겠습니다아',
-      membersCount: route?.params?.routineData?.pepoleNums || 52,
-      timeRange: `${route?.params?.routineData?.startTime || '20:00'} - ${route?.params?.routineData?.endTime || '21:00'}`,
-      progressText: '[자기개발] 67%',
-      selectedDays: route?.params?.routineData?.dayOfWeek || ['화', '토', '일'],
-      isJoined: route?.params?.routineData?.isJoined || false,
-      routineType: route?.params?.routineData?.routineType || 'DAILY',
-      routineNums: route?.params?.routineData?.routineNums || 5,
-      tasks: [
-        { icon: '☕', title: '커피 내리기', duration: '3분' },
-        { icon: '🥐', title: '식빵 굽기', duration: '5분' },
-        { icon: '🧼', title: '샤워하기', duration: '15분' },
-        { icon: '✅', title: '싸피 목걸이 챙기기', duration: '15분' },
-      ],
-      participants: [
-        'https://i.pravatar.cc/100?img=1',
-        'https://i.pravatar.cc/100?img=2',
-        'https://i.pravatar.cc/100?img=3',
-        'https://i.pravatar.cc/100?img=4',
-        'https://i.pravatar.cc/100?img=5',
-        'https://i.pravatar.cc/100?img=6',
-        'https://i.pravatar.cc/100?img=7',
-        'https://i.pravatar.cc/100?img=8',
-      ],
-    }),
-    [route?.params?.routineId, route?.params?.routineData],
-  );
+  const routineId = route?.params?.routineId ?? '1';
+
+  const queryClient = useQueryClient();
+
+  // 실제 API 데이터 조회
+  const {
+    data: routineDetailData,
+    isLoading: isRoutineDetailLoading,
+    error: routineDetailError,
+  } = useGroupRoutineDetail(routineId);
+
+  // API 데이터를 화면에 맞는 형태로 변환
+  const routine = useMemo(() => {
+    if (!routineDetailData?.result) {
+      return {
+        id: routineId,
+        title: '로딩 중...',
+        description: '',
+        membersCount: 0,
+        timeRange: '',
+        progressText: '',
+        selectedDays: [],
+        isJoined: false,
+        routineType: 'DAILY',
+        routineNums: 0,
+        tasks: [],
+        participants: [],
+        completedParticipants: [],
+        unachievedParticipants: [],
+        completedCount: 0,
+        unachievedCount: 0,
+        isAdmin: false,
+      };
+    }
+
+    const result = routineDetailData.result;
+    const groupRoutineInfo = result.groupRoutineInfo;
+    const routineInfos = result.routineInfos || [];
+    const memberInfo = result.groupRoutineMemberInfo;
+
+    // 완료/미달성 참여자 계산
+    const completedParticipants =
+      memberInfo?.successPeopleProfileImageUrl || [];
+    const unachievedParticipants =
+      memberInfo?.failedPeopleProfileImageUrl || [];
+    const completedCount = completedParticipants.length;
+    const unachievedCount = unachievedParticipants.length;
+
+    const routineObject = {
+      id: routineId,
+      title: groupRoutineInfo?.title || '제목 없음',
+      description: groupRoutineInfo?.description || '',
+      membersCount: groupRoutineInfo?.peopleNums || 0,
+      timeRange: `${groupRoutineInfo?.startTime || '00:00'} - ${groupRoutineInfo?.endTime || '00:00'}`,
+      progressText:
+        routineInfos.length > 0
+          ? `[${groupRoutineInfo?.routineType === 'DAILY' ? '생활' : '소비'}] ${Math.round((routineInfos.filter((r: any) => r.isCompleted).length / routineInfos.length) * 100)}%`
+          : '0%',
+      selectedDays: groupRoutineInfo?.dayOfWeek || [],
+      isJoined: groupRoutineInfo?.joined || false,
+      routineType: groupRoutineInfo?.routineType || 'DAILY',
+      routineNums: groupRoutineInfo?.routineNums || 0,
+      tasks: routineInfos.map((r: any) => ({
+        icon: '☕', // 이모지는 별도로 처리 필요
+        title: r.name,
+        duration: `${r.time}분`,
+      })),
+      participants: [...completedParticipants, ...unachievedParticipants],
+      completedParticipants,
+      unachievedParticipants,
+      completedCount,
+      unachievedCount,
+      isAdmin: result.admin === true, // isAdmin → admin으로 수정
+    };
+
+    return routineObject;
+  }, [routineDetailData, routineId]);
 
   const [isJoinModalVisible, setJoinModalVisible] = useState(false);
-  const [isJoined, setIsJoined] = useState(
-    route?.params?.routineData?.isJoined || false,
-  );
+  const [isJoined, setIsJoined] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isEditRoutineModalVisible, setIsEditRoutineModalVisible] =
+    useState(false);
+  const [isEditRoutineDetailModalVisible, setIsEditRoutineDetailModalVisible] =
+    useState(false);
+  const [isGuestbookModalVisible, setIsGuestbookModalVisible] = useState(false);
   const [userRole, setUserRole] = useState<'host' | 'member' | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isTemplateModalVisible, setIsTemplateModalVisible] = useState(false);
+
+  // userRole과 isJoined 상태를 실제 API 데이터에 맞게 설정
+  useEffect(() => {
+    if (routineDetailData?.result) {
+      const result = routineDetailData.result;
+      if (result.admin) {
+        // isAdmin → admin으로 수정
+        setUserRole('host');
+        setIsJoined(true); // 방장은 가입된 상태로 간주
+      } else if (result.groupRoutineInfo?.joined) {
+        setUserRole('member');
+        setIsJoined(true);
+      } else {
+        setUserRole(null);
+        setIsJoined(false);
+      }
+    }
+  }, [routineDetailData]);
 
   // 그룹 루틴 관련 훅들
   const { mutate: deleteGroupRoutine, isPending: isDeleting } =
@@ -81,25 +152,53 @@ const GroupRoutineDetailScreen = ({
   const handleJoin = () => setJoinModalVisible(true);
   const handleCloseJoinModal = () => setJoinModalVisible(false);
   const handleConfirmJoin = () => {
+    // 이미 가입된 상태인지 확인
+    if (isJoined) {
+      console.log('🔍 이미 가입된 그룹 루틴입니다');
+      setJoinModalVisible(false);
+      return;
+    }
+
+    // isAdmin이 false일 때만 가입 가능
+    if (routine.isAdmin) {
+      console.log('🔍 방장은 가입할 수 없습니다');
+      setJoinModalVisible(false);
+      return;
+    }
+
     // 그룹 루틴 가입 API 호출
     joinGroupRoutine(routine.id, {
       onSuccess: () => {
         console.log('🔍 그룹 루틴 가입 성공');
+
+        // 상태 즉시 업데이트
         setIsJoined(true);
-        setUserRole('member'); // 기본적으로 팀원으로 설정
+        setUserRole('member');
         setJoinModalVisible(false);
-        // 성공 메시지 표시
-        navigation.navigate('Result', {
-          type: 'success',
-          title: '그룹 루틴 가입 완료',
-          description: '그룹 루틴에 성공적으로 가입되었습니다.',
-          nextScreen: 'HomeMain',
+
+        // 캐시 무효화로 데이터 새로고침
+        queryClient.invalidateQueries({
+          queryKey: ['groupRoutineDetail', routineId],
         });
+        queryClient.invalidateQueries({
+          queryKey: ['infiniteGroupRoutines'],
+        });
+
+        // 성공 메시지 표시
+        Alert.alert('가입 완료', '그룹 루틴에 성공적으로 가입되었습니다.', [
+          {
+            text: '확인',
+            onPress: () => {
+              // 홈 화면으로 돌아가기
+              navigation.navigate('HomeMain');
+            },
+          },
+        ]);
       },
       onError: (error) => {
         console.error('🔍 그룹 루틴 가입 실패:', error);
         setJoinModalVisible(false);
-        // 에러 처리 (나중에 토스트나 알림 추가)
+        Alert.alert('가입 실패', '그룹 루틴 가입에 실패했습니다.');
       },
     });
   };
@@ -109,19 +208,73 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleEditRoutine = () => {
-    // 루틴 수정 로직
+    // 그룹 루틴 기본 정보 수정 (제목, 설명, 시간, 요일 등)
     setIsMenuVisible(false);
+    setIsEditRoutineModalVisible(true);
+  };
+
+  const handleConfirmEditRoutine = () => {
+    setIsEditRoutineModalVisible(false);
     navigation.navigate('CreateGroupRoutine', {
       mode: 'edit',
       routineData: {
         id: routine.id,
         title: routine.title,
         description: routine.description,
+        routineType: routine.routineType,
+        startTime: routine.timeRange.split(' - ')[0],
+        endTime: routine.timeRange.split(' - ')[1],
+        dayTypes: routine.selectedDays, // dayOfWeek → dayTypes로 수정 (API 요청 형식에 맞춤)
+      },
+    });
+  };
+
+  const handleCancelEditRoutine = () => {
+    setIsEditRoutineModalVisible(false);
+  };
+
+  const handleEditRoutineDetail = () => {
+    // 그룹 루틴 상세 루틴 수정 (개별 루틴 아이템들)
+    setIsMenuVisible(false);
+    setIsEditRoutineDetailModalVisible(true);
+  };
+
+  const handleConfirmEditRoutineDetail = () => {
+    setIsEditRoutineDetailModalVisible(false);
+
+    // 실제 API 데이터에서 routineInfos 사용
+    const routineInfos = routineDetailData?.result?.routineInfos || [];
+
+    navigation.navigate('CreateGroupRoutineDetail', {
+      mode: 'edit',
+      routineData: {
+        groupRoutineListId: routine.id, // 그룹 루틴 ID를 명확한 이름으로 전달
+        id: routine.id, // 기존 호환성을 위해 유지
+        title: routine.title,
+        description: routine.description,
+        routineType: routine.routineType,
         startTime: routine.timeRange.split(' - ')[0],
         endTime: routine.timeRange.split(' - ')[1],
         dayTypes: routine.selectedDays,
+        routines: routineInfos, // 원본 데이터 그대로 전달
       },
     });
+  };
+
+  const handleCancelEditRoutineDetail = () => {
+    setIsEditRoutineDetailModalVisible(false);
+  };
+
+  const handleSaveRoutineDetail = () => {
+    // 상세 루틴 수정 저장
+    // TODO: updateGroupRoutineDetail API 호출
+    console.log('🔍 상세 루틴 수정 저장');
+    setIsEditMode(false);
+  };
+
+  const handleCancelEdit = () => {
+    // 상세 루틴 수정 취소
+    setIsEditMode(false);
   };
 
   const handleDeleteRoutine = () => {
@@ -154,33 +307,124 @@ const GroupRoutineDetailScreen = ({
     setIsDeleteModalVisible(false);
   };
 
+  const [isLeaveModalVisible, setIsLeaveModalVisible] = useState(false);
+
   const handleLeaveRoutine = () => {
+    // isAdmin이 true일 때는 나가기 불가
+    if (routine.isAdmin) {
+      setIsMenuVisible(false);
+      return;
+    }
+
+    // 이미 나간 상태인지 확인
+    if (!isJoined) {
+      setIsMenuVisible(false);
+      return;
+    }
+
+    // 나가기 확인 모달 표시
+    setIsMenuVisible(false);
+    setIsLeaveModalVisible(true);
+  };
+
+  const handleConfirmLeave = () => {
     // 그룹 루틴 나가기 API 호출
     leaveGroupRoutine(routine.id, {
       onSuccess: () => {
         console.log('🔍 그룹 루틴 나가기 성공');
+
+        // 상태 즉시 업데이트
         setIsJoined(false);
         setUserRole(null);
-        setIsMenuVisible(false);
-        // 성공 메시지 표시
-        navigation.navigate('Result', {
-          type: 'success',
-          title: '그룹 루틴 나가기 완료',
-          description: '그룹 루틴에서 성공적으로 나갔습니다.',
-          nextScreen: 'HomeMain',
+        setIsLeaveModalVisible(false);
+
+        // 캐시 무효화로 데이터 새로고침
+        queryClient.invalidateQueries({
+          queryKey: ['groupRoutineDetail', routineId],
         });
+        queryClient.invalidateQueries({
+          queryKey: ['infiniteGroupRoutines'],
+        });
+
+        // 성공 메시지 표시
+        Alert.alert('나가기 완료', '그룹 루틴에서 성공적으로 나갔습니다.', [
+          {
+            text: '확인',
+            onPress: () => {
+              // 홈 화면으로 돌아가기
+              navigation.navigate('HomeMain');
+            },
+          },
+        ]);
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error('🔍 그룹 루틴 나가기 실패:', error);
-        setIsMenuVisible(false);
-        // 에러 처리 (나중에 토스트나 알림 추가)
+
+        // 에러 상세 정보 로깅
+        if (error.response) {
+          console.error('🔍 에러 응답:', {
+            status: error.response.status,
+            data: error.response.data,
+            headers: error.response.headers,
+          });
+        }
+
+        setIsLeaveModalVisible(false);
+
+        // 에러 상태에 따른 메시지
+        let errorMessage = '그룹 루틴 나가기에 실패했습니다.';
+        if (error.response?.status === 403) {
+          errorMessage = '권한이 없습니다. 방장은 나갈 수 없습니다.';
+        } else if (error.response?.status === 404) {
+          errorMessage = '그룹 루틴을 찾을 수 없습니다.';
+        }
+
+        Alert.alert('나가기 실패', errorMessage);
       },
     });
   };
 
+  const handleCancelLeave = () => {
+    setIsLeaveModalVisible(false);
+  };
+
+  // 로딩 상태 처리
+  if (isRoutineDetailLoading) {
+    return (
+      <Container edges={['top', 'left', 'right']}>
+        <Header title="단체 루틴" onBackPress={handleBack} />
+        <LoadingContainer>
+          <LoadingText>로딩 중...</LoadingText>
+        </LoadingContainer>
+      </Container>
+    );
+  }
+
+  // 에러 상태 처리
+  if (routineDetailError) {
+    return (
+      <Container edges={['top', 'left', 'right']}>
+        <Header title="단체 루틴" onBackPress={handleBack} />
+        <ErrorContainer>
+          <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
+        </ErrorContainer>
+      </Container>
+    );
+  }
+
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="단체 루틴" onBackPress={handleBack} />
+      <Header
+        title={isEditMode ? '상세 루틴 수정' : '단체 루틴'}
+        onBackPress={isEditMode ? handleCancelEdit : handleBack}
+        rightComponent={
+          isEditMode ? (
+            <SaveButton onPress={handleSaveRoutineDetail}>
+              <SaveText>저장</SaveText>
+            </SaveButton>
+          ) : undefined
+        }
+      />
       <ScrollContent
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
@@ -194,7 +438,8 @@ const GroupRoutineDetailScreen = ({
                 <MemberCountText>{routine.membersCount}</MemberCountText>
               </MemberCountRow>
             )}
-            {isJoined && (
+            {/* 메뉴 버튼: 방장이거나 참여한 팀원만 표시 */}
+            {(routine.isAdmin || (isJoined && !routine.isAdmin)) && (
               <MenuButton onPress={handleMenuPress}>
                 <MenuIcon>⋯</MenuIcon>
               </MenuButton>
@@ -225,6 +470,13 @@ const GroupRoutineDetailScreen = ({
                 </TaskContent>
               </ItemRow>
             ))}
+            {isEditMode && (
+              <AddTemplateButton
+                onPress={() => setIsTemplateModalVisible(true)}
+              >
+                <AddTemplateText>+ 템플릿 추가</AddTemplateText>
+              </AddTemplateButton>
+            )}
           </ItemList>
         </SectionCard>
 
@@ -236,27 +488,41 @@ const GroupRoutineDetailScreen = ({
             <AvatarRow horizontal showsHorizontalScrollIndicator={false}>
               {routine.participants.slice(0, 8).map((uri, idx) => (
                 <AvatarWrapper key={`participant-${idx}`}>
-                  <Avatar source={{ uri }} />
+                  <Avatar
+                    source={{ uri }}
+                    defaultSource={require('../../assets/images/default_profile.png')}
+                    onError={() => console.log('프로필 이미지 로드 실패:', uri)}
+                  />
                 </AvatarWrapper>
               ))}
             </AvatarRow>
           ) : (
             // 참여한 후: 완료자와 미달성자로 분류
-            <>
+            <ParticipantsContainer>
               {/* 완료된 참여자 */}
               <CompletedSection>
-                <CompletedTitle>완료</CompletedTitle>
-                <CompletedCountContainer>
-                  <CompletedIcon>👥</CompletedIcon>
-                  <CompletedCountText>12</CompletedCountText>
-                </CompletedCountContainer>
+                <CompletedHeader>
+                  <CompletedTitle>완료</CompletedTitle>
+                  <CompletedCountContainer>
+                    <CompletedIcon>👥</CompletedIcon>
+                    <CompletedCountText>
+                      {routine.completedCount}
+                    </CompletedCountText>
+                  </CompletedCountContainer>
+                </CompletedHeader>
                 <CompletedAvatarRow
                   horizontal
                   showsHorizontalScrollIndicator={false}
                 >
-                  {routine.participants.slice(0, 8).map((uri, idx) => (
+                  {routine.completedParticipants.slice(0, 6).map((uri, idx) => (
                     <AvatarWrapper key={`completed-${idx}`}>
-                      <Avatar source={{ uri }} />
+                      <Avatar
+                        source={{ uri }}
+                        defaultSource={require('../../assets/images/default_profile.png')}
+                        onError={() =>
+                          console.log('프로필 이미지 로드 실패:', uri)
+                        }
+                      />
                     </AvatarWrapper>
                   ))}
                 </CompletedAvatarRow>
@@ -264,41 +530,53 @@ const GroupRoutineDetailScreen = ({
 
               {/* 미달성 참여자 */}
               <UnachievedSection>
-                <UnachievedTitle>미달성</UnachievedTitle>
-                <UnachievedCountContainer>
-                  <UnachievedIcon>👥</UnachievedIcon>
-                  <UnachievedCountText>252</UnachievedCountText>
-                </UnachievedCountContainer>
+                <UnachievedHeader>
+                  <UnachievedTitle>미달성</UnachievedTitle>
+                  <UnachievedCountContainer>
+                    <UnachievedIcon>👥</UnachievedIcon>
+                    <UnachievedCountText>
+                      {routine.unachievedCount}
+                    </UnachievedCountText>
+                  </UnachievedCountContainer>
+                </UnachievedHeader>
                 <UnachievedAvatarRow
                   horizontal
                   showsHorizontalScrollIndicator={false}
                 >
-                  {routine.participants.slice(0, 8).map((uri, idx) => (
-                    <AvatarWrapper key={`unachieved-${idx}`}>
-                      <Avatar source={{ uri }} />
-                    </AvatarWrapper>
-                  ))}
+                  {routine.unachievedParticipants
+                    .slice(0, 6)
+                    .map((uri, idx) => (
+                      <AvatarWrapper key={`unachieved-${idx}`}>
+                        <Avatar
+                          source={{ uri }}
+                          defaultSource={require('../../assets/images/default_profile.png')}
+                          onError={() =>
+                            console.log('프로필 이미지 로드 실패:', uri)
+                          }
+                        />
+                      </AvatarWrapper>
+                    ))}
                 </UnachievedAvatarRow>
               </UnachievedSection>
-            </>
+            </ParticipantsContainer>
           )}
         </ParticipantsCard>
       </ScrollContent>
 
       {/* 하단 고정 버튼 */}
-      {!isJoined ? (
+      {!isJoined && !routine.isAdmin ? (
         <FixedJoinCta>
           <JoinButton onPress={handleJoin} disabled={isJoining}>
             <JoinText>{isJoining ? '가입 중...' : '단체루틴 참여'}</JoinText>
           </JoinButton>
         </FixedJoinCta>
-      ) : (
+      ) : isJoined ? (
         <FixedJoinCta>
-          <JoinButton disabled>
-            <JoinText>참여 완료</JoinText>
+          <JoinButton onPress={() => setIsGuestbookModalVisible(true)}>
+            <JoinText>방명록</JoinText>
           </JoinButton>
         </FixedJoinCta>
-      )}
+      ) : null}
 
       {/* 참여 확인 모달 */}
       <BottomSheetDialog
@@ -336,23 +614,46 @@ const GroupRoutineDetailScreen = ({
         visible={isMenuVisible}
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        {userRole === 'host' ? (
-          <>
-            <MenuItem onPress={handleEditRoutine}>
-              <MenuItemText>수정</MenuItemText>
-            </MenuItem>
-            <MenuItem onPress={handleDeleteRoutine}>
-              <MenuItemText style={{ color: theme.colors.error }}>
-                삭제
-              </MenuItemText>
-            </MenuItem>
-          </>
+        {routine.isAdmin ? (
+          // 방장 메뉴: 루틴 수정, 상세 루틴 수정, 삭제
+          <SheetActions>
+            <CustomButton
+              text="루틴 수정"
+              onPress={handleEditRoutine}
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.gray800}
+              borderColor={theme.colors.gray300}
+              borderWidth={1}
+            />
+            <CustomButton
+              text="상세 루틴 수정"
+              onPress={handleEditRoutineDetail}
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.gray800}
+              borderColor={theme.colors.gray300}
+              borderWidth={1}
+            />
+            <CustomButton
+              text="삭제"
+              onPress={handleDeleteRoutine}
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.error}
+              borderColor={theme.colors.error}
+              borderWidth={1}
+            />
+          </SheetActions>
         ) : (
-          <MenuItem onPress={handleLeaveRoutine}>
-            <MenuItemText style={{ color: theme.colors.error }}>
-              {isLeaving ? '나가는 중...' : '나가기'}
-            </MenuItemText>
-          </MenuItem>
+          // 팀원 메뉴: 단체 루틴 나가기
+          <SheetActions>
+            <CustomButton
+              text="단체 루틴 나가기"
+              onPress={handleLeaveRoutine}
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.error}
+              borderColor={theme.colors.error}
+              borderWidth={1}
+            />
+          </SheetActions>
         )}
       </BottomSheetDialog>
 
@@ -361,8 +662,13 @@ const GroupRoutineDetailScreen = ({
         visible={isDeleteModalVisible}
         onRequestClose={handleCancelDelete}
       >
-        <ModalTitle>그룹 루틴을 삭제하시겠습니까?</ModalTitle>
-        <ModalSubtitle>삭제된 그룹 루틴은 복구할 수 없습니다.</ModalSubtitle>
+        <ModalTitle>단체 루틴 삭제</ModalTitle>
+        <ModalSubtitle>
+          정말 해당 루틴을 삭제하시겠습니까?{'\n'}
+          삭제 시{' '}
+          <ModalSubtitleHighlight>모든 참여자들의</ModalSubtitleHighlight>{' '}
+          루틴에서도 삭제됩니다.
+        </ModalSubtitle>
 
         <ButtonRow>
           <ButtonWrapper>
@@ -384,6 +690,125 @@ const GroupRoutineDetailScreen = ({
           </ButtonWrapper>
         </ButtonRow>
       </BottomSheetDialog>
+
+      {/* 단체 루틴 수정 확인 모달 */}
+      <BottomSheetDialog
+        visible={isEditRoutineModalVisible}
+        onRequestClose={handleCancelEditRoutine}
+      >
+        <ModalTitle>단체 루틴 수정</ModalTitle>
+        <ModalSubtitle>
+          정말 해당 루틴을 수정하시겠습니까?{'\n'}
+          수정 시{' '}
+          <ModalSubtitleHighlight>모든 참여자들의</ModalSubtitleHighlight>{' '}
+          루틴에서도 수정됩니다.
+        </ModalSubtitle>
+
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCancelEditRoutine}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="수정"
+              onPress={handleConfirmEditRoutine}
+              backgroundColor={theme.colors.primary}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 단체 루틴 상세 수정 확인 모달 */}
+      <BottomSheetDialog
+        visible={isEditRoutineDetailModalVisible}
+        onRequestClose={handleCancelEditRoutineDetail}
+      >
+        <ModalTitle>단체 루틴 상세 수정</ModalTitle>
+        <ModalSubtitle>
+          정말 해당 루틴을 수정하시겠습니까?{'\n'}
+          수정 시{' '}
+          <ModalSubtitleHighlight>모든 참여자들의</ModalSubtitleHighlight>{' '}
+          루틴에서도 수정됩니다.
+        </ModalSubtitle>
+
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCancelEditRoutineDetail}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="수정"
+              onPress={handleConfirmEditRoutineDetail}
+              backgroundColor={theme.colors.primary}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 단체 루틴 나가기 확인 모달 */}
+      <BottomSheetDialog
+        visible={isLeaveModalVisible}
+        onRequestClose={handleCancelLeave}
+      >
+        <ModalTitle>단체 루틴 나가기</ModalTitle>
+        <ModalSubtitle>
+          정말 해당 루틴에서 나가시겠습니까?{'\n'}
+          나가기 시{' '}
+          <ModalSubtitleHighlight>
+            다시 참여할 수 없습니다.
+          </ModalSubtitleHighlight>
+        </ModalSubtitle>
+
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCancelLeave}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="나가기"
+              onPress={handleConfirmLeave}
+              backgroundColor={theme.colors.error}
+              textColor={theme.colors.white}
+              disabled={isLeaving}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 방명록 모달 */}
+      <GuestbookModal
+        isVisible={isGuestbookModalVisible}
+        onClose={() => setIsGuestbookModalVisible(false)}
+        groupRoutineListId={routine.id}
+      />
+
+      {/* 템플릿 선택 모달 */}
+      <RoutineSuggestionModal
+        visible={isTemplateModalVisible}
+        onRequestClose={() => setIsTemplateModalVisible(false)}
+        onRoutineSelect={(template) => {
+          console.log('🔍 선택된 템플릿:', template);
+          setIsTemplateModalVisible(false);
+          // TODO: 선택된 템플릿을 루틴 목록에 추가
+        }}
+      />
     </Container>
   );
 };
@@ -470,6 +895,53 @@ const ProgressText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 12px;
   color: ${theme.colors.gray700};
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray500};
+`;
+
+const ErrorContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
+const ErrorText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.error};
+`;
+
+const SheetActions = styled.View`
+  gap: 12px;
+  padding: 16px;
+  width: 100%;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const SaveButton = styled.TouchableOpacity`
+  padding: 8px 16px;
+  background-color: ${theme.colors.primary};
+  border-radius: 8px;
+`;
+
+const SaveText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.white};
 `;
 
 const SectionCard = styled.View`
@@ -647,6 +1119,13 @@ const ModalSubtitle = styled.Text`
   margin-top: 8px;
 `;
 
+const ModalSubtitleHighlight = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 13px;
+  color: ${theme.colors.error};
+  text-align: center;
+`;
+
 const ButtonRow = styled.View`
   flex-direction: row;
   gap: 12px;
@@ -669,15 +1148,39 @@ const MenuIcon = styled.Text`
   font-weight: bold;
 `;
 
-const MenuItem = styled.TouchableOpacity`
+// Template Button Styles
+const AddTemplateButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray100};
+  background-color: ${theme.colors.gray50};
+  border: 2px dashed ${theme.colors.gray300};
+  border-radius: 8px;
+  margin-top: 8px;
 `;
 
-const MenuItemText = styled.Text`
+const AddTemplateText = styled.Text`
   font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-  text-align: center;
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+`;
+
+// Participants Styles
+const ParticipantsContainer = styled.View`
+  gap: 16px;
+`;
+
+const CompletedHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
+const UnachievedHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 `;

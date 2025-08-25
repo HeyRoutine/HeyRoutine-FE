@@ -357,7 +357,7 @@ export interface ParticipantGroupRoutineDetailResponse {
 
 // 단체루틴 상세 조회 응답 타입 (통합)
 export interface GroupRoutineDetailResponse {
-  isAdmin: boolean;
+  admin: boolean; // isAdmin → admin으로 수정
   groupRoutineInfo: GroupRoutineInfo;
   routineInfos?: RoutineInfoWithCompletion[]; // 참여자/방장용
   groupRoutineMemberInfo?: ParticipantMemberInfo; // 참여자/방장용
@@ -403,7 +403,7 @@ export interface CreateGroupGuestbookRequest {
 }
 
 // 방명록 작성 응답 타입
-export type CreateGroupGuestbookResponse = EmptyResponse;
+export type CreateGroupGuestbookResponse = GuestbookItem;
 
 // 방명록 삭제 응답 타입
 export type DeleteGroupGuestbookResponse = EmptyResponse;
@@ -549,6 +549,21 @@ export interface UpdatePersonalRoutineDetailRequest {
   routineName: string; // 루틴 명
   emojiId: number; // 이모지 Id
   time: number; // 루틴 시간
+}
+
+// 개인루틴 리스트 수정 요청 타입 (새로운 API 스펙)
+export interface UpdateRoutineInMyRoutineListRequest {
+  updateRoutine: Array<{
+    id: number;
+    routineName: string;
+    emojiId: number;
+    time: number;
+  }>;
+  makeRoutine: Array<{
+    routineName: string;
+    emojiId: number;
+    time: number;
+  }>;
 }
 
 // 개인루틴 상세 수정 응답 타입

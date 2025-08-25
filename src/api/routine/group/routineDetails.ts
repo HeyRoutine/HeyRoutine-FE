@@ -28,11 +28,16 @@ export const updateGroupRoutineDetail = async (
   groupRoutineListId: string,
   data: UpdateGroupRoutineDetailRequest,
 ): Promise<ApiResponse<UpdateGroupRoutineDetailResponse>> => {
-  const response = await apiClient.put<
-    ApiResponse<UpdateGroupRoutineDetailResponse>
-  >(`/api/v1/routines/groups/${groupRoutineListId}/sub-routines`, data);
+  // 개별 루틴 수정 방식으로 변경
+  const promises = data.routines.map((routine) =>
+    apiClient.put<ApiResponse<UpdateGroupRoutineDetailResponse>>(
+      `/api/v1/routines/groups/${groupRoutineListId}/sub-routines/${routine.routineId}`,
+      routine,
+    ),
+  );
 
-  return response.data;
+  const responses = await Promise.all(promises);
+  return responses[0].data; // 첫 번째 응답 반환
 };
 
 // 단체루틴 상세 삭제 API

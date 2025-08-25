@@ -182,6 +182,19 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         }) || [],
     ) || [];
 
+  // 선택된 날짜의 요일
+  const selectedDayLabel = ['일', '월', '화', '수', '목', '금', '토'][
+    selectedDate.getDay()
+  ];
+
+  // 선택된 요일의 루틴만 필터링
+  const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
+    routine.selectedDays.includes(selectedDayLabel),
+  );
+  const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
+    routine.selectedDays.includes(selectedDayLabel),
+  );
+
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');
   };
@@ -256,7 +269,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     }
   };
 
-  const currentRoutines = selectedTab === 0 ? personalRoutines : groupRoutines;
   const isFetchingNextPage =
     selectedTab === 0 ? isFetchingNextPersonalPage : isFetchingNextGroupPage;
 
@@ -303,7 +315,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         {/* 루틴 목록 */}
         <RoutineList>
           <FlatList
-            data={currentRoutines}
+            data={
+              selectedTab === 0
+                ? selectedDayPersonalRoutines
+                : selectedDayGroupRoutines
+            }
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <RoutineCard
