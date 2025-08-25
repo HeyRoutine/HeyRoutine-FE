@@ -31,7 +31,21 @@ export const checkEmailDuplicate = async (
   const encodedEmail = encodeURIComponent(email);
   const url = `/api/v1/user/email-duplicate-check?email=${encodedEmail}`;
 
+  console.log('🔍 이메일 중복 확인 API 호출:', url);
+  console.log('🔍 원본 이메일:', email);
+  console.log('🔍 인코딩된 이메일:', encodedEmail);
+
   const response = await apiClient.post<ApiResponse<string>>(url);
+
+  console.log('🔍 이메일 중복 확인 API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    code: response.data?.code,
+    message: response.data?.message,
+    result: response.data?.result,
+  });
+
   return response.data;
 };
 
