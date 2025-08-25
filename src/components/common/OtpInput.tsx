@@ -45,14 +45,17 @@ const OtpInput = ({
 export default OtpInput;
 
 const OtpInputContainer = styled.View`
+  width: 100%;
   flex-direction: row;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 `;
 
 const OtpBox = styled.View<{ isFocused: boolean }>`
-  width: 60px;
+  flex: 1;
+  max-width: 48px;
+  min-width: 36px;
   height: 50px;
   border-bottom-width: 2px;
   border-color: ${(props) =>
