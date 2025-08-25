@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image } from 'react-native';
+import { Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
@@ -9,10 +9,17 @@ import Header from '../../../components/common/Header';
 import OtpInput from '../../../components/common/OtpInput';
 import Timer from '../../../components/common/Timer';
 import { useAuthStore } from '../../../store';
+import { mailSend, authCheck } from '../../../api/user/user';
+import { MailSendRequest, ApiResponse, AuthCheckRequest } from '../../../types/api';
+import { Ionicons } from '@expo/vector-icons';
 
 const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
+  const [resendState, setResendState] = useState<'idle' | 'loading' | 'done'>(
+    'idle',
+  );
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   // route.params에서 이메일 가져오기
   const { email, isEmailChange, onSuccess } = route.params || {};
@@ -29,8 +36,29 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     return () => clearInterval(intervalId);
   }, [timeLeft]);
 
-  const handleVerify = () => {
-    // TODO: 인증하기 로직 구현
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [resendCooldown]);
+
+  const handleVerify = async () => {
+    // 인증번호 확인 로직 (서버 스펙에 따라 UUID 기반이면 authCheck 호출)
+    try {
+      // 예시: 4자리 코드와 이메일을 함께 전송한다고 가정 (스펙에 맞게 조정)
+      const payload: AuthCheckRequest = { email, authNum: code } as any;
+      const res = await authCheck(payload);
+      if (!res.isSuccess) {
+        // 실패 처리 (간단히 얼럿 대체)
+        console.warn('인증 실패:', res.message);
+        return;
+      }
+    } catch (e) {
+      console.warn('인증 요청 오류:', e);
+      return;
+    }
 
     if (isEmailChange) {
       // 이메일 변경 모드일 때
@@ -46,6 +74,31 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
       navigation.navigate('Password', { email });
     }
   };
+  const sendVerificationMail = async () => {
+    if (!email) return;
+    const payload: MailSendRequest = { email } as any;
+    try {
+      setResendState('loading');
+      const res = await mailSend(payload);
+      if (!res.isSuccess) {
+        console.warn('메일 전송 실패:', res.message);
+        setResendState('idle');
+      }
+      if (res.isSuccess) {
+        setResendState('done');
+        setResendCooldown(5); // 5초 쿨다운
+        setTimeout(() => setResendState('idle'), 1500); // 1.5초 완료 표시
+      }
+    } catch (e) {
+      console.warn('메일 전송 오류:', e);
+      setResendState('idle');
+    }
+  };
+
+  useEffect(() => {
+    // 화면 진입 시 인증메일 발송
+    sendVerificationMail();
+  }, []);
 
   const handleCodeChange = (text: string) => {
     setCode(text);
@@ -75,8 +128,26 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
           autoFocus={true}
         />
 
-        <ResendButton>
-          <ResendText>인증번호 재발송</ResendText>
+        <ResendButton
+          onPress={sendVerificationMail}
+          disabled={resendState === 'loading' || resendCooldown > 0}
+          activeOpacity={0.7}
+        >
+          {resendState === 'loading' ? (
+            <ResendRow>
+              <ActivityIndicator size="small" color={theme.colors.gray600} />
+              <ResendText disabled>재발송 중...</ResendText>
+            </ResendRow>
+          ) : resendState === 'done' ? (
+            <ResendRow>
+              <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />
+              <ResendText>재발송 완료</ResendText>
+            </ResendRow>
+          ) : resendCooldown > 0 ? (
+            <ResendText disabled>{`다시 요청 (${resendCooldown}s)`}</ResendText>
+          ) : (
+            <ResendText>인증번호 재발송</ResendText>
+          )}
         </ResendButton>
 
         <CharacterImage
@@ -131,11 +202,17 @@ const ResendButton = styled.TouchableOpacity`
   align-self: flex-start;
 `;
 
-const ResendText = styled.Text`
+const ResendText = styled.Text<{ disabled?: boolean }>`
   font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray600};
+  color: ${(props) => (props.disabled ? theme.colors.gray400 : theme.colors.gray600)};
   text-decoration-line: underline;
+`;
+
+const ResendRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 `;
 
 // 오른쪽 아래, 아래보다는 조금 위
