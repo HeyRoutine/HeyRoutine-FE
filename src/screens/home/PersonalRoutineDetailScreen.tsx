@@ -608,7 +608,7 @@ const PersonalRoutineDetailScreen = ({
       <Header title="" onBackPress={handleBack} />
       <Content>
         {/* 루틴 헤더 섹션 */}
-        <RoutineHeaderCard>
+        <RoutineCard>
           <HeaderContent>
             <HeaderLeft>
               <RoutineTitle>{routineData?.name || '루틴 제목'}</RoutineTitle>
@@ -634,48 +634,48 @@ const PersonalRoutineDetailScreen = ({
             buttonSize={40}
             borderRadius={20}
           />
-        </RoutineHeaderCard>
 
-        {/* 새로운 루틴 추가 (수정 모드일 때만) */}
-        {isEditMode && editingIndex === null && (
-          <AdderContainer>
-            <RoutineItemAdder
-              onPlusPress={handlePlusPress}
-              onClockPress={handleClockPress}
-              onTextChange={handleTextChange}
-              onTextPress={handleTextPress}
-              selectedTime={selectedTime}
-              selectedEmoji={selectedEmoji}
-              currentText={currentText}
-              placeholder="루틴을 추가해주세요"
-              editable={isEditMode}
-            />
-          </AdderContainer>
-        )}
+          {/* 새로운 루틴 추가 (수정 모드일 때만) */}
+          {isEditMode && editingIndex === null && (
+            <AdderContainer>
+              <RoutineItemAdder
+                onPlusPress={handlePlusPress}
+                onClockPress={handleClockPress}
+                onTextChange={handleTextChange}
+                onTextPress={handleTextPress}
+                selectedTime={selectedTime}
+                selectedEmoji={selectedEmoji}
+                currentText={currentText}
+                placeholder="루틴을 추가해주세요"
+                editable={isEditMode}
+              />
+            </AdderContainer>
+          )}
 
-        {/* 완성된 루틴 아이템들 */}
-        {routineItems.map((item, index) => (
-          <AdderContainer key={index}>
-            <CompletedRoutineItem
-              item={item}
-              index={index}
-              onEdit={(index, emoji, text, time) => {
-                const updatedItems = [...routineItems];
-                updatedItems[index] = {
-                  emoji,
-                  text,
-                  time,
-                  isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
-                };
-                setRoutineItems(updatedItems);
-              }}
-              onDelete={handleDeleteItem}
-              isEditMode={isEditMode}
-            />
-          </AdderContainer>
-        ))}
-
+          {/* 완성된 루틴 아이템들 */}
+          {routineItems.map((item, index) => (
+            <AdderContainer key={index}>
+              <CompletedRoutineItem
+                item={item}
+                index={index}
+                onEdit={(index, emoji, text, time) => {
+                  const updatedItems = [...routineItems];
+                  updatedItems[index] = {
+                    emoji,
+                    text,
+                    time,
+                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
+                  };
+                  setRoutineItems(updatedItems);
+                }}
+                onDelete={handleDeleteItem}
+                isEditMode={isEditMode}
+              />
+            </AdderContainer>
+          ))}
+        </RoutineCard>
         {/* 루틴 실행/수정 완료 버튼 */}
+
         <CreateButton
           onPress={isEditMode ? handleSave : handleStartRoutine}
           disabled={!isEditMode && !isTodayInSelectedDays()}
@@ -804,7 +804,7 @@ export default PersonalRoutineDetailScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
-  background-color: ${theme.colors.gray50};
+  background-color: ${theme.colors.white};
 `;
 
 const Content = styled.View`
@@ -813,7 +813,7 @@ const Content = styled.View`
 `;
 
 const RoutineCard = styled.View`
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.gray50};
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
