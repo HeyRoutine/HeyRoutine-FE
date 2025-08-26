@@ -1,5 +1,3 @@
-import { ms } from '../utils/size';
-
 export const fontWeights = {
   Light: 'Pretendard-Light', // 300
   Regular: 'Pretendard-Regular', // 400
@@ -12,9 +10,9 @@ export const fontWeights = {
 };
 
 export const fontSizes = {
-  title: ms(24),
-  subtitle: ms(20),
-  body: ms(16),
-  caption: ms(14),
-  small: ms(12),
+  title: 24,
+  subtitle: 20,
+  body: 16,
+  caption: 14,
+  small: 12,
 };
