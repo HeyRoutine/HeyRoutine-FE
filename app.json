@@ -28,13 +28,10 @@
         "package": "com.heyroutine.app"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.heyroutine.app"
+      "package": "com.ungnam.shinhanHeyRoutine"
     },
     "web": {
       "favicon": "./src/assets/images/favicon.png"
-    },
-    "notification": {
-      "vapidPublicKey": "BCDA0eSm7bt7Rr8dFBcpraxVL9-ef4YBdsiC9Ef2lTuiSo7RA-CpgYJm9zpxBcwi1L4C48SF39asvxgR_cib4wY"
     },
     "plugins": [
       "@react-native-firebase/app",

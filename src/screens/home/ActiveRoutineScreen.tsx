@@ -145,15 +145,29 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     const currentTask = tasks[activeTaskIndex];
     const taskRoutineId = currentTask?.routineId;
 
+    console.log('🔍 ActiveRoutineScreen - 루틴 완료 처리:', {
+      currentTask,
+      taskRoutineId,
+      activeTaskIndex,
+      tasksLength: tasks.length,
+    });
+
     if (taskRoutineId) {
       const today = new Date();
       const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
       const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
 
+      console.log('🔍 ActiveRoutineScreen - donePersonalRoutine 호출:', {
+        routineId: taskRoutineId.toString(),
+        date: dateString,
+      });
+
       donePersonalRoutine({
         routineId: taskRoutineId.toString(),
         params: { date: dateString },
       });
+    } else {
+      console.log('🔍 ActiveRoutineScreen - taskRoutineId가 없음');
     }
 
     if (activeTaskIndex < tasks.length - 1) {
