@@ -133,6 +133,7 @@ export interface GroupRoutineItem {
   endTime: string; // HH:mm 형식
   routineNums: number;
   peopleNums?: number; // API 응답에서 제공되지 않음 (임시로 옵셔널) - pepoleNums에서 수정
+  percent?: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
   joined?: boolean; // API 응답에서 제공되지 않음 (임시로 옵셔널) - isJoined에서 수정
 }

@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import {
   getGroupRoutines,
+  getMyGroupRoutines,
   createGroupRoutine,
   updateGroupRoutine,
   deleteGroupRoutine,
@@ -56,6 +57,38 @@ export const useInfiniteGroupRoutines = (
     queryKey: ['infiniteGroupRoutines', params],
     queryFn: ({ pageParam = 0 }) =>
       getGroupRoutines({ ...params, page: pageParam, size: 10 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.result.page < lastPage.result.totalPages - 1) {
+        return lastPage.result.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 0,
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 내 단체루틴 조회[홈] 훅
+export const useMyGroupRoutines = (
+  params: Omit<GroupRoutineListParams, 'page' | 'size'> = {},
+) => {
+  return useQuery({
+    queryKey: ['myGroupRoutines', params],
+    queryFn: () => getMyGroupRoutines({ ...params, page: 0, size: 10 }),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 무한 스크롤용 내 단체루틴 조회[홈] 훅
+export const useInfiniteMyGroupRoutines = (
+  params: Omit<GroupRoutineListParams, 'page' | 'size'> = {},
+) => {
+  return useInfiniteQuery({
+    queryKey: ['infiniteMyGroupRoutines', params],
+    queryFn: ({ pageParam = 0 }) =>
+      getMyGroupRoutines({ ...params, page: pageParam, size: 10 }),
     getNextPageParam: (lastPage) => {
       if (lastPage.result.page < lastPage.result.totalPages - 1) {
         return lastPage.result.page + 1;

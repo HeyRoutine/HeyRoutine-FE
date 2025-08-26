@@ -21,6 +21,7 @@ import {
 import {
   useInfiniteGroupRoutines,
   useGroupRoutines,
+  useInfiniteMyGroupRoutines,
 } from '../../hooks/routine/group/useGroupRoutines';
 
 interface HomeScreenProps {
@@ -102,7 +103,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     day: selectedDay,
   });
 
-  // 그룹 루틴 API 훅 (joined 필드 사용)
+  // 내 단체루틴 조회[홈] API 훅
   const {
     data: groupRoutinesData,
     isLoading: isGroupRoutinesLoading,
@@ -111,9 +112,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     hasNextPage: hasNextGroupPage,
     isFetchingNextPage: isFetchingNextGroupPage,
     refetch: refetchGroupRoutines,
-  } = useInfiniteGroupRoutines({
-    joined: true, // 참여한 그룹 루틴만 필터링
-  });
+  } = useInfiniteMyGroupRoutines({});
 
   // 화면이 포커스될 때마다 데이터 새로고침
   useFocusEffect(
@@ -165,7 +164,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       })),
     ) || [];
 
-  // 그룹 루틴 데이터를 화면에 맞는 형태로 변환 (joined 필드 사용)
+  // 내 단체루틴 데이터를 화면에 맞는 형태로 변환
   const groupRoutines: RoutineListItem[] =
     groupRoutinesData?.pages?.flatMap(
       (page) =>
@@ -173,7 +172,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           return {
             id: item.id.toString(),
             category: item.routineType === 'DAILY' ? '생활' : '소비',
-            progress: 0, // API에서 제공하지 않는 경우 기본값
+            progress: item.percent || 0, // API에서 제공하는 percent 사용
             title: item.title,
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
             selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
@@ -207,6 +206,42 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
   );
+
+  // 각 요일별 완료 상태 계산
+  const dayCompletionStatus = weekData.map((item) => {
+    const dayLabel = item.day;
+
+    // 해당 요일의 개인 루틴들
+    const dayPersonalRoutines = personalRoutines.filter((routine) =>
+      routine.selectedDays.includes(dayLabel),
+    );
+
+    // 해당 요일의 그룹 루틴들
+    const dayGroupRoutines = groupRoutines.filter((routine) =>
+      routine.selectedDays.includes(dayLabel),
+    );
+
+    // 개인 루틴 완료 상태 (현재는 API에서 제공하지 않으므로 기본값)
+    const personalCompleted = dayPersonalRoutines.length > 0 ? false : false;
+
+    // 그룹 루틴 완료 상태 (percent가 100%인 경우 완료로 간주)
+    const groupCompleted =
+      dayGroupRoutines.length > 0
+        ? dayGroupRoutines.every((routine) => (routine.progress || 0) >= 100)
+        : false;
+
+    // 완료 상태 결정 (개인 또는 그룹 루틴 중 하나라도 완료되면 완료)
+    const isCompleted = personalCompleted || groupCompleted;
+
+    return {
+      day: dayLabel,
+      isCompleted,
+      hasRoutines:
+        dayPersonalRoutines.length > 0 || dayGroupRoutines.length > 0,
+    };
+  });
+
+  console.log('🔍 요일별 완료 상태:', dayCompletionStatus);
 
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');
@@ -295,21 +330,26 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             {selectedDate.getFullYear()}년 {selectedDate.getMonth() + 1}월
           </MonthText>
           <WeekContainer>
-            {weekData.map((item) => (
-              <DayItem key={item.fullDate.toISOString()}>
-                <DayText day={item.day}>{item.day}</DayText>
-                <DateButton
-                  isSelected={isSameDate(item.fullDate, selectedDate)}
-                  onPress={() => handleDateSelect(item.fullDate)}
-                >
-                  <DateText
+            {weekData.map((item, index) => {
+              const completionStatus = dayCompletionStatus[index];
+              return (
+                <DayItem key={item.fullDate.toISOString()}>
+                  <DayText day={item.day}>{item.day}</DayText>
+                  <DateButton
                     isSelected={isSameDate(item.fullDate, selectedDate)}
+                    isCompleted={completionStatus?.isCompleted}
+                    onPress={() => handleDateSelect(item.fullDate)}
                   >
-                    {item.date}
-                  </DateText>
-                </DateButton>
-              </DayItem>
-            ))}
+                    <DateText
+                      isSelected={isSameDate(item.fullDate, selectedDate)}
+                      isCompleted={completionStatus?.isCompleted}
+                    >
+                      {item.date}
+                    </DateText>
+                  </DateButton>
+                </DayItem>
+              );
+            })}
           </WeekContainer>
         </DateSelector>
 
@@ -429,21 +469,29 @@ const DayText = styled.Text<{ day: string }>`
   margin-bottom: 4px;
 `;
 
-const DateButton = styled.TouchableOpacity<{ isSelected: boolean }>`
+const DateButton = styled.TouchableOpacity<{
+  isSelected: boolean;
+  isCompleted?: boolean;
+}>`
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background-color: ${({ isSelected }) =>
-    isSelected ? theme.colors.primary : 'transparent'};
+  background-color: ${({ isSelected, isCompleted }) => {
+    if (isCompleted) return theme.colors.primary;
+    if (isSelected) return theme.colors.primary;
+    return 'transparent';
+  }};
   align-items: center;
   justify-content: center;
 `;
 
-const DateText = styled.Text<{ isSelected: boolean }>`
+const DateText = styled.Text<{ isSelected: boolean; isCompleted?: boolean }>`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
-  color: ${({ isSelected }) =>
-    isSelected ? theme.colors.white : theme.colors.gray800};
+  color: ${({ isSelected, isCompleted }) => {
+    if (isCompleted || isSelected) return theme.colors.white;
+    return theme.colors.gray800;
+  }};
 `;
 
 const RoutineList = styled.View`
