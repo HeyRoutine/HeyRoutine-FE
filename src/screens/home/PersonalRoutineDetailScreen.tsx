@@ -202,12 +202,10 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleEmojiSelect = (emoji: string) => {
-    console.log('선택된 이모지:', emoji);
     setSelectedEmoji(emoji);
   };
 
   const handleTextChange = (text: string) => {
-    console.log('입력된 텍스트:', text);
     setCurrentText(text);
   };
 
@@ -345,12 +343,6 @@ const PersonalRoutineDetailScreen = ({
 
     const deletedRoutines = existingRoutines.slice(routineItems.length);
 
-    console.log('🔍 루틴 수정 데이터:', {
-      updateRoutine,
-      makeRoutine,
-      deletedRoutines,
-    });
-
     const deletePromises = deletedRoutines.map(
       (routine: any) =>
         new Promise((resolve, reject) => {
@@ -466,11 +458,6 @@ const PersonalRoutineDetailScreen = ({
       startDate:
         routineData?.startDate || new Date().toISOString().split('T')[0],
     };
-
-    console.log('🔍 루틴 수정 데이터 전달:', {
-      originalData: routineData,
-      convertedData: data,
-    });
 
     navigation.navigate('CreateRoutine', { mode: 'edit', routineData: data });
   };

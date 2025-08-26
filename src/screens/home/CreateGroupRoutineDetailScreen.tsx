@@ -37,11 +37,6 @@ const CreateGroupRoutineDetailScreen = ({
   const routineData = route?.params?.routineData;
   const queryClient = useQueryClient();
 
-  console.log('🔍 CreateGroupRoutineDetailScreen - 전달받은 데이터:', {
-    mode,
-    routineData,
-  });
-
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.dayTypes || routineData?.days || [],
   );
@@ -236,33 +231,16 @@ const CreateGroupRoutineDetailScreen = ({
   const isFormValid = routineItems.length > 0;
 
   const handleSave = () => {
-    console.log('🔍 handleSave 호출됨 - mode:', mode);
-    console.log('🔍 routineData:', routineData);
-
     if (mode === 'edit') {
       // 수정 모드: 그룹 루틴 상세 수정
-      console.log('🔍 수정 모드 진입');
-      console.log('🔍 routineData.id:', routineData?.id);
-      console.log('🔍 routineItems:', routineItems);
 
       const routines = routineItems
         .map((item, index) => {
           // 실제 API에서 받아온 routineId 사용
           const originalRoutine = routineData?.routines?.[index];
-          console.log('🔍 원본 루틴 데이터:', originalRoutine);
-          console.log('🔍 originalRoutine?.id:', originalRoutine?.id);
-          console.log(
-            '🔍 originalRoutine?.routineId:',
-            originalRoutine?.routineId,
-          );
-          console.log(
-            '🔍 originalRoutine 전체:',
-            JSON.stringify(originalRoutine, null, 2),
-          );
 
           // routineId가 undefined인 경우 건너뛰기
           if (!originalRoutine?.id && !originalRoutine?.routineId) {
-            console.error('🔍 routineId가 없습니다:', originalRoutine);
             return null;
           }
 
@@ -280,13 +258,6 @@ const CreateGroupRoutineDetailScreen = ({
         routines,
       };
 
-      console.log('🔍 그룹 루틴 상세 수정 시작');
-      console.log('🔍 수정 요청 데이터:', detailData);
-      console.log(
-        '🔍 각 루틴의 routineId:',
-        detailData.routines.map((r) => r?.routineId),
-      );
-
       updateGroupRoutineDetail(
         {
           groupRoutineListId:
@@ -296,8 +267,6 @@ const CreateGroupRoutineDetailScreen = ({
         },
         {
           onSuccess: (data) => {
-            console.log('🔍 그룹 루틴 상세 수정 성공:', data);
-
             // 캐시 무효화로 데이터 새로고침
             const groupRoutineListId =
               routineData.groupRoutineListId || routineData.id;
@@ -339,20 +308,13 @@ const CreateGroupRoutineDetailScreen = ({
       daysOfWeek: selectedDays,
     };
 
-    console.log('🔍 1단계: 그룹 루틴 생성 시작');
-    console.log('🔍 그룹 루틴 생성 요청 데이터:', groupRoutineData);
-
     // 1단계: 그룹 루틴 생성
     createGroupRoutine(groupRoutineData, {
       onSuccess: (groupData) => {
-        console.log('🔍 그룹 루틴 생성 성공:', groupData);
-
         // 생성된 그룹 루틴 ID 추출 (result 자체가 ID 값)
         const groupRoutineId = groupData.result;
-        console.log('🔍 생성된 그룹 루틴 ID:', groupRoutineId);
 
         if (!groupRoutineId) {
-          console.error('🔍 그룹 루틴 ID가 반환되지 않았습니다:', groupData);
           return;
         }
 
@@ -366,10 +328,6 @@ const CreateGroupRoutineDetailScreen = ({
           })),
         };
 
-        console.log('🔍 2단계: 그룹 루틴 상세 생성 시작');
-        console.log('🔍 상세 생성 요청 데이터:', detailData);
-        console.log('🔍 사용할 그룹 루틴 ID:', groupRoutineId);
-
         createGroupRoutineDetail(
           {
             groupRoutineListId: groupRoutineId.toString(),
@@ -377,32 +335,6 @@ const CreateGroupRoutineDetailScreen = ({
           },
           {
             onSuccess: (detailData) => {
-              console.log('🔍 상세 생성 성공:', detailData);
-
-              // 3단계: 생성 완료 후 즉시 조회 테스트
-              console.log('🔍 3단계: 생성된 루틴 조회 테스트');
-
-              // 조회 API를 직접 호출해서 확인해보기
-              getGroupRoutineDetail(groupRoutineId.toString())
-                .then((testResponse) => {
-                  console.log('🔍 조회 테스트 응답:', testResponse);
-                  console.log(
-                    '🔍 routineInfos 존재 여부:',
-                    !!testResponse.result?.routineInfos,
-                  );
-                  console.log(
-                    '🔍 routineInfos 길이:',
-                    testResponse.result?.routineInfos?.length || 0,
-                  );
-                  console.log(
-                    '🔍 routineInfos 내용:',
-                    testResponse.result?.routineInfos,
-                  );
-                })
-                .catch((testError) => {
-                  console.error('🔍 조회 테스트 실패:', testError);
-                });
-
               navigation.navigate('Result', {
                 type: 'success',
                 title: '그룹 루틴 생성 완료',

@@ -107,7 +107,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log('🔍 HomeScreen - 화면 포커스됨, 데이터 새로고침 시작');
       refetchPersonalRoutines();
       refetchGroupRoutines();
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
@@ -171,22 +170,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   // 선택된 요일의 루틴만 필터링
-  console.log('🔍 개인 루틴 디버깅:', {
-    selectedDayLabel,
-    totalPersonalRoutines: personalRoutines.length,
-    personalRoutines: personalRoutines.map((r) => ({
-      id: r.id,
-      title: r.title,
-      selectedDays: r.selectedDays,
-      isIncluded: r.selectedDays.includes(selectedDayLabel),
-    })),
-  });
 
   const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
   );
-
-  console.log('🔍 필터링된 개인 루틴:', selectedDayPersonalRoutines.length);
   const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
   );
@@ -218,8 +205,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         dayPersonalRoutines.length > 0 || dayGroupRoutines.length > 0,
     };
   });
-
-  console.log('🔍 요일별 완료 상태:', dayCompletionStatus);
 
   const handleGroupBannerPress = () => {
     navigation.navigate('GroupBoard');

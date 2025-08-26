@@ -45,11 +45,8 @@ const RoutineListScreen = ({ navigation }: RoutineListScreenProps) => {
   const handleConfirmDelete = () => {
     if (!selectedRoutine?.id) return;
 
-    console.log('🔍 루틴 삭제 시작:', selectedRoutine);
-
     deleteRoutine(selectedRoutine.id.toString(), {
       onSuccess: (data) => {
-        console.log('🔍 루틴 삭제 성공:', data);
         setDeleteModalVisible(false);
         setSelectedRoutine(null);
         // 성공 메시지나 토스트 표시
@@ -69,11 +66,6 @@ const RoutineListScreen = ({ navigation }: RoutineListScreenProps) => {
   };
 
   const routines = routinesData?.result?.items || [];
-
-  // 디버깅 로그 추가
-  console.log('🔍 RoutineListScreen - routinesData:', routinesData);
-  console.log('🔍 RoutineListScreen - routines:', routines);
-  console.log('🔍 RoutineListScreen - isLoading:', isLoading);
 
   return (
     <Container edges={['top', 'left', 'right', 'bottom']}>
