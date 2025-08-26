@@ -15,7 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.heyroutine.app"
+      "bundleIdentifier": "com.heyroutine.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +27,8 @@
         "googleServicesFile": "./google-services.json",
         "package": "com.heyroutine.app"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.heyroutine.app"
     },
     "web": {
       "favicon": "./src/assets/images/favicon.png"
@@ -39,11 +43,15 @@
       [
         "expo-notifications",
         {
-          "icon": "./src/assets/images/notification-icon.png",
-          "color": "#ffffff",
-          "sounds": ["./src/assets/sounds/notification.wav"]
+          // "icon": "./src/assets/images/notification-icon.png",
+          "color": "#ffffff"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "eb5ddc79-724a-454b-9da5-f464b9742eb4"
+      }
+    }
   }
 }
