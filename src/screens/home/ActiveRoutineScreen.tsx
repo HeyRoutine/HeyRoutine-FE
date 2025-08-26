@@ -8,9 +8,13 @@ import RoutineActionButton from '../../components/domain/routine/RoutineActionBu
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoutineStore } from '../../store';
+import {
+  useDonePersonalRoutine,
+  useDonePersonalRoutineList,
+} from '../../hooks/routine/personal/usePersonalRoutines';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
-  const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isPauseModalVisible, setPauseModalVisible] = useState(false);
@@ -20,11 +24,19 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const { markActiveRoutineTaskCompleted, resetActiveRoutineProgress } =
     useRoutineStore();
+  const { mutate: donePersonalRoutine } = useDonePersonalRoutine();
+  const { mutate: donePersonalRoutineList } = useDonePersonalRoutineList();
 
   const incomingTasks = route?.params?.tasks as
-    | Array<{ icon: string; title: string; duration: string }>
+    | Array<{
+        icon: string;
+        title: string;
+        duration: string;
+        routineId?: number;
+      }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
+  const routineId = route?.params?.routineId as string | undefined;
   const onTaskComplete = route?.params?.onTaskComplete as
     | ((index: number) => void)
     | undefined;
@@ -32,13 +44,20 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
-    return [
-      { icon: '🍞', title: '식빵 굽기', duration: '10분' },
-      { icon: '☕', title: '커피 내리기', duration: '5분' },
-      { icon: '🧼', title: '샤워하기', duration: '15분' },
-    ];
+    return [];
   }, [incomingTasks]);
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const currentTask = tasks[activeTaskIndex];
+      const duration = currentTask?.duration || '10분';
+      const minutes = parseInt(duration.replace('분', ''));
+      const seconds = minutes * 60;
+      setTimeLeft(seconds);
+      setProgress(0);
+    }
+  }, [tasks, activeTaskIndex]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -47,7 +66,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
           const newTime = prev - 1;
-          setProgress(((10 * 60 - newTime) / (10 * 60)) * 100);
+          const totalTime = tasks[activeTaskIndex]
+            ? parseInt(tasks[activeTaskIndex].duration.replace('분', '')) * 60
+            : 600;
+          setProgress(((totalTime - newTime) / totalTime) * 100);
           return newTime;
         });
       }, 1000);
@@ -56,7 +78,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  // 모든 루틴 완료 상태일 때만 ResultScreen으로 이동
   useEffect(() => {
     if (isCompleted && activeTaskIndex >= tasks.length - 1) {
       const timer = setTimeout(() => {
@@ -65,7 +86,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
             onComplete();
           } catch {}
         }
-        // 루틴 완료 후 루틴 상세 화면으로 돌아가기
         navigation.goBack();
       }, 3000);
 
@@ -110,32 +130,53 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const handleCloseResumeModal = () => setResumeModalVisible(false);
 
   const handleCompletePress = () => {
-    // 항상 완료 확인 모달을 노출
     setCompleteModalVisible(true);
   };
 
   const handleConfirmComplete = () => {
-    // 현재 태스크 완료를 전역에도 기록
     try {
       markActiveRoutineTaskCompleted(activeTaskIndex);
     } catch {}
-    // 상세 화면 콜백도 유지
+
     try {
       onTaskComplete?.(activeTaskIndex);
     } catch {}
-    // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
+
+    const currentTask = tasks[activeTaskIndex];
+    const taskRoutineId = currentTask?.routineId;
+
+    if (taskRoutineId) {
+      const today = new Date();
+      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+      const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+
+      donePersonalRoutine({
+        routineId: taskRoutineId.toString(),
+        params: { date: dateString },
+      });
+    }
+
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
-      // 개별 루틴 완료 시 잠깐 성공 화면 표시
       setIsActive(false);
       setIsCompleted(true);
 
-      // 2초 후 다음 루틴으로 이동
       setTimeout(() => {
         setIsCompleted(false);
         goToNextTask();
       }, 2000);
     } else {
+      if (routineId) {
+        const today = new Date();
+        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+        const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+
+        donePersonalRoutineList({
+          myRoutineListId: routineId,
+          params: { date: dateString },
+        });
+      }
+
       setCompleteModalVisible(false);
       setIsActive(false);
       setIsCompleted(true);
@@ -151,8 +192,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const goToNextTask = () => {
     if (activeTaskIndex < tasks.length - 1) {
       setActiveTaskIndex((prev) => prev + 1);
-      setTimeLeft(10 * 60);
-      setProgress(0);
       setIsActive(true);
     } else {
       navigation.goBack();
@@ -183,20 +222,18 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                   <CheckIcon>
                     <Ionicons
                       name="checkmark"
-                      size={80}
+                      size={60}
                       color={theme.colors.white}
                     />
                   </CheckIcon>
                 </SuccessCircle>
-                <SuccessTitle>루틴 성공🎉</SuccessTitle>
-                <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
               </SuccessContainer>
             ) : (
               <>
                 <ProgressCircle
                   progress={progress}
-                  size={280}
-                  strokeWidth={12}
+                  size={240}
+                  strokeWidth={16}
                   progressColor={theme.colors.primary}
                   backgroundColor={theme.colors.gray200}
                   showText={false}
@@ -208,12 +245,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                       source={{ uri: tasks[activeTaskIndex].icon }}
                       resizeMode="contain"
                       defaultSource={require('../../assets/images/robot.png')}
-                      onError={() =>
-                        console.log(
-                          '이모지 이미지 로드 실패:',
-                          tasks[activeTaskIndex].icon,
-                        )
-                      }
+                      onError={() => {}}
                     />
                   ) : (
                     <BreadIcon>
@@ -228,6 +260,13 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
               </>
             )}
           </TimerContainer>
+
+          {isCompleted && (
+            <SuccessTextContainer>
+              <SuccessTitle>루틴 성공🎉</SuccessTitle>
+              <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
+            </SuccessTextContainer>
+          )}
 
           {!isCompleted && (
             <ActionButtonsContainer>
@@ -352,16 +391,18 @@ const ContentContainer = styled.View`
 
 const Title = styled.Text`
   font-family: ${theme.fonts.Bold};
-  font-size: 28px;
-  color: ${theme.colors.gray900};
+  font-size: 36px;
+  font-weight: 700;
+  color: #1f2021;
   text-align: center;
   margin-bottom: 12px;
 `;
 
 const Subtitle = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-size: 14px;
+  font-weight: 400;
+  color: #b5b6bd;
   text-align: center;
   margin-bottom: 16px;
 `;
@@ -369,8 +410,8 @@ const Subtitle = styled.Text`
 const TimerContainer = styled.View`
   margin: 0 0 40px 0;
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 240px;
+  height: 240px;
   justify-content: center;
   align-items: center;
 `;
@@ -382,27 +423,35 @@ const TimerContent = styled.View`
 `;
 
 const BreadIcon = styled.Text`
-  font-size: 48px;
+  font-size: 86px;
   margin-bottom: 16px;
 `;
 
 const BreadIconImage = styled.Image`
-  width: 48px;
-  height: 48px;
+  width: 86px;
+  height: 86px;
   margin-bottom: 16px;
 `;
 
 const TimeLeft = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 36px;
-  color: ${theme.colors.gray900};
+  font-family: ${theme.fonts.Medium};
+  font-size: 32px;
+  font-weight: 500;
+  color: #3f3f42;
+  text-align: center;
   margin-bottom: 8px;
+  line-height: normal;
+  letter-spacing: -0.3px;
 `;
 
 const TotalTime = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-family: ${theme.fonts.Medium};
+  font-size: 12px;
+  font-weight: 500;
+  color: #98989e;
+  text-align: center;
+  line-height: normal;
+  letter-spacing: -0.3px;
 `;
 
 const ActionButtonsContainer = styled.View`
@@ -412,12 +461,16 @@ const ActionButtonsContainer = styled.View`
   margin-top: 0;
 `;
 
-// Success styles
 const SuccessContainer = styled.View`
   align-items: center;
-  width: 280px;
-  height: 280px;
+  width: 240px;
+  height: 240px;
   justify-content: center;
+`;
+
+const SuccessTextContainer = styled.View`
+  align-items: center;
+  margin-top: 20px;
 `;
 
 const SuccessCircle = styled.View`
@@ -435,17 +488,21 @@ const CheckIcon = styled.View`
 `;
 
 const SuccessTitle = styled.Text`
-  margin-top: 20px;
   font-family: ${theme.fonts.Bold};
-  font-size: 22px;
-  color: ${theme.colors.gray900};
+  font-size: 32px;
+  font-weight: 700;
+  color: #7f7cfa;
+  text-align: center;
+  line-height: normal;
 `;
 
 const SuccessSubtitle = styled.Text`
-  margin-top: 6px;
   font-family: ${theme.fonts.Regular};
   font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-weight: 400;
+  color: #98989e;
+  text-align: center;
+  line-height: normal;
 `;
 
 const ModalTitle = styled.Text`
@@ -482,22 +539,26 @@ const CancelButton = styled.TouchableOpacity`
 `;
 
 const CancelText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.gray700};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const PauseButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+  background-color: ${theme.colors.error};
   border-radius: 12px;
   padding: 14px;
   align-items: center;
 `;
 
 const PauseText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const CompleteButton = styled.TouchableOpacity`
@@ -508,9 +569,11 @@ const CompleteButton = styled.TouchableOpacity`
 `;
 
 const CompleteText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const ResumeButton = styled.TouchableOpacity`
@@ -521,9 +584,11 @@ const ResumeButton = styled.TouchableOpacity`
 `;
 
 const ResumeText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const SkipButton = styled.TouchableOpacity`
@@ -534,7 +599,9 @@ const SkipButton = styled.TouchableOpacity`
 `;
 
 const SkipText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;

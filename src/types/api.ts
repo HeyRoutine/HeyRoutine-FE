@@ -133,6 +133,7 @@ export interface GroupRoutineItem {
   endTime: string; // HH:mm 형식
   routineNums: number;
   peopleNums?: number; // API 응답에서 제공되지 않음 (임시로 옵셔널) - pepoleNums에서 수정
+  percent?: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
   dayOfWeek: string[]; // ['월', '화', '수'] 형식
   joined?: boolean; // API 응답에서 제공되지 않음 (임시로 옵셔널) - isJoined에서 수정
 }
@@ -494,6 +495,7 @@ export interface PersonalRoutineListItem {
   endTime: string; // HH:mm:ss 형식
   routineType: RoutineType;
   dayTypes: DayType[]; // ['월', '화', '수'] 형식
+  percent?: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
 }
 
 // 개인루틴 리스트 조회 응답 타입
@@ -533,7 +535,7 @@ export interface PersonalRoutineDetailItem {
   routineName: string;
   emojiUrl: string;
   time: number;
-  completed: boolean;
+  isCompleted: boolean; // 실제 API 응답에서는 isCompleted 필드로 옴
 }
 
 // 개인루틴 상세 조회 응답 타입

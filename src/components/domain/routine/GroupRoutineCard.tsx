@@ -50,6 +50,6 @@ const Subtitle = styled.Text`
 `;
 
 const RightIcon = styled(Image)`
-  width: 40px;
-  height: 40px;
+  width: 64px;
+  height: 64px;
 `;

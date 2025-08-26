@@ -31,6 +31,7 @@ const GuestbookModal = ({
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const { data: guestbookData, isLoading } =
     useGroupGuestbooks(groupRoutineListId);
@@ -49,6 +50,10 @@ const GuestbookModal = ({
           onSuccess: () => {
             setMessage('');
             console.log('🔍 방명록 작성 성공');
+            // 새 댓글 작성 후 맨 아래로 스크롤
+            setTimeout(() => {
+              scrollViewRef.current?.scrollToEnd({ animated: true });
+            }, 100);
           },
           onError: (error) => {
             console.error('🔍 방명록 작성 실패:', error);
@@ -120,7 +125,7 @@ const GuestbookModal = ({
     >
       <Container>
         <Header>
-          <Title>단체 루틴 방명록</Title>
+          <Title>방명록</Title>
           <CloseButton onPress={onClose}>
             <MaterialIcons
               name="close"
@@ -132,50 +137,51 @@ const GuestbookModal = ({
 
         <ContentContainer>
           <ScrollView
+            ref={scrollViewRef}
             style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
             nestedScrollEnabled={true}
+            onContentSizeChange={() => {
+              // 데이터가 로드되거나 변경될 때 맨 아래로 스크롤
+              scrollViewRef.current?.scrollToEnd({ animated: false });
+            }}
           >
             {isLoading ? null : guestbookData?.result?.items &&
               guestbookData.result.items.length > 0 ? (
               <GuestbookList>
-                {guestbookData.result.items
-                  .slice()
-                  .reverse()
-                  .map((item) => (
-                    <Swipeable
-                      key={item.id}
-                      ref={(ref) => {
-                        swipeableRefs.current[item.id] = ref;
-                      }}
-                      renderRightActions={
-                        item.isWriter
-                          ? () => renderRightActions(item.id)
-                          : undefined
-                      }
-                      rightThreshold={40}
-                      enabled={item.isWriter}
-                    >
-                      <GuestbookItem>
-                        <ProfileSection>
-                          <ProfileImage
-                            source={
-                              item.profileImageUrl
-                                ? { uri: item.profileImageUrl }
-                                : require('../../../assets/images/default_profile.png')
-                            }
-                            defaultSource={require('../../../assets/images/default_profile.png')}
-                          />
-                          <UserInfo>
-                            <UserName>{item.nickname}</UserName>
-                            <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
-                          </UserInfo>
-                        </ProfileSection>
-                        <MessageText>{item.content}</MessageText>
-                      </GuestbookItem>
-                    </Swipeable>
-                  ))}
+                {guestbookData.result.items.map((item) => (
+                  <Swipeable
+                    key={item.id}
+                    ref={(ref) => {
+                      swipeableRefs.current[item.id] = ref;
+                    }}
+                    renderRightActions={
+                      item.isWriter
+                        ? () => renderRightActions(item.id)
+                        : undefined
+                    }
+                    rightThreshold={40}
+                    enabled={item.isWriter}
+                  >
+                    <GuestbookItem>
+                      <ProfileSection>
+                        <ProfileImage
+                          source={
+                            item.profileImageUrl
+                              ? { uri: item.profileImageUrl }
+                              : require('../../../assets/images/default_profile.png')
+                          }
+                          defaultSource={require('../../../assets/images/default_profile.png')}
+                        />
+                        <UserInfo>
+                          <UserName>{item.nickname}</UserName>
+                          <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
+                        </UserInfo>
+                      </ProfileSection>
+                      <MessageText>{item.content}</MessageText>
+                    </GuestbookItem>
+                  </Swipeable>
+                ))}
               </GuestbookList>
             ) : (
               <EmptyText>아직 방명록이 없어요.</EmptyText>
@@ -218,6 +224,8 @@ export default GuestbookModal;
 
 const Container = styled.View`
   height: 50%;
+  min-height: 400px;
+  max-height: 60%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -259,23 +267,18 @@ const GuestbookItem = styled.View`
   border-radius: 12px;
   padding: 16px;
   gap: 12px;
-  shadow-color: ${theme.colors.gray900};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 2;
 `;
 
 const ProfileSection = styled.View`
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
 `;
 
 const UserInfo = styled.View`
@@ -297,10 +300,10 @@ const TimeText = styled.Text`
 
 const MessageText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 15px;
+  font-size: 14px;
   color: ${theme.colors.gray800};
-  line-height: 22px;
-  margin-left: 52px;
+  line-height: 20px;
+  margin-left: 60px;
 `;
 
 const InputSection = styled.View`
@@ -312,7 +315,7 @@ const InputSection = styled.View`
 
 const InputContainer = styled.View`
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
   gap: 12px;
   background-color: ${theme.colors.gray50};
   border-radius: 24px;
@@ -327,6 +330,7 @@ const MessageInput = styled.TextInput`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
   color: ${theme.colors.gray800};
+  text-align-vertical: center;
 `;
 
 const SendButton = styled.TouchableOpacity`
@@ -374,4 +378,5 @@ const DeleteActionButton = styled.TouchableOpacity`
   height: 100%;
   justify-content: center;
   align-items: center;
+  border-radius: 8px;
 `;

@@ -29,11 +29,6 @@ const CreateRoutineScreen = ({
   const mode = route?.params?.mode || 'create';
   const routineData = route?.params?.routineData;
 
-  console.log('🔍 CreateRoutineScreen - 전달받은 데이터:', {
-    mode,
-    routineData,
-  });
-
   // 기존 데이터로 초기화 (수정 모드인 경우)
   const [routineName, setRoutineName] = useState(routineData?.title || '');
   const [selectedCategory, setSelectedCategory] = useState(
@@ -62,14 +57,6 @@ const CreateRoutineScreen = ({
     routineData?.startDate || '',
   );
 
-  console.log('🔍 CreateRoutineScreen - 초기화된 상태:', {
-    routineName,
-    selectedCategory,
-    selectedDays,
-    startTime,
-    endTime,
-    selectedStartDate,
-  });
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
@@ -82,16 +69,6 @@ const CreateRoutineScreen = ({
   const isPending = isCreating || isUpdating;
 
   const handleSubmitRoutine = () => {
-    console.log('🔍 루틴 처리 시작:', {
-      mode,
-      name: routineName,
-      category: selectedCategory,
-      days: selectedDays,
-      startTime,
-      endTime,
-      startDate: selectedStartDate,
-    });
-
     // API 요청 데이터 준비
     const submitData = {
       title: routineName,
@@ -103,16 +80,6 @@ const CreateRoutineScreen = ({
         : 'FINANCE') as RoutineType,
       dayTypes: selectedDays as DayType[],
     };
-
-    console.log('🔍 API 요청 데이터:', submitData);
-    console.log('🔍 날짜/시간 형식 확인:', {
-      startDate: selectedStartDate,
-      startTime: startTime,
-      endTime: endTime,
-      startDateType: typeof selectedStartDate,
-      startTimeType: typeof startTime,
-      endTimeType: typeof endTime,
-    });
 
     if (mode === 'edit') {
       // 수정 모드
@@ -128,7 +95,6 @@ const CreateRoutineScreen = ({
         },
         {
           onSuccess: (data) => {
-            console.log('🔍 루틴 수정 성공:', data);
             // 홈 화면으로 직접 이동하여 데이터 새로고침
             navigation.navigate('Result', {
               type: 'success',
@@ -147,8 +113,6 @@ const CreateRoutineScreen = ({
       // 생성 모드
       createRoutine(submitData, {
         onSuccess: (data) => {
-          console.log('🔍 루틴 생성 성공:', data);
-
           // CreateRoutineDetailScreen으로 이동
           navigation.navigate('CreateRoutineDetail', {
             routineData: {
@@ -189,15 +153,12 @@ const CreateRoutineScreen = ({
 
   const handleDateSelect = (date: string) => {
     // date는 이미 YYYY-MM-DD 형식으로 전달됨
-    console.log('선택된 날짜:', date);
     setSelectedStartDate(date);
     setShowDatePicker(false);
   };
 
   // 시간을 HH:mm 형식으로 변환하는 함수 (화면 표시용)
   const formatTimeForDisplay = (time: string): string => {
-    console.log('🔍 formatTimeForDisplay 입력:', time);
-
     // "오전 09:00" 또는 "오후 02:30" 형식을 "09:00" 또는 "14:30"으로 변환
     if (time.includes('오전')) {
       const timePart = time.replace('오전 ', '');
@@ -211,7 +172,6 @@ const CreateRoutineScreen = ({
       return `${hourNum.toString().padStart(2, '0')}:${minute}`;
     }
 
-    console.log('🔍 formatTimeForDisplay 출력:', time);
     return time; // 이미 HH:mm 형식이면 그대로 반환
   };
 
@@ -225,21 +185,17 @@ const CreateRoutineScreen = ({
   };
 
   const handleStartTimeSelect = (time: string | number) => {
-    console.log('🔍 시작 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
       const displayTime = formatTimeForDisplay(time);
       setStartTime(displayTime);
-      console.log('🔍 시작 시간 설정됨:', displayTime);
     }
     setShowStartTimePicker(false);
   };
 
   const handleEndTimeSelect = (time: string | number) => {
-    console.log('🔍 종료 시간 선택됨:', time, typeof time);
     if (typeof time === 'string') {
       const displayTime = formatTimeForDisplay(time);
       setEndTime(displayTime);
-      console.log('🔍 종료 시간 설정됨:', displayTime);
     }
     setShowEndTimePicker(false);
   };

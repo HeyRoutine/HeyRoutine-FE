@@ -100,10 +100,8 @@ const DayOfWeekSelector = ({
 export default DayOfWeekSelector;
 
 const Container = styled.View`
-  margin-bottom: 24px;
-  padding: 24px;
-  background-color: #fafafa;
-  border-radius: 10px;
+  margin-bottom: 16px;
+  padding: 0;
 `;
 
 const HeaderRow = styled.View`
@@ -133,8 +131,8 @@ const StartDateText = styled.Text`
 
 const DaysContainer = styled.View`
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 4px;
+  gap: 8px;
 `;

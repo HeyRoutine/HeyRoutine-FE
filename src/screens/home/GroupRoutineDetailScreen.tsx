@@ -174,20 +174,17 @@ const GroupRoutineDetailScreen = ({
   const handleCloseJoinModal = () => setJoinModalVisible(false);
   const handleConfirmJoin = () => {
     if (isJoined) {
-      console.log('🔍 이미 가입된 그룹 루틴입니다');
       setJoinModalVisible(false);
       return;
     }
 
     if (routine.isAdmin) {
-      console.log('🔍 방장은 가입할 수 없습니다');
       setJoinModalVisible(false);
       return;
     }
 
     joinGroupRoutine(routine.id, {
       onSuccess: () => {
-        console.log('🔍 그룹 루틴 가입 성공');
         setIsJoined(true);
         setUserRole('member');
         setJoinModalVisible(false);
@@ -279,7 +276,6 @@ const GroupRoutineDetailScreen = ({
   };
 
   const handleSaveRoutineDetail = () => {
-    console.log('🔍 상세 루틴 수정 저장');
     setIsEditMode(false);
   };
 
@@ -295,7 +291,6 @@ const GroupRoutineDetailScreen = ({
   const handleConfirmDelete = () => {
     deleteGroupRoutine(routine.id, {
       onSuccess: () => {
-        console.log('🔍 그룹 루틴 삭제 성공');
         setIsDeleteModalVisible(false);
         navigation.navigate('Result', {
           type: 'success',
@@ -335,7 +330,6 @@ const GroupRoutineDetailScreen = ({
   const handleConfirmLeave = () => {
     leaveGroupRoutine(routine.id, {
       onSuccess: () => {
-        console.log('🔍 그룹 루틴 나가기 성공');
         setIsJoined(false);
         setUserRole(null);
         setIsLeaveModalVisible(false);
@@ -426,10 +420,6 @@ const GroupRoutineDetailScreen = ({
           const allCompleted = updatedRoutineInfos.every((r) => r.isCompleted);
 
           if (allCompleted && updatedRoutineInfos.length > 0) {
-            console.log(
-              '🔍 모든 루틴이 완료되었습니다. 단체루틴 기록을 업데이트합니다.',
-            );
-
             // 단체루틴 기록 성공 API 호출
             updateGroupRoutineRecord.mutate(
               {
@@ -437,9 +427,7 @@ const GroupRoutineDetailScreen = ({
                 data: { status: true },
               },
               {
-                onSuccess: () => {
-                  console.log('🔍 단체루틴 기록 업데이트 성공');
-                },
+                onSuccess: () => {},
                 onError: (error) => {
                   console.error('🔍 단체루틴 기록 업데이트 실패:', error);
                 },
@@ -579,9 +567,7 @@ const GroupRoutineDetailScreen = ({
                               : require('../../assets/images/default_profile.png')
                           }
                           defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() =>
-                            console.log('프로필 이미지 로드 실패:', uri)
-                          }
+                          onError={() => {}}
                         />
                       </AvatarWrapper>
                     ))}
@@ -616,9 +602,7 @@ const GroupRoutineDetailScreen = ({
                               : require('../../assets/images/default_profile.png')
                           }
                           defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() =>
-                            console.log('프로필 이미지 로드 실패:', uri)
-                          }
+                          onError={() => {}}
                         />
                       </AvatarWrapper>
                     ))}
@@ -876,7 +860,6 @@ const GroupRoutineDetailScreen = ({
         visible={isTemplateModalVisible}
         onRequestClose={() => setIsTemplateModalVisible(false)}
         onRoutineSelect={(template) => {
-          console.log('🔍 선택된 템플릿:', template);
           setIsTemplateModalVisible(false);
         }}
       />
@@ -1132,9 +1115,9 @@ const UnachievedAvatarContainer = styled.View`
 `;
 
 const AvatarWrapper = styled.View`
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
   overflow: hidden;
   margin-right: 8px;
 `;
@@ -1222,7 +1205,7 @@ const ModalContainer = styled.View`
 `;
 
 const ModalButtonWrapper = styled.View`
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   height: 48px;
 
   &:last-child {

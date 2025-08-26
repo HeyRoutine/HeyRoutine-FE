@@ -85,8 +85,6 @@ const CreateRoutineDetailScreen = ({
       existingRoutinesData?.result &&
       existingRoutinesData.result.length > 0
     ) {
-      console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
-
       const existingItems = existingRoutinesData.result.map((routine: any) => ({
         emoji: routine.emojiUrl,
         emojiId: routine.emojiId || 1, // 서버에서 emojiId가 없을 경우 기본값
@@ -110,29 +108,13 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handlePlusPress = () => {
-    console.log('🔍 루틴 템플릿 조회 시작');
-    console.log('🔍 템플릿 데이터:', templateData);
-    console.log('🔍 템플릿 로딩 상태:', isLoadingTemplates);
-    console.log('🔍 이모지 데이터:', emojiData);
-    console.log('🔍 이모지 로딩 상태:', isLoadingEmojis);
-
     if (isLoadingTemplates || isLoadingEmojis) {
-      console.log('🔍 템플릿 또는 이모지 로딩 중...');
       return;
     }
 
     if (templateData?.result?.items && templateData.result.items.length > 0) {
-      console.log(
-        '🔍 사용 가능한 템플릿 개수:',
-        templateData.result.items.length,
-      );
-      console.log(
-        '🔍 사용 가능한 이모지 개수:',
-        emojiData?.result?.items?.length || 0,
-      );
       setRoutineSuggestionVisible(true);
     } else {
-      console.log('🔍 사용 가능한 템플릿이 없습니다');
       // 템플릿이 없어도 모달을 열어서 직접 입력할 수 있도록 함
       setRoutineSuggestionVisible(true);
     }
@@ -144,24 +126,19 @@ const CreateRoutineDetailScreen = ({
   };
 
   const handleEmojiSelect = (emoji: string) => {
-    console.log('선택된 이모지:', emoji);
     setSelectedEmoji(emoji);
   };
 
   const handleTimeSelect = (time: string | number) => {
-    console.log('시간 선택됨:', time, typeof time);
     if (typeof time === 'number') {
       const timeString = `${time}분`;
       setSelectedTime(timeString);
-      console.log('분 설정됨:', timeString);
     } else {
       setSelectedTime(time);
-      console.log('시간 설정됨:', time);
     }
   };
 
   const handleTextChange = (text: string) => {
-    console.log('입력된 텍스트:', text);
     // 시간 형식인지 확인 (예: "40분", "30분" 등)
     if (text.includes('분')) {
       setSelectedTime(text);
@@ -279,11 +256,6 @@ const CreateRoutineDetailScreen = ({
       time: parseInt(item.time.replace('분', '')), // "30분" -> 30
     }));
 
-    console.log('🔍 루틴 상세 생성 요청 데이터 (배열):', {
-      myRoutineListId: routineData.routineListId,
-      data: routineDetailsArray,
-    });
-
     // 배열로 한 번에 API 호출
     createRoutineDetail(
       {
@@ -292,8 +264,6 @@ const CreateRoutineDetailScreen = ({
       },
       {
         onSuccess: (data) => {
-          console.log('🔍 루틴 상세 생성 성공:', data);
-
           // 캐시 무효화 후 바로 홈으로 이동
           queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
           queryClient.invalidateQueries({

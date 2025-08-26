@@ -40,8 +40,10 @@ const Button = styled(TouchableOpacity)<{
   buttonSize: number;
   borderRadius: number;
 }>`
-  width: ${({ buttonSize }) => buttonSize}px;
-  height: ${({ buttonSize }) => buttonSize}px;
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: ${({ buttonSize }) => buttonSize}px;
+  max-height: ${({ buttonSize }) => buttonSize}px;
   border-radius: ${({ borderRadius }) => borderRadius}px;
   background-color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray100};
@@ -51,7 +53,8 @@ const Button = styled(TouchableOpacity)<{
 
 const ButtonText = styled(Text)<{ isSelected: boolean }>`
   font-family: ${theme.fonts.Medium};
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.white : theme.colors.gray600};
 `;

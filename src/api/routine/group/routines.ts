@@ -84,6 +84,36 @@ export const getGroupRoutines = async (
   return response.data;
 };
 
+// 내 단체루틴 조회[홈] API
+export const getMyGroupRoutines = async (
+  params: GroupRoutineListParams = {},
+): Promise<ApiResponse<GroupRoutineListResponse>> => {
+  const { page = 0, size = 10 } = params;
+
+  const requestParams: any = {
+    page: page.toString(),
+    pageSize: size.toString(),
+  };
+
+  const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
+    '/api/v1/home/groups',
+    {
+      params: requestParams,
+    },
+  );
+
+  console.log('🔍 getMyGroupRoutines 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    items: response.data?.result?.items,
+    itemsCount: response.data?.result?.items?.length || 0,
+  });
+
+  return response.data;
+};
+
 // 단체루틴 가입 API
 export const joinGroupRoutine = async (
   groupRoutineListId: string,
