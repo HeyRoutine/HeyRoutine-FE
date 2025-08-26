@@ -514,7 +514,6 @@ const GroupRoutineDetailScreen = ({
             onPress={() => {}}
             onMorePress={handleMenuPress}
             showProgress={false}
-            itemCount={routine.tasks.length}
           />
         </RoutineCardContainer>
 
