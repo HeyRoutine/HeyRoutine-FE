@@ -248,3 +248,34 @@ export const makeRoutineToMyRoutineList = async (
 
   return response.data;
 };
+
+// 개인루틴 상세 조회 API
+export const getPersonalRoutineDetails = async (
+  myRoutineListId: string,
+  params: { date: string },
+): Promise<ApiResponse<any>> => {
+  const { date } = params;
+
+  console.log('🔍 개인루틴 상세 조회 API 호출:', {
+    myRoutineListId,
+    date,
+    url: `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+  });
+
+  const response = await apiClient.get<ApiResponse<any>>(
+    `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+    {
+      params: { date },
+    },
+  );
+
+  console.log('🔍 개인루틴 상세 조회 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    itemsCount: response.data?.result?.items?.length || 0,
+  });
+
+  return response.data;
+};

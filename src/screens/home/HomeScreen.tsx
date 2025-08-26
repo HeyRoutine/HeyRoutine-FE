@@ -157,7 +157,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       page.result.items.map((item) => ({
         id: item.id.toString(),
         category: item.routineType === 'DAILY' ? '생활' : '소비',
-        progress: 0, // API에서 제공하지 않는 경우 기본값
+        progress: item.percent || 0, // API에서 제공하는 percent 사용
         title: item.title,
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
         selectedDays: item.dayTypes, // 타입 정의에 따르면 dayTypes
@@ -358,7 +358,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         {/* 그룹 루틴 카드 */}
         <GroupRoutineCard
           onPress={handleGroupBannerPress}
-          iconSource={require('../../assets/images/people.png')}
+          iconSource={require('../../assets/images/group.png')}
         />
 
         {/* 탭 선택 */}
@@ -450,6 +450,7 @@ const MonthText = styled.Text`
   font-size: 20px;
   color: ${theme.colors.gray800};
   margin-bottom: 12px;
+  padding-left: 0px;
 `;
 
 const WeekContainer = styled.View`

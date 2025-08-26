@@ -267,23 +267,18 @@ const GuestbookItem = styled.View`
   border-radius: 12px;
   padding: 16px;
   gap: 12px;
-  shadow-color: ${theme.colors.gray900};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 2;
 `;
 
 const ProfileSection = styled.View`
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
 `;
 
 const UserInfo = styled.View`
@@ -305,10 +300,10 @@ const TimeText = styled.Text`
 
 const MessageText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 15px;
+  font-size: 14px;
   color: ${theme.colors.gray800};
-  line-height: 22px;
-  margin-left: 52px;
+  line-height: 20px;
+  margin-left: 60px;
 `;
 
 const InputSection = styled.View`
@@ -320,7 +315,7 @@ const InputSection = styled.View`
 
 const InputContainer = styled.View`
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
   gap: 12px;
   background-color: ${theme.colors.gray50};
   border-radius: 24px;
@@ -335,6 +330,7 @@ const MessageInput = styled.TextInput`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
   color: ${theme.colors.gray800};
+  text-align-vertical: center;
 `;
 
 const SendButton = styled.TouchableOpacity`
@@ -382,4 +378,5 @@ const DeleteActionButton = styled.TouchableOpacity`
   height: 100%;
   justify-content: center;
   align-items: center;
+  border-radius: 8px;
 `;

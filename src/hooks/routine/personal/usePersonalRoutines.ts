@@ -11,6 +11,7 @@ import {
   showMyRoutineList,
   doneRoutineToMyRoutineList,
   doneMyRoutineList,
+  getPersonalRoutineDetails,
 } from '../../../api/routine/personal/routines';
 import {
   makeRoutineToMyRoutineList,
@@ -197,6 +198,24 @@ export const usePersonalRoutineDetails = (
   return useQuery({
     queryKey: ['personalRoutineDetails', myRoutineListId, params],
     queryFn: () => getRoutinesInListByDate(myRoutineListId, params),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+// 개인루틴 상세 조회 훅 (항목 개수용)
+export const usePersonalRoutineDetailsCount = (
+  myRoutineListId: string,
+  params: { date: string },
+) => {
+  console.log('🔍 개인루틴 상세 조회 훅 호출 (개수용):', {
+    myRoutineListId,
+    params,
+  });
+
+  return useQuery({
+    queryKey: ['personalRoutineDetailsCount', myRoutineListId, params],
+    queryFn: () => getPersonalRoutineDetails(myRoutineListId, params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

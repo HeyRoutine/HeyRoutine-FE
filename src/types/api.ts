@@ -495,6 +495,7 @@ export interface PersonalRoutineListItem {
   endTime: string; // HH:mm:ss 형식
   routineType: RoutineType;
   dayTypes: DayType[]; // ['월', '화', '수'] 형식
+  percent?: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
 }
 
 // 개인루틴 리스트 조회 응답 타입
