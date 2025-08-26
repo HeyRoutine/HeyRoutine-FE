@@ -14,7 +14,7 @@ import {
 } from '../../hooks/routine/personal/usePersonalRoutines';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
-  const [timeLeft, setTimeLeft] = useState(0); // 초기값은 0으로 설정
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isPauseModalVisible, setPauseModalVisible] = useState(false);
@@ -48,7 +48,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   }, [incomingTasks]);
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
 
-  // 현재 태스크의 시간을 초로 변환하여 타이머 설정
   useEffect(() => {
     if (tasks.length > 0) {
       const currentTask = tasks[activeTaskIndex];
@@ -79,7 +78,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  // 모든 루틴 완료 상태일 때만 ResultScreen으로 이동
   useEffect(() => {
     if (isCompleted && activeTaskIndex >= tasks.length - 1) {
       const timer = setTimeout(() => {
@@ -88,7 +86,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
             onComplete();
           } catch {}
         }
-        // 루틴 완료 후 루틴 상세 화면으로 돌아가기
         navigation.goBack();
       }, 3000);
 
@@ -133,92 +130,47 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const handleCloseResumeModal = () => setResumeModalVisible(false);
 
   const handleCompletePress = () => {
-    // 항상 완료 확인 모달을 노출
     setCompleteModalVisible(true);
   };
 
   const handleConfirmComplete = () => {
-    // 현재 태스크 완료를 전역에도 기록
     try {
       markActiveRoutineTaskCompleted(activeTaskIndex);
     } catch {}
 
-    // 상세 화면 콜백도 유지
     try {
       onTaskComplete?.(activeTaskIndex);
     } catch {}
 
-    // 개인루틴 수행 API 호출 (각 태스크의 routineId가 있는 경우)
     const currentTask = tasks[activeTaskIndex];
     const taskRoutineId = currentTask?.routineId;
 
-    console.log('🔍 현재 태스크 정보:', {
-      activeTaskIndex,
-      currentTask,
-      taskRoutineId,
-      allTasks: tasks.map((task, idx) => ({
-        index: idx,
-        title: task.title,
-        routineId: task.routineId,
-      })),
-    });
-
     if (taskRoutineId) {
-      // 한국 시간으로 날짜 생성
       const today = new Date();
-      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
       const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
 
-      console.log('🔍 개인루틴 수행 API 호출:', {
-        routineId: taskRoutineId,
-        date: dateString,
-        originalTime: today.toISOString(),
-        koreaTime: koreaTime.toISOString(),
-        taskTitle: currentTask.title,
-        taskIndex: activeTaskIndex,
-      });
-
-      // 개인루틴 수행 API 호출
       donePersonalRoutine({
         routineId: taskRoutineId.toString(),
         params: { date: dateString },
       });
-    } else {
-      console.log('🔍 taskRoutineId가 없음:', {
-        currentTask,
-        taskRoutineId,
-        activeTaskIndex,
-      });
     }
 
-    // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
-      // 개별 루틴 완료 시 잠깐 성공 화면 표시
       setIsActive(false);
       setIsCompleted(true);
 
-      // 2초 후 다음 루틴으로 이동
       setTimeout(() => {
         setIsCompleted(false);
         goToNextTask();
       }, 2000);
     } else {
-      // 마지막 항목 완료 시 루틴 리스트 완료 API 호출
       if (routineId) {
-        // 한국 시간으로 날짜 생성
         const today = new Date();
-        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
         const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
 
-        console.log('🔍 루틴 리스트 완료 API 호출:', {
-          myRoutineListId: routineId,
-          date: dateString,
-          originalTime: today.toISOString(),
-          koreaTime: koreaTime.toISOString(),
-        });
-
-        // 루틴 리스트 완료 API 호출
         donePersonalRoutineList({
           myRoutineListId: routineId,
           params: { date: dateString },
@@ -240,7 +192,6 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const goToNextTask = () => {
     if (activeTaskIndex < tasks.length - 1) {
       setActiveTaskIndex((prev) => prev + 1);
-      // 다음 태스크의 시간으로 설정 (useEffect에서 자동으로 처리됨)
       setIsActive(true);
     } else {
       navigation.goBack();
@@ -515,7 +466,6 @@ const ActionButtonsContainer = styled.View`
   margin-top: 0;
 `;
 
-// Success styles
 const SuccessContainer = styled.View`
   align-items: center;
   width: 240px;

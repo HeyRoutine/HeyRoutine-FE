@@ -64,150 +64,84 @@ const PersonalRoutineDetailScreen = ({
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleteSuccessVisible, setDeleteSuccessVisible] = useState(false);
 
-  // 수정 중인 아이템 인덱스 (null이면 새로 추가하는 중)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // 루틴 추천 모달 상태
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
-  // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
   const {
     data: existingRoutinesData,
     isLoading: isLoadingExistingRoutines,
     refetch: refetchRoutineDetails,
   } = usePersonalRoutineDetails(routineData?.id?.toString() || '', {
-    // 한국 시간으로 날짜 생성
     date: (() => {
       const today = new Date();
-      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
       return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
     })(),
   });
 
-  // 화면이 포커스될 때마다 루틴 상세 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      console.log(
-        '🔍 PersonalRoutineDetailScreen - 화면 포커스됨, 루틴 상세 데이터 새로고침',
-      );
-      console.log(
-        '🔍 현재 날짜:',
-        (() => {
-          const today = new Date();
-          const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-          return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
-        })(),
-      );
       refetchRoutineDetails();
     }, [refetchRoutineDetails]),
   );
 
-  // 개인루틴 삭제 훅
   const { mutate: deleteRoutine } = useDeletePersonalRoutineList();
 
-  // 개인루틴 상세 수정 훅
   const { mutate: updateRoutineDetail, isPending: isUpdating } =
     useUpdatePersonalRoutineDetail();
 
-  // 개인루틴 상세 삭제 훅
   const { mutate: deleteRoutineDetail } = useDeletePersonalRoutineDetail();
 
-  // 루틴 템플릿 조회 훅
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useRoutineTemplates();
 
-  // 루틴 이모지 조회 훅
   const { data: emojisData, isLoading: isLoadingEmojis } = useRoutineEmojis();
 
-  // 루틴 삭제 확인 모달 열기
   const handleDeleteRoutine = () => {
     closeMoreSheet();
     setDeleteConfirmVisible(true);
   };
 
-  // 루틴 삭제 실행
   const handleConfirmDelete = () => {
     if (!routineData?.id) {
-      console.error('🔍 루틴 ID가 없습니다:', routineData);
       return;
     }
 
-    console.log('🔍 전체 루틴 삭제 시작:', routineData.id);
     deleteRoutine(routineData.id.toString(), {
       onSuccess: () => {
-        console.log('🔍 전체 루틴 삭제 성공');
         setDeleteConfirmVisible(false);
         setDeleteSuccessVisible(true);
       },
       onError: (error) => {
-        console.error('🔍 전체 루틴 삭제 실패:', error);
         Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
       },
     });
   };
 
-  // 삭제 확인 모달 닫기
   const closeDeleteConfirm = () => setDeleteConfirmVisible(false);
 
-  // 삭제 성공 모달 닫기
   const closeDeleteSuccess = () => {
     setDeleteSuccessVisible(false);
     navigation.goBack();
   };
 
-  // 화면 진입 시 편집 모드 해제
   useEffect(() => {
     setEditMode(false);
   }, [setEditMode]);
 
-  // 기존 루틴 데이터를 화면에 로드
   useEffect(() => {
-    console.log('🔍 existingRoutinesData 변경됨:', {
-      hasData: !!existingRoutinesData,
-      resultLength: existingRoutinesData?.result?.length || 0,
-      result: existingRoutinesData?.result,
-      fullResponse: existingRoutinesData,
-    });
-
     if (
       existingRoutinesData?.result &&
       existingRoutinesData.result.length > 0
     ) {
-      console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
-
-      // 루틴 순서를 고정하기 위해 routineId로 정렬
       const sortedRoutines = [...existingRoutinesData.result].sort((a, b) => {
-        // routineId가 작은 순서대로 정렬 (생성 순서)
         return a.routineId - b.routineId;
       });
 
-      console.log('🔍 정렬된 루틴 데이터:', sortedRoutines);
-      console.log('🔍 전체 API 응답 구조:', existingRoutinesData);
-
-      // 모든 루틴의 완료 상태를 상세히 로그
-      sortedRoutines.forEach((routine: any, index: number) => {
-        console.log(`🔍 루틴 ${index + 1} 상세 정보:`, {
-          routineId: routine.routineId,
-          routineName: routine.routineName,
-          isCompleted: routine.isCompleted,
-          completed: routine.completed,
-          isCompletedType: typeof routine.isCompleted,
-          allFields: Object.keys(routine),
-          rawRoutine: routine,
-        });
-      });
-
       const existingItems = sortedRoutines.map((routine: any) => {
-        // API 응답에서 완료 상태 필드 확인 (isCompleted 또는 completed)
         const isCompleted = routine.isCompleted || routine.completed || false;
-
-        console.log(`🔍 루틴 "${routine.routineName}" 완료 상태 매핑:`, {
-          routineId: routine.routineId,
-          originalIsCompleted: routine.isCompleted,
-          originalCompleted: routine.completed,
-          finalIsCompleted: isCompleted,
-        });
 
         return {
           emoji: routine.emojiUrl,
@@ -217,29 +151,23 @@ const PersonalRoutineDetailScreen = ({
         };
       });
 
-      console.log('🔍 최종 매핑된 루틴 아이템들:', existingItems);
       setRoutineItems(existingItems);
     } else if (
       existingRoutinesData?.result &&
       existingRoutinesData.result.length === 0
     ) {
-      console.log('🔍 빈 루틴 데이터 - 기존 아이템들 초기화');
-      // 빈 배열인 경우 기존 아이템들 초기화
       setRoutineItems([]);
     }
   }, [existingRoutinesData]);
 
-  // 완료 상태 관련 로직은 API 연동 시 구현 예정
-
-  // 폰의 뒤로가기 버튼 처리
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
         if (isEditMode) {
           setExitConfirmVisible(true);
-          return true; // 이벤트 소비
+          return true;
         }
-        return false; // 기본 뒤로가기 동작 허용
+        return false;
       };
 
       const subscription = BackHandler.addEventListener(
@@ -270,7 +198,6 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
-    // 시간 선택 시 현재 선택된 시간을 RoutineSuggestionModal에 전달
     setRoutineSuggestionVisible(true);
   };
 
@@ -288,7 +215,6 @@ const PersonalRoutineDetailScreen = ({
     setRoutineSuggestionVisible(true);
   };
 
-  // 기존 아이템 수정 시작
   const handleEditItem = (index: number) => {
     const item = routineItems[index];
     setEditingIndex(index);
@@ -297,11 +223,9 @@ const PersonalRoutineDetailScreen = ({
     setSelectedTime(item.time);
   };
 
-  // 수정 완료 또는 새 아이템 추가
   const handleCompleteEdit = () => {
     if (selectedEmoji && currentText && selectedTime) {
       if (editingIndex !== null) {
-        // 기존 아이템 수정
         const updatedItems = [...routineItems];
         updatedItems[editingIndex] = {
           emoji: selectedEmoji,
@@ -312,7 +236,6 @@ const PersonalRoutineDetailScreen = ({
         setRoutineItems(updatedItems);
         setEditingIndex(null);
       } else {
-        // 새 아이템 추가
         const newItem = {
           emoji: selectedEmoji,
           text: currentText,
@@ -322,14 +245,12 @@ const PersonalRoutineDetailScreen = ({
         setRoutineItems([...routineItems, newItem]);
       }
 
-      // 필드 초기화
       setSelectedEmoji('');
       setCurrentText('');
       setSelectedTime('');
     }
   };
 
-  // 세 개 필드가 모두 채워졌을 때 자동으로 추가/수정
   useEffect(() => {
     if (selectedEmoji && currentText && selectedTime) {
       handleCompleteEdit();
@@ -337,7 +258,6 @@ const PersonalRoutineDetailScreen = ({
   }, [selectedEmoji, currentText, selectedTime]);
 
   const handleDeleteItem = (index: number) => {
-    // 삭제할 아이템이 기존 루틴인지 확인
     const itemToDelete = routineItems[index];
     const existingRoutines = existingRoutinesData?.result || [];
 
@@ -349,62 +269,48 @@ const PersonalRoutineDetailScreen = ({
     );
 
     if (existingRoutine) {
-      // 기존 루틴인 경우 API 호출로 삭제
-      console.log('🔍 기존 루틴 삭제 시작:', existingRoutine.routineId);
       deleteRoutineDetail(existingRoutine.routineId.toString(), {
         onSuccess: () => {
-          console.log('🔍 기존 루틴 삭제 성공');
-          // 로컬 상태에서도 제거
           const updatedItems = routineItems.filter((_, i) => i !== index);
           setRoutineItems(updatedItems);
         },
         onError: (error) => {
-          console.error('🔍 기존 루틴 삭제 실패:', error);
           Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
         },
       });
     } else {
-      // 새로 추가된 루틴인 경우 로컬에서만 제거
-      console.log('🔍 새로 추가된 루틴 로컬 삭제:', itemToDelete.text);
       const updatedItems = routineItems.filter((_, i) => i !== index);
       setRoutineItems(updatedItems);
     }
   };
 
-  // 루틴 추천 선택 핸들러 (완료 버튼 클릭 시 호출)
   const handleRoutineSuggestionSelect = (routine: any) => {
-    // 완성된 루틴 아이템을 화면에 추가
     const newItem = {
       emoji: routine.icon,
       text: routine.title,
-      time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
+      time: selectedTime || '30분',
       isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
 
-    // 필드 초기화
     setSelectedEmoji('');
     setCurrentText('');
     setSelectedTime('');
   };
 
-  // 루틴 추천 모달이 닫힐 때 호출되는 핸들러
   const handleRoutineSuggestionClose = () => {
     setRoutineSuggestionVisible(false);
   };
 
   const handleSave = () => {
     if (!routineData?.id) {
-      console.error('🔍 루틴 ID가 없습니다:', routineData);
       return;
     }
 
-    // 기존 루틴 데이터와 새로운 루틴 데이터를 비교하여 업데이트할 데이터 준비
     const existingRoutines = existingRoutinesData?.result || [];
 
-    // 이모지 URL을 emojiId로 매핑하는 함수
     const getEmojiId = (emojiUrl: string) => {
-      let emojiId = 1; // 기본값
+      let emojiId = 1;
       if (emojisData?.result?.items) {
         const emoji = emojisData.result.items.find(
           (e: any) => e.emojiUrl === emojiUrl,
@@ -416,16 +322,12 @@ const PersonalRoutineDetailScreen = ({
       return emojiId;
     };
 
-    // 업데이트할 루틴과 새로 만들 루틴을 분리
     const updateRoutine: any[] = [];
     const makeRoutine: any[] = [];
 
-    // 기존 루틴과 새로운 루틴을 구분하기 위해 인덱스 기반으로 매핑
     routineItems.forEach((item, index) => {
-      // 기존 루틴 데이터가 있고, 해당 인덱스에 기존 루틴이 있는 경우
       if (index < existingRoutines.length) {
         const existingRoutine = existingRoutines[index];
-        // 기존 루틴이 수정된 경우
         updateRoutine.push({
           id: existingRoutine.routineId,
           routineName: item.text,
@@ -433,7 +335,6 @@ const PersonalRoutineDetailScreen = ({
           time: parseInt(item.time.replace('분', '')),
         });
       } else {
-        // 새로 추가된 루틴
         makeRoutine.push({
           routineName: item.text,
           emojiId: getEmojiId(item.emoji),
@@ -442,7 +343,6 @@ const PersonalRoutineDetailScreen = ({
       }
     });
 
-    // 삭제된 루틴 찾기 (기존 루틴 개수보다 현재 아이템이 적으면 삭제된 것)
     const deletedRoutines = existingRoutines.slice(routineItems.length);
 
     console.log('🔍 루틴 수정 데이터:', {
@@ -451,7 +351,6 @@ const PersonalRoutineDetailScreen = ({
       deletedRoutines,
     });
 
-    // 삭제된 루틴들 먼저 삭제
     const deletePromises = deletedRoutines.map(
       (routine: any) =>
         new Promise((resolve, reject) => {
@@ -465,7 +364,6 @@ const PersonalRoutineDetailScreen = ({
     // 삭제 완료 후 업데이트 및 생성
     Promise.all(deletePromises)
       .then(() => {
-        // 업데이트할 루틴과 새로 만들 루틴이 있으면 한 번에 처리
         if (updateRoutine.length > 0 || makeRoutine.length > 0) {
           updateRoutineDetail(
             {
@@ -477,36 +375,29 @@ const PersonalRoutineDetailScreen = ({
             },
             {
               onSuccess: () => {
-                console.log('🔍 루틴 수정 성공');
-                // 모든 작업 완료 후 편집 모드 종료
                 setEditMode(false);
-                refetchRoutineDetails(); // 데이터 새로고침
+                refetchRoutineDetails();
               },
               onError: (error) => {
-                console.error('🔍 루틴 수정 실패:', error);
                 Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
               },
             },
           );
         } else {
-          // 수정할 내용이 없으면 바로 편집 모드 종료
           setEditMode(false);
-          refetchRoutineDetails(); // 데이터 새로고침
+          refetchRoutineDetails();
         }
       })
       .catch((error) => {
-        console.error('🔍 루틴 삭제 실패:', error);
         Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
       });
   };
 
   const handleStartRoutine = () => {
     if (!routineData?.id) {
-      console.error('🔍 루틴 ID가 없습니다:', routineData);
       return;
     }
 
-    console.log('🔍 루틴 실행 시작:', routineData.id);
     setActiveRoutineId(routineData.id.toString());
 
     // ActiveRoutineScreen으로 이동
@@ -519,15 +410,6 @@ const PersonalRoutineDetailScreen = ({
         : [];
       const matchingRoutine = sortedRoutines[index];
 
-      console.log(`🔍 태스크 ${index + 1} 매칭:`, {
-        itemText: item.text,
-        itemTime: item.time,
-        itemEmoji: item.emoji,
-        matchingRoutine: matchingRoutine,
-        routineId: matchingRoutine?.routineId,
-        sortedRoutineIds: sortedRoutines.map((r) => r.routineId),
-      });
-
       return {
         icon: item.emoji,
         title: item.text,
@@ -535,8 +417,6 @@ const PersonalRoutineDetailScreen = ({
         routineId: matchingRoutine?.routineId,
       };
     });
-
-    console.log('🔍 ActiveRoutineScreen으로 전달할 tasks:', tasksWithRoutineId);
 
     navigation.navigate('ActiveRoutine', {
       tasks: tasksWithRoutineId,

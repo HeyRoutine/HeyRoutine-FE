@@ -32,23 +32,19 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
 
-  // Zustand 스토어에서 루틴 상태 가져오기
   const { selectedDate, setSelectedDate } = useRoutineStore();
 
-  // 오늘 날짜 기준
   const today = new Date();
 
-  // 주 시작(월요일) 계산
   const getStartOfWeekMonday = (date: Date) => {
     const copied = new Date(date);
-    const day = copied.getDay(); // 0=일,1=월,...6=토
-    const diffToMonday = (day + 6) % 7; // 월요일까지 되돌아가기
+    const day = copied.getDay();
+    const diffToMonday = (day + 6) % 7;
     copied.setHours(0, 0, 0, 0);
     copied.setDate(copied.getDate() - diffToMonday);
     return copied;
   };
 
-  // 같은 날짜 비교 (연/월/일)
   const isSameDate = (a: Date, b: Date) => {
     return (
       a.getFullYear() === b.getFullYear() &&
@@ -57,40 +53,35 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     );
   };
 
-  // 요일 문자열 (월화수목금토일 순서)
   const dayLabels = ['월', '화', '수', '목', '금', '토', '일'] as const;
 
-  // 선택된 날짜가 속한 주(월~일) 데이터 생성
   const startOfWeek = getStartOfWeekMonday(selectedDate);
   const weekData = Array.from({ length: 7 }).map((_, idx) => {
     const d = new Date(startOfWeek);
     d.setDate(startOfWeek.getDate() + idx);
     return {
-      day: dayLabels[idx], // 인덱스를 직접 사용하여 월화수목금토일 순서 보장
+      day: dayLabels[idx],
       date: d.getDate(),
       fullDate: d,
     };
   });
 
-  // 샘플 루틴 데이터 타입
   type RoutineListItem = {
     id: string;
     category: string;
     progress: number;
     title: string;
-    description?: string; // 그룹 루틴용 설명 필드
+    description?: string;
     timeRange: string;
     selectedDays: string[];
     completedDays: string[];
   };
 
-  // API 훅 사용
-  const selectedDateString = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  const selectedDateString = selectedDate.toISOString().split('T')[0];
   const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
     selectedDate.getDay()
   ];
 
-  // 개인 루틴 API 훅
   const {
     data: personalRoutinesData,
     isLoading: isPersonalRoutinesLoading,
@@ -104,7 +95,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     day: selectedDay,
   });
 
-  // 내 단체루틴 조회[홈] API 훅
   const {
     data: groupRoutinesData,
     isLoading: isGroupRoutinesLoading,
@@ -115,7 +105,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     refetch: refetchGroupRoutines,
   } = useInfiniteMyGroupRoutines({});
 
-  // 화면이 포커스될 때마다 데이터 새로고침
   useFocusEffect(
     React.useCallback(() => {
       console.log('🔍 HomeScreen - 화면 포커스됨, 데이터 새로고침 시작');
@@ -124,25 +113,20 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
   );
 
-  // 시간을 HH:mm 형식으로 변환하는 함수
   const formatTimeForDisplay = (time: any): string => {
     if (!time) return '00:00';
 
-    // [11, 0] 배열 형태로 받아오는 경우
     if (Array.isArray(time)) {
       const [hour, minute] = time;
       return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     }
 
-    // 문자열인 경우
     if (typeof time === 'string') {
-      // 9,0 형식을 09:00 형식으로 변환
       if (time.includes(',')) {
         const [hour, minute] = time.split(',');
         return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
       }
 
-      // HH:mm:ss 형식을 HH:mm 형식으로 변환
       if (time.includes(':')) {
         return time.split(':').slice(0, 2).join(':');
       }
@@ -151,21 +135,19 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     return '00:00';
   };
 
-  // API 데이터를 화면에 맞는 형태로 변환 (모든 페이지 데이터 합치기)
   const personalRoutines: RoutineListItem[] =
     personalRoutinesData?.pages?.flatMap((page) =>
       page.result.items.map((item) => ({
         id: item.id.toString(),
         category: item.routineType === 'DAILY' ? '생활' : '소비',
-        progress: item.percent || 0, // API에서 제공하는 percent 사용
+        progress: item.percent || 0,
         title: item.title,
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-        selectedDays: item.dayTypes, // 타입 정의에 따르면 dayTypes
-        completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+        selectedDays: item.dayTypes,
+        completedDays: [],
       })),
     ) || [];
 
-  // 내 단체루틴 데이터를 화면에 맞는 형태로 변환
   const groupRoutines: RoutineListItem[] =
     groupRoutinesData?.pages?.flatMap(
       (page) =>
@@ -173,12 +155,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           return {
             id: item.id.toString(),
             category: item.routineType === 'DAILY' ? '생활' : '소비',
-            progress: item.percent || 0, // API에서 제공하는 percent 사용
+            progress: item.percent || 0,
             title: item.title,
-            description: item.description, // 그룹 루틴 설명 추가
+            description: item.description,
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-            selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
-            completedDays: [], // API에서 제공하지 않는 경우 빈 배열
+            selectedDays: item.dayOfWeek,
+            completedDays: [],
           };
         }) || [],
     ) || [];
@@ -209,30 +191,24 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     routine.selectedDays.includes(selectedDayLabel),
   );
 
-  // 각 요일별 완료 상태 계산
   const dayCompletionStatus = weekData.map((item) => {
     const dayLabel = item.day;
 
-    // 해당 요일의 개인 루틴들
     const dayPersonalRoutines = personalRoutines.filter((routine) =>
       routine.selectedDays.includes(dayLabel),
     );
 
-    // 해당 요일의 그룹 루틴들
     const dayGroupRoutines = groupRoutines.filter((routine) =>
       routine.selectedDays.includes(dayLabel),
     );
 
-    // 개인 루틴 완료 상태 (현재는 API에서 제공하지 않으므로 기본값)
     const personalCompleted = dayPersonalRoutines.length > 0 ? false : false;
 
-    // 그룹 루틴 완료 상태 (percent가 100%인 경우 완료로 간주)
     const groupCompleted =
       dayGroupRoutines.length > 0
         ? dayGroupRoutines.every((routine) => (routine.progress || 0) >= 100)
         : false;
 
-    // 완료 상태 결정 (개인 또는 그룹 루틴 중 하나라도 완료되면 완료)
     const isCompleted = personalCompleted || groupCompleted;
 
     return {
@@ -251,7 +227,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
-      // 개인 루틴에서 실제 데이터 찾기
       const routine = personalRoutines.find((r) => r.id === routineId);
       if (routine) {
         navigation.navigate('PersonalRoutineDetail', {
@@ -266,11 +241,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         });
       }
     } else {
-      // 그룹 루틴에서 실제 데이터 찾기
       const routine = groupRoutines.find((r) => r.id === routineId);
       if (routine) {
         navigation.navigate('GroupRoutineDetail', {
-          routineId: routine.id, // routineId로 전달
+          routineId: routine.id,
           routineData: {
             id: routine.id,
             name: routine.title,
@@ -290,7 +264,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleAICreateRoutine = () => {
     setShowAddRoutineModal(false);
-    // TODO: AI 추천 루틴 생성 화면으로 이동
     navigation.navigate('CreateRoutine');
   };
 
@@ -308,12 +281,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   // 무한 스크롤 핸들러
   const handleLoadMore = () => {
     if (selectedTab === 0) {
-      // 개인 루틴 탭
       if (hasNextPersonalPage && !isFetchingNextPersonalPage) {
         fetchNextPersonalPage();
       }
     } else {
-      // 그룹 루틴 탭
       if (hasNextGroupPage && !isFetchingNextGroupPage) {
         fetchNextGroupPage();
       }
@@ -530,7 +501,6 @@ const GuideSubText = styled.Text`
   line-height: 20px;
 `;
 
-// 모달 관련 스타일
 const SelectionButtonsContainer = styled.View`
   gap: 12px;
 `;

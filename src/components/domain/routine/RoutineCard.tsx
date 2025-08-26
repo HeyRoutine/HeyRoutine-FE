@@ -31,8 +31,12 @@ const RoutineCard = ({
 }: RoutineCardProps) => {
   // 시간을 "오후 h:mm - 오후 h:mm" 형식으로 변환하는 함수
   const formatTimeRange = (timeRange: string) => {
-    const times = timeRange.split(' ~ ');
-    if (times.length !== 2) return timeRange;
+    let times = timeRange.split(' - ');
+    if (times.length !== 2) {
+      const timesWithTilde = timeRange.split(' ~ ');
+      if (timesWithTilde.length !== 2) return timeRange;
+      times = timesWithTilde;
+    }
 
     const formatTime = (time: string) => {
       const [hour, minute] = time.split(':').map(Number);
@@ -70,7 +74,6 @@ const RoutineCard = ({
 
   return (
     <Container onPress={onPress} isSelected={isSelected}>
-      {category && <CategoryText>[{category}]</CategoryText>}
       <Header>
         <Title>{title}</Title>
         <HeaderRight>
@@ -198,7 +201,6 @@ const DayBadge = styled.View<{ isSelected: boolean }>`
     isSelected ? theme.colors.primary : theme.colors.gray200};
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
   margin-bottom: 4px;
 `;
 

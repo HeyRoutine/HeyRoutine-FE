@@ -36,16 +36,9 @@ import {
 
 // 개인루틴 리스트 조회 훅
 export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
-  console.log('🔍 개인루틴 리스트 조회 훅 호출:', params);
-
   return useQuery({
     queryKey: ['personalRoutines', params],
-    queryFn: async () => {
-      console.log('🔍 showMyRoutineList API 호출 시작');
-      const result = await showMyRoutineList(params);
-      console.log('🔍 showMyRoutineList API 응답:', result);
-      return result;
-    },
+    queryFn: () => showMyRoutineList(params),
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
@@ -55,8 +48,6 @@ export const usePersonalRoutines = (params: PersonalRoutineListParams = {}) => {
 export const useInfinitePersonalRoutines = (
   params: Omit<PersonalRoutineListParams, 'page' | 'size'> = {},
 ) => {
-  console.log('🔍 무한 스크롤 개인루틴 리스트 조회 훅 호출:', params);
-
   return useInfiniteQuery({
     queryKey: ['infinitePersonalRoutines', params],
     queryFn: ({ pageParam = 0 }) =>
@@ -78,17 +69,11 @@ export const useCreatePersonalRoutineList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePersonalRoutineListRequest) => {
-      console.log('🔍 개인루틴 생성 훅 호출:', data);
-      return makeMyRoutineList(data);
-    },
-    onSuccess: (data) => {
-      console.log('🔍 개인루틴 생성 성공:', data);
+    mutationFn: (data: CreatePersonalRoutineListRequest) =>
+      makeMyRoutineList(data),
+    onSuccess: () => {
       // 생성 성공 시 개인루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
-    },
-    onError: (error) => {
-      console.error('🔍 개인루틴 생성 실패:', error);
     },
   });
 };
@@ -106,11 +91,9 @@ export const useUpdatePersonalRoutineList = () => {
       data: UpdatePersonalRoutineListRequest;
     }) => updateRoutineToMyRoutineList(myRoutineListId, data),
     onSuccess: () => {
-      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 시작');
       // 수정 성공 시 개인루틴 리스트 캐시 무효화 (모든 관련 쿼리)
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
-      console.log('🔍 개인루틴 수정 성공 - 캐시 무효화 완료');
     },
   });
 };
@@ -168,22 +151,12 @@ export const useCreatePersonalRoutineDetailArray = () => {
     }: {
       myRoutineListId: string;
       data: CreatePersonalRoutineDetailArrayRequest;
-    }) => {
-      console.log('🔍 개인루틴 상세 생성 훅 호출 (배열):', {
-        myRoutineListId,
-        data,
-      });
-      return makeRoutinesToMyRoutineList(myRoutineListId, data);
-    },
-    onSuccess: (data) => {
-      console.log('🔍 개인루틴 상세 생성 성공 (배열):', data);
+    }) => makeRoutinesToMyRoutineList(myRoutineListId, data),
+    onSuccess: () => {
       // 생성 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
-    },
-    onError: (error) => {
-      console.error('🔍 개인루틴 상세 생성 실패 (배열):', error);
     },
   });
 };
@@ -193,8 +166,6 @@ export const usePersonalRoutineDetails = (
   myRoutineListId: string,
   params: { date: string },
 ) => {
-  console.log('🔍 개인루틴 상세 조회 훅 호출:', { myRoutineListId, params });
-
   return useQuery({
     queryKey: ['personalRoutineDetails', myRoutineListId, params],
     queryFn: () => getRoutinesInListByDate(myRoutineListId, params),
@@ -208,11 +179,6 @@ export const usePersonalRoutineDetailsCount = (
   myRoutineListId: string,
   params: { date: string },
 ) => {
-  console.log('🔍 개인루틴 상세 조회 훅 호출 (개수용):', {
-    myRoutineListId,
-    params,
-  });
-
   return useQuery({
     queryKey: ['personalRoutineDetailsCount', myRoutineListId, params],
     queryFn: () => getPersonalRoutineDetails(myRoutineListId, params),
@@ -234,13 +200,9 @@ export const useUpdatePersonalRoutineDetail = () => {
       data: UpdateRoutineInMyRoutineListRequest;
     }) => updateRoutineInMyRoutineListV2(myRoutineListId, data),
     onSuccess: () => {
-      console.log('🔍 개인루틴 상세 수정 성공');
       // 수정 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
-    },
-    onError: (error) => {
-      console.error('🔍 개인루틴 상세 수정 실패:', error);
     },
   });
 };
