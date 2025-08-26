@@ -53,8 +53,13 @@ export const useInfinitePersonalRoutines = (
     queryFn: ({ pageParam = 0 }) =>
       showMyRoutineList({ ...params, page: pageParam, size: 10 }),
     getNextPageParam: (lastPage) => {
-      if (lastPage.result.page < lastPage.result.totalPages - 1) {
-        return lastPage.result.page + 1;
+      if (
+        lastPage?.result?.page !== undefined &&
+        lastPage?.result?.totalPages !== undefined
+      ) {
+        if (lastPage.result.page < lastPage.result.totalPages - 1) {
+          return lastPage.result.page + 1;
+        }
       }
       return undefined;
     },
@@ -108,6 +113,7 @@ export const useDeletePersonalRoutineList = () => {
     onSuccess: () => {
       // 삭제 성공 시 개인루틴 리스트 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
     },
   });
 };

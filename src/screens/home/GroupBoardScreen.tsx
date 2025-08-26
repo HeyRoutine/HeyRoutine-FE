@@ -173,7 +173,6 @@ const BannerText = styled.Text`
   font-size: 11px;
   font-weight: 400;
   color: #6f7075;
-  line-height: normal;
 `;
 
 const ListWrapper = styled.View`
@@ -207,5 +206,4 @@ const ParticipantCount = styled.Text`
   font-weight: 500;
   color: #7f7cfa;
   text-align: center;
-  line-height: normal;
 `;

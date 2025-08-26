@@ -164,7 +164,6 @@ const Title = styled.Text`
   font-size: 16px;
   font-weight: 500;
   color: #3f3f42;
-  line-height: normal;
   flex: 1;
 `;
 
@@ -173,7 +172,6 @@ const Description = styled.Text`
   font-size: 12px;
   font-weight: 400;
   color: #98989e;
-  line-height: normal;
   margin-bottom: 4px;
 `;
 
@@ -182,7 +180,6 @@ const TimeText = styled.Text`
   font-size: 12px;
   font-weight: 400;
   color: #b5b6bd;
-  line-height: normal;
   margin-bottom: 24px;
 `;
 
@@ -191,6 +188,7 @@ const DayContainer = styled.View`
   flex-wrap: wrap;
   justify-content: flex-end;
   width: 100%;
+  gap: 4px;
 `;
 
 const DayBadge = styled.View<{ isSelected: boolean }>`

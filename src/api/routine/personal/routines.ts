@@ -47,11 +47,30 @@ export const updateRoutineToMyRoutineList = async (
 export const deleteRoutineToMyRoutineList = async (
   myRoutineListId: string,
 ): Promise<ApiResponse<DeletePersonalRoutineListResponse>> => {
-  const response = await apiClient.delete<
-    ApiResponse<DeletePersonalRoutineListResponse>
-  >(`/api/v1/my-routine/list/${myRoutineListId}`);
+  console.log('🔍 deleteRoutineToMyRoutineList API 호출:', {
+    myRoutineListId,
+    url: `/api/v1/my-routine/list/${myRoutineListId}`,
+  });
 
-  return response.data;
+  try {
+    const response = await apiClient.delete<
+      ApiResponse<DeletePersonalRoutineListResponse>
+    >(`/api/v1/my-routine/list/${myRoutineListId}`);
+
+    console.log('🔍 deleteRoutineToMyRoutineList API 성공:', {
+      status: response.status,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('🔍 deleteRoutineToMyRoutineList API 에러:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    throw error;
+  }
 };
 
 // 개인루틴 리스트 전체조회 API

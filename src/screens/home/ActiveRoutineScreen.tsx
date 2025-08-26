@@ -440,7 +440,6 @@ const TimeLeft = styled.Text`
   color: #3f3f42;
   text-align: center;
   margin-bottom: 8px;
-  line-height: normal;
   letter-spacing: -0.3px;
 `;
 
@@ -450,7 +449,6 @@ const TotalTime = styled.Text`
   font-weight: 500;
   color: #98989e;
   text-align: center;
-  line-height: normal;
   letter-spacing: -0.3px;
 `;
 
@@ -493,7 +491,6 @@ const SuccessTitle = styled.Text`
   font-weight: 700;
   color: #7f7cfa;
   text-align: center;
-  line-height: normal;
 `;
 
 const SuccessSubtitle = styled.Text`
@@ -502,7 +499,6 @@ const SuccessSubtitle = styled.Text`
   font-weight: 400;
   color: #98989e;
   text-align: center;
-  line-height: normal;
 `;
 
 const ModalTitle = styled.Text`

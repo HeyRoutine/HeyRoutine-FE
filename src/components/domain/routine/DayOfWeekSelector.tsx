@@ -134,5 +134,5 @@ const DaysContainer = styled.View`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 8px;
+  gap: 4px;
 `;

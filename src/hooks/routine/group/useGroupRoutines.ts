@@ -58,8 +58,13 @@ export const useInfiniteGroupRoutines = (
     queryFn: ({ pageParam = 0 }) =>
       getGroupRoutines({ ...params, page: pageParam, size: 10 }),
     getNextPageParam: (lastPage) => {
-      if (lastPage.result.page < lastPage.result.totalPages - 1) {
-        return lastPage.result.page + 1;
+      if (
+        lastPage?.result?.page !== undefined &&
+        lastPage?.result?.totalPages !== undefined
+      ) {
+        if (lastPage.result.page < lastPage.result.totalPages - 1) {
+          return lastPage.result.page + 1;
+        }
       }
       return undefined;
     },
@@ -90,8 +95,13 @@ export const useInfiniteMyGroupRoutines = (
     queryFn: ({ pageParam = 0 }) =>
       getMyGroupRoutines({ ...params, page: pageParam, size: 10 }),
     getNextPageParam: (lastPage) => {
-      if (lastPage.result.page < lastPage.result.totalPages - 1) {
-        return lastPage.result.page + 1;
+      if (
+        lastPage?.result?.page !== undefined &&
+        lastPage?.result?.totalPages !== undefined
+      ) {
+        if (lastPage.result.page < lastPage.result.totalPages - 1) {
+          return lastPage.result.page + 1;
+        }
       }
       return undefined;
     },
