@@ -87,21 +87,23 @@ const CompletedRoutineItem: React.FC<CompletedRoutineItemProps> = ({
         rightThreshold={40}
         enabled={isEditMode && !emojiPickerVisible && !timePickerVisible}
       >
-        <RoutineItemAdder
-          onPlusPress={handleEmojiClick}
-          onClockPress={handleTimeClick}
-          onTextChange={
-            isEditMode
-              ? (text) => onEdit(index, item.emoji, text, item.time)
-              : undefined
-          }
-          selectedTime={item.time}
-          selectedEmoji={item.emoji}
-          currentText={item.text}
-          placeholder={item.text}
-          isCompleted={item.isCompleted}
-          editable={isEditMode}
-        />
+        <CompletedRoutineContainer isCompleted={item.isCompleted}>
+          <RoutineItemAdder
+            onPlusPress={handleEmojiClick}
+            onClockPress={handleTimeClick}
+            onTextChange={
+              isEditMode
+                ? (text) => onEdit(index, item.emoji, text, item.time)
+                : undefined
+            }
+            selectedTime={item.time}
+            selectedEmoji={item.emoji}
+            currentText={item.text}
+            placeholder={item.text}
+            isCompleted={item.isCompleted}
+            editable={isEditMode}
+          />
+        </CompletedRoutineContainer>
       </Swipeable>
 
       {/* 모달들을 ReanimatedSwipeable 밖에 배치 */}
@@ -141,6 +143,10 @@ const DeleteActionButton = styled.TouchableOpacity`
   height: 100%;
   justify-content: center;
   align-items: center;
+`;
+
+const CompletedRoutineContainer = styled.View<{ isCompleted: boolean }>`
+  opacity: ${(props) => (props.isCompleted ? 0.6 : 1)};
 `;
 
 const DeleteButton = styled.TouchableOpacity`
