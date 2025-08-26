@@ -29,7 +29,7 @@ const RoutineCard = ({
   onPress,
   onMorePress,
 }: RoutineCardProps) => {
-  // 시간을 "오전 h:mm - 오후 h:mm" 형식으로 변환하는 함수
+  // 시간을 "오후 h:mm - 오후 h:mm" 형식으로 변환하는 함수
   const formatTimeRange = (timeRange: string) => {
     const times = timeRange.split(' ~ ');
     if (times.length !== 2) return timeRange;
@@ -121,7 +121,7 @@ const Header = styled.View`
 const HeaderRight = styled.View`
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 0;
 `;
 
 const ProgressText = styled.Text<{ progress: number }>`
@@ -159,21 +159,27 @@ const MoreIcon = styled.Text`
 const Title = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
+  font-weight: 500;
   color: #3f3f42;
+  line-height: normal;
   flex: 1;
 `;
 
 const Description = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 12px;
-  color: ${theme.colors.gray600};
+  font-weight: 400;
+  color: #98989e;
+  line-height: normal;
   margin-bottom: 4px;
 `;
 
 const TimeText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 12px;
-  color: #98989e;
+  font-weight: 400;
+  color: #b5b6bd;
+  line-height: normal;
   margin-bottom: 24px;
 `;
 

@@ -271,20 +271,18 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                   <CheckIcon>
                     <Ionicons
                       name="checkmark"
-                      size={80}
+                      size={60}
                       color={theme.colors.white}
                     />
                   </CheckIcon>
                 </SuccessCircle>
-                <SuccessTitle>루틴 성공🎉</SuccessTitle>
-                <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
               </SuccessContainer>
             ) : (
               <>
                 <ProgressCircle
                   progress={progress}
-                  size={280}
-                  strokeWidth={12}
+                  size={240}
+                  strokeWidth={16}
                   progressColor={theme.colors.primary}
                   backgroundColor={theme.colors.gray200}
                   showText={false}
@@ -316,6 +314,13 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
               </>
             )}
           </TimerContainer>
+
+          {isCompleted && (
+            <SuccessTextContainer>
+              <SuccessTitle>루틴 성공🎉</SuccessTitle>
+              <SuccessSubtitle>훌륭해요👍</SuccessSubtitle>
+            </SuccessTextContainer>
+          )}
 
           {!isCompleted && (
             <ActionButtonsContainer>
@@ -440,16 +445,18 @@ const ContentContainer = styled.View`
 
 const Title = styled.Text`
   font-family: ${theme.fonts.Bold};
-  font-size: 28px;
-  color: ${theme.colors.gray900};
+  font-size: 36px;
+  font-weight: 700;
+  color: #1f2021;
   text-align: center;
   margin-bottom: 12px;
 `;
 
 const Subtitle = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-size: 14px;
+  font-weight: 400;
+  color: #b5b6bd;
   text-align: center;
   margin-bottom: 16px;
 `;
@@ -457,8 +464,8 @@ const Subtitle = styled.Text`
 const TimerContainer = styled.View`
   margin: 0 0 40px 0;
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 240px;
+  height: 240px;
   justify-content: center;
   align-items: center;
 `;
@@ -470,27 +477,35 @@ const TimerContent = styled.View`
 `;
 
 const BreadIcon = styled.Text`
-  font-size: 48px;
+  font-size: 86px;
   margin-bottom: 16px;
 `;
 
 const BreadIconImage = styled.Image`
-  width: 48px;
-  height: 48px;
+  width: 86px;
+  height: 86px;
   margin-bottom: 16px;
 `;
 
 const TimeLeft = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 36px;
-  color: ${theme.colors.gray900};
+  font-family: ${theme.fonts.Medium};
+  font-size: 32px;
+  font-weight: 500;
+  color: #3f3f42;
+  text-align: center;
   margin-bottom: 8px;
+  line-height: normal;
+  letter-spacing: -0.3px;
 `;
 
 const TotalTime = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-family: ${theme.fonts.Medium};
+  font-size: 12px;
+  font-weight: 500;
+  color: #98989e;
+  text-align: center;
+  line-height: normal;
+  letter-spacing: -0.3px;
 `;
 
 const ActionButtonsContainer = styled.View`
@@ -503,9 +518,14 @@ const ActionButtonsContainer = styled.View`
 // Success styles
 const SuccessContainer = styled.View`
   align-items: center;
-  width: 280px;
-  height: 280px;
+  width: 240px;
+  height: 240px;
   justify-content: center;
+`;
+
+const SuccessTextContainer = styled.View`
+  align-items: center;
+  margin-top: 20px;
 `;
 
 const SuccessCircle = styled.View`
@@ -523,17 +543,21 @@ const CheckIcon = styled.View`
 `;
 
 const SuccessTitle = styled.Text`
-  margin-top: 20px;
   font-family: ${theme.fonts.Bold};
-  font-size: 22px;
-  color: ${theme.colors.gray900};
+  font-size: 32px;
+  font-weight: 700;
+  color: #7f7cfa;
+  text-align: center;
+  line-height: normal;
 `;
 
 const SuccessSubtitle = styled.Text`
-  margin-top: 6px;
   font-family: ${theme.fonts.Regular};
   font-size: 16px;
-  color: ${theme.colors.gray600};
+  font-weight: 400;
+  color: #98989e;
+  text-align: center;
+  line-height: normal;
 `;
 
 const ModalTitle = styled.Text`
@@ -570,22 +594,26 @@ const CancelButton = styled.TouchableOpacity`
 `;
 
 const CancelText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.gray700};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const PauseButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+  background-color: ${theme.colors.error};
   border-radius: 12px;
   padding: 14px;
   align-items: center;
 `;
 
 const PauseText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const CompleteButton = styled.TouchableOpacity`
@@ -596,9 +624,11 @@ const CompleteButton = styled.TouchableOpacity`
 `;
 
 const CompleteText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const ResumeButton = styled.TouchableOpacity`
@@ -609,9 +639,11 @@ const ResumeButton = styled.TouchableOpacity`
 `;
 
 const ResumeText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;
 
 const SkipButton = styled.TouchableOpacity`
@@ -622,7 +654,9 @@ const SkipButton = styled.TouchableOpacity`
 `;
 
 const SkipText = styled.Text`
-  font-family: ${theme.fonts.Medium};
+  font-family: ${theme.fonts.SemiBold};
   font-size: 16px;
-  color: ${theme.colors.white};
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
 `;

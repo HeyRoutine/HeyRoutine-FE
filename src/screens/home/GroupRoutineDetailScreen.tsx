@@ -1132,9 +1132,9 @@ const UnachievedAvatarContainer = styled.View`
 `;
 
 const AvatarWrapper = styled.View`
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
   overflow: hidden;
   margin-right: 8px;
 `;

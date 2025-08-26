@@ -97,7 +97,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
         }
       />
       <ParticipantInfo>
-        <ParticipantIcon>👥</ParticipantIcon>
+        <ParticipantIcon source={require('../../assets/images/person.svg')} />
         <ParticipantCount>{item.participantCount}</ParticipantCount>
       </ParticipantInfo>
     </RoutineCardWrapper>
@@ -115,10 +115,8 @@ const GroupBoardScreen = ({ navigation }: any) => {
           ListHeaderComponent={() => (
             <Banner>
               <BannerIcon>
-                <Ionicons
-                  name="megaphone-outline"
-                  size={18}
-                  color={theme.colors.white}
+                <SpeakerIcon
+                  source={require('../../assets/images/speaker.svg')}
                 />
               </BannerIcon>
               <BannerText>
@@ -167,6 +165,11 @@ const BannerIcon = styled.View`
   margin-right: 10px;
 `;
 
+const SpeakerIcon = styled.Image`
+  width: 18px;
+  height: 18px;
+`;
+
 const BannerText = styled.Text`
   flex: 1;
   font-family: ${theme.fonts.Regular};
@@ -192,13 +195,17 @@ const ParticipantInfo = styled.View`
   border-radius: 12px;
 `;
 
-const ParticipantIcon = styled.Text`
-  font-size: 16px;
+const ParticipantIcon = styled.Image`
+  width: 24px;
+  height: 24px;
   margin-bottom: 2px;
 `;
 
 const ParticipantCount = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 14px;
-  color: ${theme.colors.primary};
+  font-family: ${theme.fonts.Medium};
+  font-size: 11px;
+  font-weight: 500;
+  color: #7f7cfa;
+  text-align: center;
+  line-height: normal;
 `;

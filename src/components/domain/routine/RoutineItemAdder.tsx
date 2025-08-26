@@ -121,7 +121,6 @@ const PlusSection = styled.TouchableOpacity`
   justify-content: center;
   background-color: ${theme.colors.white};
   border-radius: 8px;
-  border: 1px solid ${theme.colors.gray200};
 `;
 
 const TextSection = styled.TouchableOpacity`
@@ -132,7 +131,7 @@ const TextSection = styled.TouchableOpacity`
   padding: 0 12px;
   background-color: ${theme.colors.white};
   border-radius: 8px;
-  border: 1px solid ${theme.colors.gray200};
+  /* border: 1px solid ${theme.colors.gray200}; */
 `;
 
 const TextSectionCompleted = styled.TouchableOpacity`
@@ -143,7 +142,7 @@ const TextSectionCompleted = styled.TouchableOpacity`
   padding: 0 12px;
   background-color: ${theme.colors.white};
   border-radius: 8px;
-  border: 1px solid ${theme.colors.gray200};
+  /* border: 1px solid ${theme.colors.gray200}; */
 `;
 
 const CompletedText = styled.Text`
@@ -160,7 +159,7 @@ const TimeSection = styled.TouchableOpacity`
   justify-content: center;
   background-color: ${theme.colors.white};
   border-radius: 8px;
-  border: 1px solid ${theme.colors.gray200};
+  /* border: 1px solid ${theme.colors.gray200}; */
 `;
 
 const TimeText = styled.Text`

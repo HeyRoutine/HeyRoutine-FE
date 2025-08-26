@@ -167,6 +167,7 @@ const PersonalRoutineDetailScreen = ({
       hasData: !!existingRoutinesData,
       resultLength: existingRoutinesData?.result?.length || 0,
       result: existingRoutinesData?.result,
+      fullResponse: existingRoutinesData,
     });
 
     if (
@@ -182,6 +183,7 @@ const PersonalRoutineDetailScreen = ({
       });
 
       console.log('🔍 정렬된 루틴 데이터:', sortedRoutines);
+      console.log('🔍 전체 API 응답 구조:', existingRoutinesData);
 
       // 모든 루틴의 완료 상태를 상세히 로그
       sortedRoutines.forEach((routine: any, index: number) => {
@@ -189,18 +191,21 @@ const PersonalRoutineDetailScreen = ({
           routineId: routine.routineId,
           routineName: routine.routineName,
           isCompleted: routine.isCompleted,
+          completed: routine.completed,
+          isCompletedType: typeof routine.isCompleted,
           allFields: Object.keys(routine),
           rawRoutine: routine,
         });
       });
 
       const existingItems = sortedRoutines.map((routine: any) => {
-        // 실제 API 응답에서는 isCompleted 필드로 옴
-        const isCompleted = routine.isCompleted || false;
+        // API 응답에서 완료 상태 필드 확인 (isCompleted 또는 completed)
+        const isCompleted = routine.isCompleted || routine.completed || false;
 
         console.log(`🔍 루틴 "${routine.routineName}" 완료 상태 매핑:`, {
           routineId: routine.routineId,
           originalIsCompleted: routine.isCompleted,
+          originalCompleted: routine.completed,
           finalIsCompleted: isCompleted,
         });
 
@@ -596,6 +601,16 @@ const PersonalRoutineDetailScreen = ({
   };
 
   // 오늘이 선택된 요일에 포함되는지 확인하는 함수
+  const formatTimeWithPeriod = (time: string) => {
+    if (!time) return '00:00';
+
+    // HH:mm 형식에서 시간 추출
+    const [hour, minute] = time.split(':').map(Number);
+    const period = hour < 12 ? '오전' : '오후';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${period} ${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  };
+
   const isTodayInSelectedDays = () => {
     const today = new Date();
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -605,7 +620,7 @@ const PersonalRoutineDetailScreen = ({
 
   return (
     <Container>
-      <Header title="" onBackPress={handleBack} />
+      <Header title="루틴 상세" onBackPress={handleBack} />
       <Content>
         {/* 루틴 헤더 섹션 */}
         <RoutineCard>
@@ -613,8 +628,8 @@ const PersonalRoutineDetailScreen = ({
             <HeaderLeft>
               <RoutineTitle>{routineData?.name || '루틴 제목'}</RoutineTitle>
               <RoutineTime>
-                {routineData?.startTime || '00:00'} -{' '}
-                {routineData?.endTime || '00:00'}
+                {formatTimeWithPeriod(routineData?.startTime || '00:00')} -{' '}
+                {formatTimeWithPeriod(routineData?.endTime || '00:00')}
               </RoutineTime>
             </HeaderLeft>
             {!isEditMode && (
@@ -815,14 +830,15 @@ const Content = styled.View`
 const RoutineCard = styled.View`
   background-color: ${theme.colors.gray50};
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px 16px;
   margin-bottom: 16px;
 `;
 
 const RoutineTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 20px;
-  color: ${theme.colors.gray900};
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  font-weight: 500;
+  color: #3f3f42;
   margin-bottom: 4px;
 `;
 
@@ -841,7 +857,7 @@ const CreateButton = styled.TouchableOpacity`
   background-color: ${theme.colors.primary};
   border-radius: 12px;
   padding: 16px;
-  margin: 0 16px;
+  margin: 0;
   align-items: center;
   justify-content: center;
 `;
@@ -937,7 +953,7 @@ const ConfirmText = styled.Text`
 
 const MoreSheetContainer = styled.View`
   gap: 12px;
-  padding: 16px;
+  padding: 0;
 `;
 
 const MoreButton = styled.TouchableOpacity`
@@ -951,7 +967,10 @@ const MoreButton = styled.TouchableOpacity`
 const MoreButtonText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
-  color: ${theme.colors.gray900};
+  font-weight: 500;
+  color: #5c5d61;
+  text-align: center;
+  line-height: 22px;
 `;
 
 const DeleteButton = styled.TouchableOpacity`
@@ -965,7 +984,10 @@ const DeleteButton = styled.TouchableOpacity`
 const DeleteButtonText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
+  font-weight: 500;
   color: ${theme.colors.error};
+  text-align: center;
+  line-height: 22px;
 `;
 
 const RoutineHeaderCard = styled.View`

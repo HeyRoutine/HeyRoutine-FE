@@ -393,6 +393,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             onEndReachedThreshold={0.1}
             ListFooterComponent={null}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flexGrow: 0,
+              paddingBottom: 0,
+            }}
           />
         </RoutineList>
       </Content>
@@ -500,7 +504,7 @@ const DateText = styled.Text<{ isSelected: boolean; isCompleted?: boolean }>`
 
 const RoutineList = styled.View`
   flex: 1;
-  margin-bottom: 36px;
+  margin-bottom: 0;
 `;
 
 const GroupRoutineGuide = styled.View`
