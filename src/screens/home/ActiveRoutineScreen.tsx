@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoutineStore } from '../../store';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
-  const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
+  const [timeLeft, setTimeLeft] = useState(0); // 초기값은 0으로 설정
   const [isActive, setIsActive] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isPauseModalVisible, setPauseModalVisible] = useState(false);
@@ -22,7 +22,12 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     useRoutineStore();
 
   const incomingTasks = route?.params?.tasks as
-    | Array<{ icon: string; title: string; duration: string }>
+    | Array<{
+        icon: string;
+        title: string;
+        duration: string;
+        routineId?: number;
+      }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
   const onTaskComplete = route?.params?.onTaskComplete as
@@ -32,13 +37,21 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
 
   const tasks = useMemo(() => {
     if (incomingTasks && incomingTasks.length > 0) return incomingTasks;
-    return [
-      { icon: '🍞', title: '식빵 굽기', duration: '10분' },
-      { icon: '☕', title: '커피 내리기', duration: '5분' },
-      { icon: '🧼', title: '샤워하기', duration: '15분' },
-    ];
+    return [];
   }, [incomingTasks]);
   const [activeTaskIndex, setActiveTaskIndex] = useState(0);
+
+  // 현재 태스크의 시간을 초로 변환하여 타이머 설정
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const currentTask = tasks[activeTaskIndex];
+      const duration = currentTask?.duration || '10분';
+      const minutes = parseInt(duration.replace('분', ''));
+      const seconds = minutes * 60;
+      setTimeLeft(seconds);
+      setProgress(0);
+    }
+  }, [tasks, activeTaskIndex]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -47,7 +60,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
           const newTime = prev - 1;
-          setProgress(((10 * 60 - newTime) / (10 * 60)) * 100);
+          const totalTime = tasks[activeTaskIndex]
+            ? parseInt(tasks[activeTaskIndex].duration.replace('분', '')) * 60
+            : 600;
+          setProgress(((totalTime - newTime) / totalTime) * 100);
           return newTime;
         });
       }, 1000);
@@ -119,10 +135,29 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     try {
       markActiveRoutineTaskCompleted(activeTaskIndex);
     } catch {}
+
     // 상세 화면 콜백도 유지
     try {
       onTaskComplete?.(activeTaskIndex);
     } catch {}
+
+    // 개인루틴 수행 API 호출 (각 태스크의 routineId가 있는 경우)
+    const currentTask = tasks[activeTaskIndex];
+    const taskRoutineId = currentTask?.routineId;
+
+    if (taskRoutineId) {
+      const today = new Date();
+      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      console.log('🔍 개인루틴 수행 API 호출:', {
+        routineId: taskRoutineId,
+        date: dateString,
+      });
+
+      // TODO: 개인루틴 수행 API 호출
+      // donePersonalRoutine(taskRoutineId, dateString);
+    }
+
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);
@@ -151,8 +186,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const goToNextTask = () => {
     if (activeTaskIndex < tasks.length - 1) {
       setActiveTaskIndex((prev) => prev + 1);
-      setTimeLeft(10 * 60);
-      setProgress(0);
+      // 다음 태스크의 시간으로 설정 (useEffect에서 자동으로 처리됨)
       setIsActive(true);
     } else {
       navigation.goBack();

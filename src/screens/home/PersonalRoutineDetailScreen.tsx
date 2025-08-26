@@ -457,16 +457,19 @@ const PersonalRoutineDetailScreen = ({
 
     // ActiveRoutineScreen으로 이동
     navigation.navigate('ActiveRoutine', {
-      routineData: {
-        ...routineData,
-        tasks: routineItems.map((item) => ({
-          id: item.text, // 임시 ID
-          title: item.text,
-          emoji: item.emoji,
-          time: parseInt(item.time.replace('분', '')),
-          completed: item.completed,
-        })),
-      },
+      tasks: routineItems.map((item) => ({
+        icon: item.emoji,
+        title: item.text,
+        duration: item.time,
+        routineId: existingRoutinesData?.result?.find(
+          (routine: any) =>
+            routine.routineName === item.text &&
+            routine.time === parseInt(item.time.replace('분', '')) &&
+            routine.emojiUrl === item.emoji,
+        )?.routineId,
+      })),
+      routineName: routineData?.name || '루틴',
+      routineId: routineData?.id?.toString(),
     });
   };
 
