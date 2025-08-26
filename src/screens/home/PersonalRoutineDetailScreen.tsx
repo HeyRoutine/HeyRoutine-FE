@@ -553,6 +553,20 @@ const PersonalRoutineDetailScreen = ({
     setEditMode(false);
   };
 
+  const handleCancelEdit = () => {
+    setEditMode(false);
+  };
+
+  const handleTaskToggle = (index: number) => {
+    // 개인 루틴 토글 로직 구현
+    const updatedItems = [...routineItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      isCompleted: !updatedItems[index].isCompleted,
+    };
+    setRoutineItems(updatedItems);
+  };
+
   const handleEditRoutine = () => {
     closeMoreSheet();
 
@@ -591,28 +605,28 @@ const PersonalRoutineDetailScreen = ({
 
   return (
     <Container>
-      <Header
-        title={isEditMode ? '루틴 상세 수정' : '루틴 상세'}
-        onBackPress={handleBack}
-      />
+      <Header title="" onBackPress={handleBack} />
       <Content>
-        <RoutineCard>
-          <TitleContainer>
-            <RoutineTitle>{routineData?.name || '루틴 제목'}</RoutineTitle>
+        {/* 루틴 헤더 섹션 */}
+        <RoutineHeaderCard>
+          <HeaderContent>
+            <HeaderLeft>
+              <RoutineTitle>{routineData?.name || '루틴 제목'}</RoutineTitle>
+              <RoutineTime>
+                {routineData?.startTime || '00:00'} -{' '}
+                {routineData?.endTime || '00:00'}
+              </RoutineTime>
+            </HeaderLeft>
             {!isEditMode && (
-              <MoreButton onPress={handleMorePress}>
+              <MoreIconButton onPress={handleMorePress}>
                 <Ionicons
                   name="ellipsis-horizontal"
                   size={20}
                   color={theme.colors.gray600}
                 />
-              </MoreButton>
+              </MoreIconButton>
             )}
-          </TitleContainer>
-          <RoutineTime>
-            {routineData?.startTime || '00:00'} -{' '}
-            {routineData?.endTime || '00:00'}
-          </RoutineTime>
+          </HeaderContent>
           <DayOfWeekSelector
             selectedDays={selectedDays}
             onDaysChange={setSelectedDays}
@@ -620,7 +634,7 @@ const PersonalRoutineDetailScreen = ({
             buttonSize={40}
             borderRadius={20}
           />
-        </RoutineCard>
+        </RoutineHeaderCard>
 
         {/* 새로운 루틴 추가 (수정 모드일 때만) */}
         {isEditMode && editingIndex === null && (
@@ -718,14 +732,17 @@ const PersonalRoutineDetailScreen = ({
         visible={moreSheetVisible}
         onRequestClose={closeMoreSheet}
       >
-        <SheetActions>
-          <CustomButton text="루틴 수정" onPress={handleEditRoutine} />
-          <CustomButton
-            text="루틴 상세 수정"
-            onPress={handleEditRoutineDetail}
-          />
-          <CustomButton text="루틴 삭제" onPress={handleDeleteRoutine} />
-        </SheetActions>
+        <MoreSheetContainer>
+          <MoreButton onPress={handleEditRoutine}>
+            <MoreButtonText>루틴 수정</MoreButtonText>
+          </MoreButton>
+          <MoreButton onPress={handleEditRoutineDetail}>
+            <MoreButtonText>상세 루틴 수정</MoreButtonText>
+          </MoreButton>
+          <DeleteButton onPress={handleDeleteRoutine}>
+            <DeleteButtonText>삭제</DeleteButtonText>
+          </DeleteButton>
+        </MoreSheetContainer>
       </BottomSheetDialog>
 
       {/* 편집 모드 종료 확인 모달 */}
@@ -734,6 +751,7 @@ const PersonalRoutineDetailScreen = ({
         onRequestClose={closeExitConfirm}
       >
         <SheetTitle>편집을 종료하시겠습니까?</SheetTitle>
+        <SheetSubtitle>저장하지 않은 변경사항은 사라집니다.</SheetSubtitle>
         <SheetActions>
           <ButtonWrapper>
             <CancelButton onPress={closeExitConfirm}>
@@ -841,7 +859,7 @@ const TitleContainer = styled.View`
   margin-bottom: 4px;
 `;
 
-const MoreButton = styled.TouchableOpacity`
+const MoreIconButton = styled.TouchableOpacity`
   padding: 4px;
 `;
 
@@ -849,6 +867,14 @@ const SheetTitle = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   font-size: 20px;
   color: ${theme.colors.gray900};
+  text-align: center;
+  margin-bottom: 8px;
+`;
+
+const SheetSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
   text-align: center;
   margin-bottom: 24px;
 `;
@@ -907,4 +933,204 @@ const ConfirmText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 16px;
   color: ${theme.colors.white};
+`;
+
+const MoreSheetContainer = styled.View`
+  gap: 12px;
+  padding: 16px;
+`;
+
+const MoreButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.white};
+  border: 1px solid ${theme.colors.gray300};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+`;
+
+const MoreButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray900};
+`;
+
+const DeleteButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.white};
+  border: 1px solid ${theme.colors.error};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+`;
+
+const DeleteButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.error};
+`;
+
+const RoutineHeaderCard = styled.View`
+  background-color: ${theme.colors.white};
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+`;
+
+const HeaderContent = styled.View`
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+const HeaderLeft = styled.View`
+  flex: 1;
+`;
+
+const DaySelectorCard = styled.View`
+  background-color: ${theme.colors.white};
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+`;
+
+const ScrollContent = styled.ScrollView`
+  flex: 1;
+`;
+
+const RoutineCardContainer = styled.View`
+  /* margin-bottom: 16px; */
+`;
+
+const SectionCard = styled.View`
+  background-color: ${theme.colors.white};
+  border-radius: 12px;
+  margin-bottom: 16px;
+`;
+
+const SectionHeader = styled.Text`
+  font-family: ${theme.fonts.Bold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 16px;
+`;
+
+const RoutineListContainer = styled.View`
+  background-color: ${theme.colors.gray50};
+  border-radius: 8px;
+  padding: 12px;
+  gap: 8px;
+`;
+
+const RoutineItemRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px;
+  background-color: ${theme.colors.white};
+  border-radius: 8px;
+`;
+
+const TaskIcon = styled.Text`
+  font-size: 20px;
+  margin-right: 12px;
+  align-self: center;
+`;
+
+const TaskContent = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+`;
+
+const TaskTitle = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray800};
+  line-height: 20px;
+`;
+
+const TaskDuration = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray600};
+  margin-left: 8px;
+  align-self: center;
+`;
+
+const TaskStatus = styled.TouchableOpacity`
+  margin-left: 8px;
+  align-self: center;
+`;
+
+const CompletedCheckbox = styled.View`
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: ${theme.colors.primary};
+  align-items: center;
+  justify-content: center;
+`;
+
+const CompletedCheckmark = styled.Text`
+  font-size: 12px;
+  color: ${theme.colors.white};
+  font-weight: bold;
+`;
+
+const UncompletedCheckbox = styled.View`
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  border: 2px solid ${theme.colors.gray300};
+  background-color: ${theme.colors.white};
+`;
+
+const SaveButton = styled.TouchableOpacity`
+  padding: 8px 16px;
+  background-color: ${theme.colors.primary};
+  border-radius: 8px;
+`;
+
+const SaveText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.white};
+`;
+
+const FixedJoinCta = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background-color: ${theme.colors.white};
+`;
+
+const JoinButton = styled.TouchableOpacity<{ disabled?: boolean }>`
+  background-color: ${(props) =>
+    props.disabled ? theme.colors.gray300 : theme.colors.primary};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+`;
+
+const JoinText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const AddTemplateButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: ${theme.colors.gray50};
+  border: 2px dashed ${theme.colors.gray300};
+  border-radius: 8px;
+  margin-top: 8px;
+`;
+
+const AddTemplateText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
 `;
