@@ -31,6 +31,7 @@ const GuestbookModal = ({
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const { data: guestbookData, isLoading } =
     useGroupGuestbooks(groupRoutineListId);
@@ -49,6 +50,10 @@ const GuestbookModal = ({
           onSuccess: () => {
             setMessage('');
             console.log('🔍 방명록 작성 성공');
+            // 새 댓글 작성 후 맨 아래로 스크롤
+            setTimeout(() => {
+              scrollViewRef.current?.scrollToEnd({ animated: true });
+            }, 100);
           },
           onError: (error) => {
             console.error('🔍 방명록 작성 실패:', error);
@@ -120,7 +125,7 @@ const GuestbookModal = ({
     >
       <Container>
         <Header>
-          <Title>단체 루틴 방명록</Title>
+          <Title>방명록</Title>
           <CloseButton onPress={onClose}>
             <MaterialIcons
               name="close"
@@ -132,50 +137,51 @@ const GuestbookModal = ({
 
         <ContentContainer>
           <ScrollView
+            ref={scrollViewRef}
             style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
             nestedScrollEnabled={true}
+            onContentSizeChange={() => {
+              // 데이터가 로드되거나 변경될 때 맨 아래로 스크롤
+              scrollViewRef.current?.scrollToEnd({ animated: false });
+            }}
           >
             {isLoading ? null : guestbookData?.result?.items &&
               guestbookData.result.items.length > 0 ? (
               <GuestbookList>
-                {guestbookData.result.items
-                  .slice()
-                  .reverse()
-                  .map((item) => (
-                    <Swipeable
-                      key={item.id}
-                      ref={(ref) => {
-                        swipeableRefs.current[item.id] = ref;
-                      }}
-                      renderRightActions={
-                        item.isWriter
-                          ? () => renderRightActions(item.id)
-                          : undefined
-                      }
-                      rightThreshold={40}
-                      enabled={item.isWriter}
-                    >
-                      <GuestbookItem>
-                        <ProfileSection>
-                          <ProfileImage
-                            source={
-                              item.profileImageUrl
-                                ? { uri: item.profileImageUrl }
-                                : require('../../../assets/images/default_profile.png')
-                            }
-                            defaultSource={require('../../../assets/images/default_profile.png')}
-                          />
-                          <UserInfo>
-                            <UserName>{item.nickname}</UserName>
-                            <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
-                          </UserInfo>
-                        </ProfileSection>
-                        <MessageText>{item.content}</MessageText>
-                      </GuestbookItem>
-                    </Swipeable>
-                  ))}
+                {guestbookData.result.items.map((item) => (
+                  <Swipeable
+                    key={item.id}
+                    ref={(ref) => {
+                      swipeableRefs.current[item.id] = ref;
+                    }}
+                    renderRightActions={
+                      item.isWriter
+                        ? () => renderRightActions(item.id)
+                        : undefined
+                    }
+                    rightThreshold={40}
+                    enabled={item.isWriter}
+                  >
+                    <GuestbookItem>
+                      <ProfileSection>
+                        <ProfileImage
+                          source={
+                            item.profileImageUrl
+                              ? { uri: item.profileImageUrl }
+                              : require('../../../assets/images/default_profile.png')
+                          }
+                          defaultSource={require('../../../assets/images/default_profile.png')}
+                        />
+                        <UserInfo>
+                          <UserName>{item.nickname}</UserName>
+                          <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
+                        </UserInfo>
+                      </ProfileSection>
+                      <MessageText>{item.content}</MessageText>
+                    </GuestbookItem>
+                  </Swipeable>
+                ))}
               </GuestbookList>
             ) : (
               <EmptyText>아직 방명록이 없어요.</EmptyText>
@@ -218,6 +224,8 @@ export default GuestbookModal;
 
 const Container = styled.View`
   height: 50%;
+  min-height: 400px;
+  max-height: 60%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;

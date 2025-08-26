@@ -78,6 +78,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     category: string;
     progress: number;
     title: string;
+    description?: string; // 그룹 루틴용 설명 필드
     timeRange: string;
     selectedDays: string[];
     completedDays: string[];
@@ -174,6 +175,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             category: item.routineType === 'DAILY' ? '생활' : '소비',
             progress: item.percent || 0, // API에서 제공하는 percent 사용
             title: item.title,
+            description: item.description, // 그룹 루틴 설명 추가
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
             selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
             completedDays: [], // API에서 제공하지 않는 경우 빈 배열
@@ -380,6 +382,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 category={item.category}
                 progress={item.progress}
                 title={item.title}
+                description={item.description}
                 timeRange={item.timeRange}
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}

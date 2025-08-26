@@ -432,18 +432,11 @@ const CreateGroupRoutineDetailScreen = ({
         onBackPress={handleBack}
       />
       <Content>
-        {/* 그룹 루틴 설명 (수정 모드에서만 표시) */}
-        {mode === 'edit' && routineData?.description && (
-          <DescriptionCard>
-            <DescriptionTitle>그룹 루틴 설명</DescriptionTitle>
-            <DescriptionText>{routineData.description}</DescriptionText>
-          </DescriptionCard>
-        )}
-
         <RoutineCard>
           <RoutineTitle>
             {routineData?.title || routineData?.name || '새 그룹 루틴'}
           </RoutineTitle>
+          <DescriptionText>{routineData.description}</DescriptionText>
           <RoutineTime>
             {routineData?.startTime || '오후 7:00'} -{' '}
             {routineData?.endTime || '오후 10:00'}
