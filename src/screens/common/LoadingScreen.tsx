@@ -82,7 +82,7 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
   }, [statusItems.length, nextScreen, navigation]);
 
   const getStatusForItem = (index: number) => {
-    if (index <= currentStep) return 'isCompleted';
+    if (index <= currentStep) return 'completed';
     return 'pending';
   };
 

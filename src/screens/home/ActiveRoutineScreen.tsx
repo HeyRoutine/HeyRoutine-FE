@@ -8,7 +8,6 @@ import RoutineActionButton from '../../components/domain/routine/RoutineActionBu
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoutineStore } from '../../store';
-import { useDonePersonalRoutine } from '../../hooks/routine/personal/usePersonalRoutines';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10분을 초로
@@ -22,19 +21,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const { markActiveRoutineTaskCompleted, resetActiveRoutineProgress } =
     useRoutineStore();
 
-  // 개인루틴 수행 훅
-  const { mutate: donePersonalRoutine } = useDonePersonalRoutine();
-
   const incomingTasks = route?.params?.tasks as
-    | Array<{
-        icon: string;
-        title: string;
-        duration: string;
-        routineId?: number;
-      }>
+    | Array<{ icon: string; title: string; duration: string }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
-  const routineId = route?.params?.routineId as string | undefined; // 루틴 ID 추가
   const onTaskComplete = route?.params?.onTaskComplete as
     | ((index: number) => void)
     | undefined;
@@ -129,44 +119,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     try {
       markActiveRoutineTaskCompleted(activeTaskIndex);
     } catch {}
-
     // 상세 화면 콜백도 유지
     try {
       onTaskComplete?.(activeTaskIndex);
     } catch {}
-
-    // 개인루틴 수행 API 호출 (각 태스크의 routineId가 있는 경우)
-    const currentTask = tasks[activeTaskIndex];
-    const taskRoutineId = currentTask?.routineId;
-
-    if (taskRoutineId) {
-      const today = new Date();
-      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-      console.log('🔍 개인루틴 수행 API 호출:', {
-        routineId: taskRoutineId,
-        date: dateString,
-        taskTitle: currentTask.title,
-      });
-
-      donePersonalRoutine(
-        {
-          routineId: taskRoutineId,
-          params: { date: dateString },
-        },
-        {
-          onSuccess: () => {
-            console.log('🔍 개인루틴 수행 성공:', currentTask.title);
-          },
-          onError: (error) => {
-            console.error('🔍 개인루틴 수행 실패:', error);
-          },
-        },
-      );
-    } else {
-      console.log('🔍 개인루틴 수행 API 호출 실패: taskRoutineId가 없음');
-    }
-
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
     if (activeTaskIndex < tasks.length - 1) {
       setCompleteModalVisible(false);

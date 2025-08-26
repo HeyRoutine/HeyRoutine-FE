@@ -10,8 +10,6 @@ import {
   DeleteGroupRoutineResponse,
   JoinGroupRoutineResponse,
   LeaveGroupRoutineResponse,
-  SearchGroupRoutinesParams,
-  SearchGroupRoutinesResponse,
 } from '../../../types/api';
 
 // 단체루틴 생성 API
@@ -112,66 +110,6 @@ export const leaveGroupRoutine = async (
   console.log('🔍 leaveGroupRoutine API 응답:', {
     status: response.status,
     data: response.data,
-  });
-
-  return response.data;
-};
-
-// 단체루틴 검색 API
-export const searchGroupRoutines = async (
-  params: SearchGroupRoutinesParams,
-): Promise<ApiResponse<SearchGroupRoutinesResponse>> => {
-  const { keyword, page = 0, size = 10 } = params;
-
-  console.log('🔍 단체루틴 검색 API 호출:', { keyword, page, size });
-
-  const response = await apiClient.get<
-    ApiResponse<SearchGroupRoutinesResponse>
-  >('/api/v1/routines/groups/search', {
-    params: {
-      keyword,
-      page,
-      size,
-    },
-  });
-
-  console.log('🔍 단체루틴 검색 API 응답:', {
-    status: response.status,
-    data: response.data,
-    isSuccess: response.data?.isSuccess,
-    result: response.data?.result,
-    items: response.data?.result?.items,
-    itemsCount: response.data?.result?.items?.length || 0,
-  });
-
-  return response.data;
-};
-
-// 내 단체루틴 조회 API (최신순 정렬)
-export const getMyGroupRoutines = async (
-  params: GroupRoutineListParams = {},
-): Promise<ApiResponse<GroupRoutineListResponse>> => {
-  const { page = 0, size = 10 } = params;
-
-  console.log('🔍 내 단체루틴 조회 API 호출:', { page, size });
-
-  const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
-    '/api/v1/routines/groups/my',
-    {
-      params: {
-        page,
-        size,
-      },
-    },
-  );
-
-  console.log('🔍 내 단체루틴 조회 API 응답:', {
-    status: response.status,
-    data: response.data,
-    isSuccess: response.data?.isSuccess,
-    result: response.data?.result,
-    items: response.data?.result?.items,
-    itemsCount: response.data?.result?.items?.length || 0,
   });
 
   return response.data;

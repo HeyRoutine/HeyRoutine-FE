@@ -80,13 +80,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     timeRange: string;
     selectedDays: string[];
     completedDays: string[];
-    itemCount?: number; // 선택적 필드로 변경
   };
 
   // API 훅 사용
-  // 한국 시간대(KST)를 고려한 날짜 계산
-  const selectedDateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`; // YYYY-MM-DD 형식
-
+  const selectedDateString = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
   const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
     selectedDate.getDay()
   ];
@@ -165,7 +162,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
         selectedDays: item.dayTypes, // 타입 정의에 따르면 dayTypes
         completedDays: [], // API에서 제공하지 않는 경우 빈 배열
-        itemCount: 0, // 개인 루틴은 기본값 0
       })),
     ) || [];
 
@@ -182,7 +178,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
             selectedDays: item.dayOfWeek, // 그룹 루틴은 dayOfWeek 사용
             completedDays: [], // API에서 제공하지 않는 경우 빈 배열
-            itemCount: item.routineNums || 0, // 항목 수 추가
           };
         }) || [],
     ) || [];
@@ -349,7 +344,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}
                 onPress={() => handleRoutinePress(item.id)}
-                itemCount={item.itemCount}
               />
             )}
             onEndReached={handleLoadMore}

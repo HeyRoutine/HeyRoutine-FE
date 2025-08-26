@@ -15,11 +15,11 @@ import {
 import {
   makeRoutineToMyRoutineList,
   makeRoutinesToMyRoutineList,
+  getRoutinesInListByDate,
   updateRoutineInMyRoutineList,
   updateRoutineInMyRoutineListV2,
   deleteRoutineInMyRoutineList,
 } from '../../../api/routine/personal/routineDetails';
-import { getRoutinesInListByDate } from '../../../api/routine/personal/routines';
 import {
   PersonalRoutineListParams,
   CreatePersonalRoutineListRequest,
@@ -196,7 +196,7 @@ export const usePersonalRoutineDetails = (
 
   return useQuery({
     queryKey: ['personalRoutineDetails', myRoutineListId, params],
-    queryFn: () => getRoutinesInListByDate(myRoutineListId, params.date),
+    queryFn: () => getRoutinesInListByDate(myRoutineListId, params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -250,29 +250,12 @@ export const useDonePersonalRoutine = () => {
       routineId,
       params,
     }: {
-      routineId: number;
+      routineId: string;
       params: DonePersonalRoutineParams;
     }) => doneRoutineToMyRoutineList(routineId, params),
-    onSuccess: (data, variables) => {
-      console.log('🔍 개인루틴 수행 API 성공:', {
-        routineId: variables.routineId,
-        date: variables.params.date,
-      });
-
+    onSuccess: () => {
       // 수행 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
-      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
-      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
-
-      // 더 구체적인 캐시 무효화
-      console.log('🔍 캐시 무효화 실행 - personalRoutineDetails');
-      queryClient.invalidateQueries({
-        queryKey: ['personalRoutineDetails'],
-        exact: false,
-      });
-    },
-    onError: (error) => {
-      console.error('🔍 개인루틴 수행 API 실패:', error);
     },
   });
 };
@@ -282,13 +265,7 @@ export const useDonePersonalRoutineList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      myRoutineListId,
-      date,
-    }: {
-      myRoutineListId: string;
-      date: string;
-    }) => doneMyRoutineList(myRoutineListId, date),
+    mutationFn: (myRoutineListId: string) => doneMyRoutineList(myRoutineListId),
     onSuccess: () => {
       // 완료 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });

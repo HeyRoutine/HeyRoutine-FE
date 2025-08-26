@@ -13,7 +13,6 @@ import {
   DayOfWeekSelector,
   EmojiPickerModal,
   RoutineSuggestionModal,
-  TimePickerModal,
 } from '../../components/domain/routine';
 import {
   useRoutineTemplates,
@@ -53,7 +52,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: string;
       text: string;
       time: string;
-      completed: boolean;
+      isCompleted: boolean;
     }>
   >([]);
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -71,9 +70,6 @@ const PersonalRoutineDetailScreen = ({
   // 루틴 추천 모달 상태
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
-
-  // 시간 선택 모달 상태
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
 
   // 개인루틴 상세 조회 훅 - 기존 루틴들을 불러오기
   const {
@@ -150,21 +146,12 @@ const PersonalRoutineDetailScreen = ({
     ) {
       console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
 
-      const existingItems = existingRoutinesData.result.map((routine: any) => {
-        console.log('🔍 루틴 데이터 매핑:', {
-          routineName: routine.routineName,
-          isCompleted: routine.isCompleted,
-          emojiUrl: routine.emojiUrl,
-          time: routine.time,
-        });
-
-        return {
-          emoji: routine.emojiUrl,
-          text: routine.routineName,
-          time: `${routine.time}분`,
-          completed: routine.isCompleted,
-        };
-      });
+      const existingItems = existingRoutinesData.result.map((routine: any) => ({
+        emoji: routine.emojiUrl,
+        text: routine.routineName,
+        time: `${routine.time}분`,
+        isCompleted: routine.completed,
+      }));
 
       setRoutineItems(existingItems);
     }
@@ -211,8 +198,8 @@ const PersonalRoutineDetailScreen = ({
   };
 
   const handleClockPress = () => {
-    // 시간 선택 시 시간 선택 모달 열기
-    setTimePickerVisible(true);
+    // 시간 선택 시 현재 선택된 시간을 RoutineSuggestionModal에 전달
+    setRoutineSuggestionVisible(true);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -248,7 +235,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          completed: false,
+          isCompleted: false,
         };
         setRoutineItems(updatedItems);
         setEditingIndex(null);
@@ -258,7 +245,7 @@ const PersonalRoutineDetailScreen = ({
           emoji: selectedEmoji,
           text: currentText,
           time: selectedTime,
-          completed: false,
+          isCompleted: false,
         };
         setRoutineItems([...routineItems, newItem]);
       }
@@ -319,7 +306,7 @@ const PersonalRoutineDetailScreen = ({
       emoji: routine.icon,
       text: routine.title,
       time: selectedTime || '30분', // 선택된 시간 사용, 없으면 기본값
-      completed: false,
+      isCompleted: false,
     };
     setRoutineItems([...routineItems, newItem]);
 
@@ -582,142 +569,26 @@ const PersonalRoutineDetailScreen = ({
           )}
 
           {/* 완성된 루틴 아이템들 */}
-          {routineItems.map((item, index) => {
-            console.log('🔍 루틴 아이템 렌더링:', {
-              index,
-              text: item.text,
-              completed: item.completed,
-              emoji: item.emoji,
-              isEditMode,
-            });
-            return (
-              <AdderContainer key={index}>
-                {item.completed ? (
-                  // 완료된 루틴은 CompletedRoutineItem으로 표시 (일반 모드 + 편집 모드)
-                  <CompletedRoutineItem
-                    item={{
-                      ...item,
-                      isCompleted: item.completed, // completed를 isCompleted로 매핑
-                    }}
-                    index={index}
-                    onEdit={(index, emoji, text, time) => {
-                      if (isEditMode) {
-                        // 편집 모드에서는 해당 아이템 업데이트
-                        const updatedItems = [...routineItems];
-                        updatedItems[index] = {
-                          emoji,
-                          text,
-                          time,
-                          completed: updatedItems[index].completed, // 기존 완료 상태 유지
-                        };
-                        setRoutineItems(updatedItems);
-                      } else {
-                        // 일반 모드에서는 체크 해제만 가능
-                        const updatedItems = [...routineItems];
-                        updatedItems[index] = {
-                          emoji,
-                          text,
-                          time,
-                          completed: false, // 체크 해제
-                        };
-                        setRoutineItems(updatedItems);
-                      }
-                    }}
-                    onDelete={handleDeleteItem}
-                    isEditMode={isEditMode}
-                    onPlusPress={
-                      isEditMode
-                        ? () => {
-                            // 이모지 선택 모달 열기
-                            setEditingIndex(index);
-                            setSelectedEmoji(item.emoji);
-                            setCurrentText(item.text);
-                            setSelectedTime(item.time);
-                            setEmojiPickerVisible(true);
-                          }
-                        : () => {}
-                    }
-                    onClockPress={
-                      isEditMode
-                        ? () => {
-                            // 시간 선택 모달 열기
-                            setEditingIndex(index);
-                            setSelectedEmoji(item.emoji);
-                            setCurrentText(item.text);
-                            setSelectedTime(item.time);
-                            setTimePickerVisible(true);
-                          }
-                        : () => {}
-                    }
-                    onTextChange={
-                      isEditMode
-                        ? (text) => {
-                            // 편집 모드에서 텍스트 변경 시 해당 아이템 업데이트
-                            const updatedItems = [...routineItems];
-                            updatedItems[index] = {
-                              ...updatedItems[index],
-                              text: text,
-                            };
-                            setRoutineItems(updatedItems);
-                          }
-                        : () => {}
-                    }
-                  />
-                ) : (
-                  // 편집 모드이거나 미완료 루틴은 RoutineItemAdder로 표시
-                  <RoutineItemAdder
-                    onPlusPress={
-                      isEditMode
-                        ? () => {
-                            // 이모지 선택 모달 열기
-                            setEditingIndex(index);
-                            setSelectedEmoji(item.emoji);
-                            setCurrentText(item.text);
-                            setSelectedTime(item.time);
-                            setEmojiPickerVisible(true);
-                          }
-                        : () => {}
-                    }
-                    onClockPress={
-                      isEditMode
-                        ? () => {
-                            // 시간 선택 모달 열기
-                            setEditingIndex(index);
-                            setSelectedEmoji(item.emoji);
-                            setCurrentText(item.text);
-                            setSelectedTime(item.time);
-                            setTimePickerVisible(true);
-                          }
-                        : () => {}
-                    }
-                    onTextChange={isEditMode ? handleTextChange : () => {}}
-                    onTextPress={
-                      isEditMode
-                        ? () => {
-                            // 텍스트 입력 활성화 (별도 동작 없음, TextInput이 자동으로 활성화됨)
-                            setEditingIndex(index);
-                            setSelectedEmoji(item.emoji);
-                            setCurrentText(item.text);
-                            setSelectedTime(item.time);
-                          }
-                        : () => {}
-                    }
-                    selectedTime={item.time}
-                    selectedEmoji={item.emoji}
-                    currentText={item.text}
-                    completed={!isEditMode && item.completed} // 편집 모드에서는 완료 상태 표시하지 않음
-                    editable={isEditMode}
-                    onDelete={
-                      isEditMode && !item.completed
-                        ? () => handleDeleteItem(index)
-                        : () => {}
-                    }
-                    showDeleteButton={isEditMode && !item.completed} // 완료된 루틴은 삭제 버튼 숨김
-                  />
-                )}
-              </AdderContainer>
-            );
-          })}
+          {routineItems.map((item, index) => (
+            <AdderContainer key={index}>
+              <CompletedRoutineItem
+                item={item}
+                index={index}
+                onEdit={(index, emoji, text, time) => {
+                  const updatedItems = [...routineItems];
+                  updatedItems[index] = {
+                    emoji,
+                    text,
+                    time,
+                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
+                  };
+                  setRoutineItems(updatedItems);
+                }}
+                onDelete={handleDeleteItem}
+                isEditMode={isEditMode}
+              />
+            </AdderContainer>
+          ))}
         </RoutineCard>
 
         {/* 루틴 실행/수정 완료 버튼 */}
@@ -762,40 +633,6 @@ const PersonalRoutineDetailScreen = ({
           }
 
           setEmojiPickerVisible(false);
-        }}
-      />
-
-      <TimePickerModal
-        visible={timePickerVisible}
-        onRequestClose={() => setTimePickerVisible(false)}
-        onTimeSelect={(time) => {
-          if (typeof time === 'number') {
-            const timeString = `${time}분`;
-            setSelectedTime(timeString);
-
-            // 편집 중인 아이템이 있으면 해당 아이템의 시간을 업데이트
-            if (editingIndex !== null) {
-              const updatedItems = [...routineItems];
-              updatedItems[editingIndex] = {
-                ...updatedItems[editingIndex],
-                time: timeString,
-              };
-              setRoutineItems(updatedItems);
-            }
-          } else {
-            setSelectedTime(time);
-
-            // 편집 중인 아이템이 있으면 해당 아이템의 시간을 업데이트
-            if (editingIndex !== null) {
-              const updatedItems = [...routineItems];
-              updatedItems[editingIndex] = {
-                ...updatedItems[editingIndex],
-                time: time,
-              };
-              setRoutineItems(updatedItems);
-            }
-          }
-          setTimePickerVisible(false);
         }}
       />
 
@@ -979,7 +816,7 @@ const ButtonWrapper = styled.View`
 const CancelButton = styled.TouchableOpacity`
   background-color: ${theme.colors.gray200};
   border-radius: 12px;
-  padding: 14px;
+  padding: 18px;
   align-items: center;
 `;
 

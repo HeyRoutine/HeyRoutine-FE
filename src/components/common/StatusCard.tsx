@@ -5,14 +5,14 @@ import { theme } from '../../styles/theme';
 
 interface StatusCardProps {
   text: string;
-  status: 'isCompleted' | 'pending';
+  status: 'completed' | 'pending';
   isActive?: boolean;
 }
 
 const StatusCard = ({ text, status, isActive = false }: StatusCardProps) => {
   const getIconName = () => {
     switch (status) {
-      case 'isCompleted':
+      case 'completed':
         return 'checkmark';
       case 'pending':
         return 'checkmark';
@@ -26,12 +26,12 @@ const StatusCard = ({ text, status, isActive = false }: StatusCardProps) => {
   };
 
   const getBackgroundColor = () => {
-    if (status === 'isCompleted') return theme.colors.primary;
+    if (status === 'completed') return theme.colors.primary;
     return theme.colors.gray600;
   };
 
   const getTextColor = () => {
-    if (status === 'isCompleted') return theme.colors.gray900;
+    if (status === 'completed') return theme.colors.gray900;
     return theme.colors.gray500;
   };
 

@@ -571,7 +571,7 @@ const GroupRoutineDetailScreen = ({
                   {routine.completedParticipants
                     .slice(0, 12)
                     .map((uri, idx) => (
-                      <AvatarWrapper key={`isCompleted-${idx}`}>
+                      <AvatarWrapper key={`completed-${idx}`}>
                         <Avatar
                           source={
                             uri
