@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { TextInput } from 'react-native';
+import { TextInput, Pressable } from 'react-native';
 import styled from 'styled-components/native';
 import { theme } from '../../styles/theme';
 
@@ -24,35 +24,40 @@ const OtpInput = ({
   };
 
   return (
-    <OtpInputContainer>
-      {Array.from({ length: maxLength }).map((_, index) => (
-        <OtpBox key={index} isFocused={index === code.length}>
-          <OtpText>{code[index] || ''}</OtpText>
-        </OtpBox>
-      ))}
-      <HiddenTextInput
-        ref={inputRef}
-        value={code}
-        onChangeText={handleCodeChange}
-        maxLength={maxLength}
-        keyboardType="number-pad"
-        autoFocus={autoFocus}
-      />
-    </OtpInputContainer>
+    <Pressable onPress={() => inputRef.current?.focus()}>
+      <OtpInputContainer>
+        {Array.from({ length: maxLength }).map((_, index) => (
+          <OtpBox key={index} isFocused={index === code.length}>
+            <OtpText>{code[index] || ''}</OtpText>
+          </OtpBox>
+        ))}
+        <HiddenTextInput
+          ref={inputRef}
+          value={code}
+          onChangeText={handleCodeChange}
+          maxLength={maxLength}
+          keyboardType="number-pad"
+          autoFocus={autoFocus}
+        />
+      </OtpInputContainer>
+    </Pressable>
   );
 };
 
 export default OtpInput;
 
 const OtpInputContainer = styled.View`
+  width: 100%;
   flex-direction: row;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 `;
 
 const OtpBox = styled.View<{ isFocused: boolean }>`
-  width: 60px;
+  flex: 1;
+  max-width: 48px;
+  min-width: 36px;
   height: 50px;
   border-bottom-width: 2px;
   border-color: ${(props) =>
