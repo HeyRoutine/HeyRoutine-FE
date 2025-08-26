@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
+import { ScrollView, TouchableOpacity, View, FlatList, Text } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -289,6 +289,22 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   return (
     <Container edges={['top', 'left', 'right']}>
       <Content>
+        {/* FCM 테스트 버튼 */}
+        <TouchableOpacity 
+          style={{
+            backgroundColor: '#FF6B6B',
+            padding: 10,
+            borderRadius: 8,
+            marginBottom: 16,
+            alignItems: 'center'
+          }}
+          onPress={() => navigation.navigate('FCMTest')}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>
+            🔥 FCM 테스트
+          </Text>
+        </TouchableOpacity>
+        
         {/* 날짜 선택기 */}
         <DateSelector>
           <MonthText>

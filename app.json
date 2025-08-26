@@ -13,18 +13,37 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.heyroutine.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "googleServicesFile": "./google-services.json",
+        "package": "com.heyroutine.app"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./src/assets/images/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "notification": {
+      "vapidPublicKey": "BCDA0eSm7bt7Rr8dFBcpraxVL9-ef4YBdsiC9Ef2lTuiSo7RA-CpgYJm9zpxBcwi1L4C48SF39asvxgR_cib4wY"
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": ["./src/assets/sounds/notification.wav"]
+        }
+      ]
+    ]
   }
 }
