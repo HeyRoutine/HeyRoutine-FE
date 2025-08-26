@@ -265,7 +265,13 @@ export const useDonePersonalRoutineList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (myRoutineListId: string) => doneMyRoutineList(myRoutineListId),
+    mutationFn: ({
+      myRoutineListId,
+      params,
+    }: {
+      myRoutineListId: string;
+      params: DonePersonalRoutineParams;
+    }) => doneMyRoutineList(myRoutineListId, params),
     onSuccess: () => {
       // 완료 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });

@@ -77,8 +77,31 @@ const PersonalRoutineDetailScreen = ({
     isLoading: isLoadingExistingRoutines,
     refetch: refetchRoutineDetails,
   } = usePersonalRoutineDetails(routineData?.id?.toString() || '', {
-    date: new Date().toISOString().split('T')[0], // 오늘 날짜
+    // 한국 시간으로 날짜 생성
+    date: (() => {
+      const today = new Date();
+      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+      return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+    })(),
   });
+
+  // 화면이 포커스될 때마다 루틴 상세 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      console.log(
+        '🔍 PersonalRoutineDetailScreen - 화면 포커스됨, 루틴 상세 데이터 새로고침',
+      );
+      console.log(
+        '🔍 현재 날짜:',
+        (() => {
+          const today = new Date();
+          const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+          return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+        })(),
+      );
+      refetchRoutineDetails();
+    }, [refetchRoutineDetails]),
+  );
 
   // 개인루틴 삭제 훅
   const { mutate: deleteRoutine } = useDeletePersonalRoutineList();
@@ -140,20 +163,64 @@ const PersonalRoutineDetailScreen = ({
 
   // 기존 루틴 데이터를 화면에 로드
   useEffect(() => {
+    console.log('🔍 existingRoutinesData 변경됨:', {
+      hasData: !!existingRoutinesData,
+      resultLength: existingRoutinesData?.result?.length || 0,
+      result: existingRoutinesData?.result,
+    });
+
     if (
       existingRoutinesData?.result &&
       existingRoutinesData.result.length > 0
     ) {
       console.log('🔍 기존 루틴 데이터 로드:', existingRoutinesData.result);
 
-      const existingItems = existingRoutinesData.result.map((routine: any) => ({
-        emoji: routine.emojiUrl,
-        text: routine.routineName,
-        time: `${routine.time}분`,
-        isCompleted: routine.completed,
-      }));
+      // 루틴 순서를 고정하기 위해 routineId로 정렬
+      const sortedRoutines = [...existingRoutinesData.result].sort((a, b) => {
+        // routineId가 작은 순서대로 정렬 (생성 순서)
+        return a.routineId - b.routineId;
+      });
 
+      console.log('🔍 정렬된 루틴 데이터:', sortedRoutines);
+
+      // 모든 루틴의 완료 상태를 상세히 로그
+      sortedRoutines.forEach((routine: any, index: number) => {
+        console.log(`🔍 루틴 ${index + 1} 상세 정보:`, {
+          routineId: routine.routineId,
+          routineName: routine.routineName,
+          isCompleted: routine.isCompleted,
+          allFields: Object.keys(routine),
+          rawRoutine: routine,
+        });
+      });
+
+      const existingItems = sortedRoutines.map((routine: any) => {
+        // 실제 API 응답에서는 isCompleted 필드로 옴
+        const isCompleted = routine.isCompleted || false;
+
+        console.log(`🔍 루틴 "${routine.routineName}" 완료 상태 매핑:`, {
+          routineId: routine.routineId,
+          originalIsCompleted: routine.isCompleted,
+          finalIsCompleted: isCompleted,
+        });
+
+        return {
+          emoji: routine.emojiUrl,
+          text: routine.routineName,
+          time: `${routine.time}분`,
+          isCompleted: isCompleted,
+        };
+      });
+
+      console.log('🔍 최종 매핑된 루틴 아이템들:', existingItems);
       setRoutineItems(existingItems);
+    } else if (
+      existingRoutinesData?.result &&
+      existingRoutinesData.result.length === 0
+    ) {
+      console.log('🔍 빈 루틴 데이터 - 기존 아이템들 초기화');
+      // 빈 배열인 경우 기존 아이템들 초기화
+      setRoutineItems([]);
     }
   }, [existingRoutinesData]);
 
@@ -348,28 +415,18 @@ const PersonalRoutineDetailScreen = ({
     const updateRoutine: any[] = [];
     const makeRoutine: any[] = [];
 
-    routineItems.forEach((item) => {
-      const existingRoutine = existingRoutines.find(
-        (existing: any) =>
-          existing.routineName === item.text &&
-          existing.time === parseInt(item.time.replace('분', '')) &&
-          existing.emojiUrl === item.emoji,
-      );
-
-      if (existingRoutine) {
+    // 기존 루틴과 새로운 루틴을 구분하기 위해 인덱스 기반으로 매핑
+    routineItems.forEach((item, index) => {
+      // 기존 루틴 데이터가 있고, 해당 인덱스에 기존 루틴이 있는 경우
+      if (index < existingRoutines.length) {
+        const existingRoutine = existingRoutines[index];
         // 기존 루틴이 수정된 경우
-        if (
-          existingRoutine.routineName !== item.text ||
-          existingRoutine.time !== parseInt(item.time.replace('분', '')) ||
-          existingRoutine.emojiUrl !== item.emoji
-        ) {
-          updateRoutine.push({
-            id: existingRoutine.routineId,
-            routineName: item.text,
-            emojiId: getEmojiId(item.emoji),
-            time: parseInt(item.time.replace('분', '')),
-          });
-        }
+        updateRoutine.push({
+          id: existingRoutine.routineId,
+          routineName: item.text,
+          emojiId: getEmojiId(item.emoji),
+          time: parseInt(item.time.replace('분', '')),
+        });
       } else {
         // 새로 추가된 루틴
         makeRoutine.push({
@@ -380,16 +437,8 @@ const PersonalRoutineDetailScreen = ({
       }
     });
 
-    // 삭제된 루틴 찾기
-    const deletedRoutines = existingRoutines.filter(
-      (existing: any) =>
-        !routineItems.some(
-          (item) =>
-            existing.routineName === item.text &&
-            existing.time === parseInt(item.time.replace('분', '')) &&
-            existing.emojiUrl === item.emoji,
-        ),
-    );
+    // 삭제된 루틴 찾기 (기존 루틴 개수보다 현재 아이템이 적으면 삭제된 것)
+    const deletedRoutines = existingRoutines.slice(routineItems.length);
 
     console.log('🔍 루틴 수정 데이터:', {
       updateRoutine,
@@ -456,18 +505,36 @@ const PersonalRoutineDetailScreen = ({
     setActiveRoutineId(routineData.id.toString());
 
     // ActiveRoutineScreen으로 이동
-    navigation.navigate('ActiveRoutine', {
-      tasks: routineItems.map((item) => ({
+    const tasksWithRoutineId = routineItems.map((item, index) => {
+      // 정렬된 순서로 routineId 매칭
+      const sortedRoutines = existingRoutinesData?.result
+        ? [...existingRoutinesData.result].sort(
+            (a, b) => a.routineId - b.routineId,
+          )
+        : [];
+      const matchingRoutine = sortedRoutines[index];
+
+      console.log(`🔍 태스크 ${index + 1} 매칭:`, {
+        itemText: item.text,
+        itemTime: item.time,
+        itemEmoji: item.emoji,
+        matchingRoutine: matchingRoutine,
+        routineId: matchingRoutine?.routineId,
+        sortedRoutineIds: sortedRoutines.map((r) => r.routineId),
+      });
+
+      return {
         icon: item.emoji,
         title: item.text,
         duration: item.time,
-        routineId: existingRoutinesData?.result?.find(
-          (routine: any) =>
-            routine.routineName === item.text &&
-            routine.time === parseInt(item.time.replace('분', '')) &&
-            routine.emojiUrl === item.emoji,
-        )?.routineId,
-      })),
+        routineId: matchingRoutine?.routineId,
+      };
+    });
+
+    console.log('🔍 ActiveRoutineScreen으로 전달할 tasks:', tasksWithRoutineId);
+
+    navigation.navigate('ActiveRoutine', {
+      tasks: tasksWithRoutineId,
       routineName: routineData?.name || '루틴',
       routineId: routineData?.id?.toString(),
     });
@@ -553,46 +620,46 @@ const PersonalRoutineDetailScreen = ({
             buttonSize={40}
             borderRadius={20}
           />
-
-          {/* 새로운 루틴 추가 (수정 모드일 때만) */}
-          {isEditMode && editingIndex === null && (
-            <AdderContainer>
-              <RoutineItemAdder
-                onPlusPress={handlePlusPress}
-                onClockPress={handleClockPress}
-                onTextChange={handleTextChange}
-                onTextPress={handleTextPress}
-                selectedTime={selectedTime}
-                selectedEmoji={selectedEmoji}
-                currentText={currentText}
-                placeholder="루틴을 추가해주세요"
-                editable={isEditMode}
-              />
-            </AdderContainer>
-          )}
-
-          {/* 완성된 루틴 아이템들 */}
-          {routineItems.map((item, index) => (
-            <AdderContainer key={index}>
-              <CompletedRoutineItem
-                item={item}
-                index={index}
-                onEdit={(index, emoji, text, time) => {
-                  const updatedItems = [...routineItems];
-                  updatedItems[index] = {
-                    emoji,
-                    text,
-                    time,
-                    isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
-                  };
-                  setRoutineItems(updatedItems);
-                }}
-                onDelete={handleDeleteItem}
-                isEditMode={isEditMode}
-              />
-            </AdderContainer>
-          ))}
         </RoutineCard>
+
+        {/* 새로운 루틴 추가 (수정 모드일 때만) */}
+        {isEditMode && editingIndex === null && (
+          <AdderContainer>
+            <RoutineItemAdder
+              onPlusPress={handlePlusPress}
+              onClockPress={handleClockPress}
+              onTextChange={handleTextChange}
+              onTextPress={handleTextPress}
+              selectedTime={selectedTime}
+              selectedEmoji={selectedEmoji}
+              currentText={currentText}
+              placeholder="루틴을 추가해주세요"
+              editable={isEditMode}
+            />
+          </AdderContainer>
+        )}
+
+        {/* 완성된 루틴 아이템들 */}
+        {routineItems.map((item, index) => (
+          <AdderContainer key={index}>
+            <CompletedRoutineItem
+              item={item}
+              index={index}
+              onEdit={(index, emoji, text, time) => {
+                const updatedItems = [...routineItems];
+                updatedItems[index] = {
+                  emoji,
+                  text,
+                  time,
+                  isCompleted: updatedItems[index].isCompleted, // 기존 완료 상태 유지
+                };
+                setRoutineItems(updatedItems);
+              }}
+              onDelete={handleDeleteItem}
+              isEditMode={isEditMode}
+            />
+          </AdderContainer>
+        ))}
 
         {/* 루틴 실행/수정 완료 버튼 */}
         <CreateButton

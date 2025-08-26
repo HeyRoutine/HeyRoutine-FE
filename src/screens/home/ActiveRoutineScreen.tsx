@@ -8,6 +8,10 @@ import RoutineActionButton from '../../components/domain/routine/RoutineActionBu
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoutineStore } from '../../store';
+import {
+  useDonePersonalRoutine,
+  useDonePersonalRoutineList,
+} from '../../hooks/routine/personal/usePersonalRoutines';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(0); // 초기값은 0으로 설정
@@ -20,6 +24,8 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const { markActiveRoutineTaskCompleted, resetActiveRoutineProgress } =
     useRoutineStore();
+  const { mutate: donePersonalRoutine } = useDonePersonalRoutine();
+  const { mutate: donePersonalRoutineList } = useDonePersonalRoutineList();
 
   const incomingTasks = route?.params?.tasks as
     | Array<{
@@ -30,6 +36,7 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
       }>
     | undefined;
   const routineName = route?.params?.routineName as string | undefined;
+  const routineId = route?.params?.routineId as string | undefined;
   const onTaskComplete = route?.params?.onTaskComplete as
     | ((index: number) => void)
     | undefined;
@@ -145,17 +152,43 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
     const currentTask = tasks[activeTaskIndex];
     const taskRoutineId = currentTask?.routineId;
 
+    console.log('🔍 현재 태스크 정보:', {
+      activeTaskIndex,
+      currentTask,
+      taskRoutineId,
+      allTasks: tasks.map((task, idx) => ({
+        index: idx,
+        title: task.title,
+        routineId: task.routineId,
+      })),
+    });
+
     if (taskRoutineId) {
+      // 한국 시간으로 날짜 생성
       const today = new Date();
-      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+      const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
 
       console.log('🔍 개인루틴 수행 API 호출:', {
         routineId: taskRoutineId,
         date: dateString,
+        originalTime: today.toISOString(),
+        koreaTime: koreaTime.toISOString(),
+        taskTitle: currentTask.title,
+        taskIndex: activeTaskIndex,
       });
 
-      // TODO: 개인루틴 수행 API 호출
-      // donePersonalRoutine(taskRoutineId, dateString);
+      // 개인루틴 수행 API 호출
+      donePersonalRoutine({
+        routineId: taskRoutineId.toString(),
+        params: { date: dateString },
+      });
+    } else {
+      console.log('🔍 taskRoutineId가 없음:', {
+        currentTask,
+        taskRoutineId,
+        activeTaskIndex,
+      });
     }
 
     // 마지막 항목이면 축하 화면으로 전환, 아니면 다음 항목으로 이동
@@ -171,6 +204,27 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
         goToNextTask();
       }, 2000);
     } else {
+      // 마지막 항목 완료 시 루틴 리스트 완료 API 호출
+      if (routineId) {
+        // 한국 시간으로 날짜 생성
+        const today = new Date();
+        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000); // UTC+9
+        const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+
+        console.log('🔍 루틴 리스트 완료 API 호출:', {
+          myRoutineListId: routineId,
+          date: dateString,
+          originalTime: today.toISOString(),
+          koreaTime: koreaTime.toISOString(),
+        });
+
+        // 루틴 리스트 완료 API 호출
+        donePersonalRoutineList({
+          myRoutineListId: routineId,
+          params: { date: dateString },
+        });
+      }
+
       setCompleteModalVisible(false);
       setIsActive(false);
       setIsCompleted(true);

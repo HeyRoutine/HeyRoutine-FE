@@ -533,7 +533,7 @@ export interface PersonalRoutineDetailItem {
   routineName: string;
   emojiUrl: string;
   time: number;
-  completed: boolean;
+  isCompleted: boolean; // 실제 API 응답에서는 isCompleted 필드로 옴
 }
 
 // 개인루틴 상세 조회 응답 타입

@@ -169,25 +169,58 @@ export const doneRoutineToMyRoutineList = async (
 ): Promise<ApiResponse<DonePersonalRoutineResponse>> => {
   const { date } = params;
 
+  console.log('🔍 개인루틴 수행 API 호출:', {
+    routineId,
+    date,
+    url: `/api/v1/my-routine/list/routine/complete/${routineId}`,
+  });
+
   const response = await apiClient.post<
     ApiResponse<DonePersonalRoutineResponse>
   >(
-    `/api/v1/list/routine/complete/${routineId}`,
+    `/api/v1/my-routine/list/routine/complete/${routineId}`,
     {},
     {
       params: { date },
     },
   );
+
+  console.log('🔍 개인루틴 수행 API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+  });
+
   return response.data;
 };
 
 // 루틴리스트 기록하기 API
 export const doneMyRoutineList = async (
   myRoutineListId: string,
+  params: DonePersonalRoutineParams,
 ): Promise<ApiResponse<DoneMyRoutineListResponse>> => {
+  const { date } = params;
+
+  console.log('🔍 루틴 리스트 전체 완료 API 호출:', {
+    myRoutineListId,
+    date,
+    url: `/api/v1/my-routine/list/complete/${myRoutineListId}`,
+  });
+
   const response = await apiClient.post<ApiResponse<DoneMyRoutineListResponse>>(
-    `/api/v1/list/complete/${myRoutineListId}`,
+    `/api/v1/my-routine/list/complete/${myRoutineListId}`,
+    {},
+    {
+      params: { date },
+    },
   );
+
+  console.log('🔍 루틴 리스트 전체 완료 API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+  });
+
   return response.data;
 };
 
