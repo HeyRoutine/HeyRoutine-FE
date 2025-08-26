@@ -241,8 +241,12 @@ export const useDonePersonalRoutine = () => {
       params: DonePersonalRoutineParams;
     }) => doneRoutineToMyRoutineList(routineId, params),
     onSuccess: () => {
+      console.log('🔍 개인루틴 수행 완료, 캐시 무효화 시작');
       // 수행 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
+      console.log('🔍 개인루틴 수행 완료, 캐시 무효화 완료');
     },
   });
 };
@@ -262,6 +266,7 @@ export const useDonePersonalRoutineList = () => {
     onSuccess: () => {
       // 완료 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['personalRoutines'] });
+      queryClient.invalidateQueries({ queryKey: ['infinitePersonalRoutines'] });
       queryClient.invalidateQueries({ queryKey: ['personalRoutineDetails'] });
     },
   });

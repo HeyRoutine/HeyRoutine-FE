@@ -12,6 +12,7 @@ import CreateGroupRoutineDetailScreen from '../../screens/home/CreateGroupRoutin
 import LoadingScreen from '../../screens/common/LoadingScreen';
 import ActiveRoutineScreen from '../../screens/home/ActiveRoutineScreen';
 import ResultScreen from '../../screens/common/ResultScreen';
+import FCMTestScreen from '../../screens/common/FCMTestScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +45,7 @@ const HomeStack = () => {
       <Stack.Screen name="ActiveRoutine" component={ActiveRoutineScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />
       <Stack.Screen name="Result" component={ResultScreen} />
+      <Stack.Screen name="FCMTest" component={FCMTestScreen} />
     </Stack.Navigator>
   );
 };

@@ -70,7 +70,10 @@ const RoutineItemAdder = ({
       </PlusSection>
       {isCompleted ? (
         <TextSectionCompleted onPress={onTextPress}>
-          <CompletedText>{text}</CompletedText>
+          <CompletedTextContainer>
+            <CompletedText>{text}</CompletedText>
+            <StrikethroughLine />
+          </CompletedTextContainer>
         </TextSectionCompleted>
       ) : (
         <TextSection onPress={onTextPress}>
@@ -145,11 +148,26 @@ const TextSectionCompleted = styled.TouchableOpacity`
   /* border: 1px solid ${theme.colors.gray200}; */
 `;
 
+const CompletedTextContainer = styled.View`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+`;
+
 const CompletedText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 13px;
   color: ${theme.colors.gray800};
-  text-decoration-line: line-through;
+`;
+
+const StrikethroughLine = styled.View`
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: ${theme.colors.gray600};
 `;
 
 const TimeSection = styled.TouchableOpacity`

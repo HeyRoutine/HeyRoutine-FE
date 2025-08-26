@@ -13,18 +13,19 @@ import { useCheckEmailDuplicate } from '../../../hooks/user/useUser';
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [shouldCheckDuplicate, setShouldCheckDuplicate] = useState(false);
+  const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(
+    null,
+  );
 
   // Zustand 스토어에서 이메일 설정 함수 가져오기
   const { setSignupEmail } = useAuthStore();
 
-  // 이메일 중복 확인 API hook
+  // 이메일 중복 확인 API hook - 실시간으로 호출
   const {
     data: duplicateCheckData,
     isLoading: isCheckingDuplicate,
     error: duplicateCheckError,
-    refetch: refetchDuplicateCheck,
-  } = useCheckEmailDuplicate(email, shouldCheckDuplicate);
+  } = useCheckEmailDuplicate(email, email.length > 0 && validateEmail(email)); // 이메일이 유효할 때 자동으로 호출
 
   // 이메일 형식 유효성 검사
   const isEmailValid = validateEmail(email);
@@ -37,39 +38,60 @@ const EmailInputScreen = ({ navigation }: any) => {
     }
   }, [email, isEmailValid]);
 
-  // 이메일 중복 확인 결과 처리
+  // 이메일 입력 시 상태 초기화
   useEffect(() => {
-    if (shouldCheckDuplicate && !isCheckingDuplicate) {
+    if (email.length === 0) {
+      // 이메일이 비어있을 때 상태 초기화
+      setIsEmailAvailable(null);
+      setErrorMessage('');
+    }
+  }, [email]);
+
+  // 이메일 중복 확인 결과 처리 - 실시간
+  useEffect(() => {
+    if (email.length > 0 && validateEmail(email) && !isCheckingDuplicate) {
       if (duplicateCheckError) {
         // API 에러 처리
+        console.log('🔍 이메일 중복 확인 에러:', duplicateCheckError);
         setErrorMessage('이메일 중복 확인 중 오류가 발생했습니다.');
-        setShouldCheckDuplicate(false);
+        setIsEmailAvailable(false);
       } else if (duplicateCheckData) {
-        // 중복 확인 성공 - 사용 가능한 이메일
-        setErrorMessage('');
-        setShouldCheckDuplicate(false);
-        // 자동으로 다음 화면으로 이동
-        handleEmailVerified();
+        // API 응답 확인
+        console.log('🔍 이메일 중복 확인 응답:', duplicateCheckData);
+        if (
+          duplicateCheckData.isSuccess &&
+          duplicateCheckData.code === 'COMMON200'
+        ) {
+          // 중복 확인 성공 - 사용 가능한 이메일
+          console.log('🔍 이메일 중복 확인 성공:', duplicateCheckData.result);
+          setErrorMessage('');
+          setIsEmailAvailable(true);
+        } else {
+          // API는 성공했지만 비즈니스 로직 실패 (중복된 이메일)
+          console.log('🔍 이메일 중복 확인 실패:', duplicateCheckData.message);
+          setErrorMessage(
+            duplicateCheckData.message || '이미 사용 중인 이메일입니다.',
+          );
+          setIsEmailAvailable(false);
+        }
       }
+    } else if (email.length === 0) {
+      // 이메일이 비어있을 때
+      setErrorMessage('');
+      setIsEmailAvailable(null);
     }
-  }, [
-    shouldCheckDuplicate,
-    isCheckingDuplicate,
-    duplicateCheckData,
-    duplicateCheckError,
-  ]);
+  }, [email, isCheckingDuplicate, duplicateCheckData, duplicateCheckError]);
 
   const handleNext = () => {
-    if (isEmailValid) {
-      // 이메일 중복 확인 실행
-      setShouldCheckDuplicate(true);
-      refetchDuplicateCheck();
+    if (isEmailValid && isEmailAvailable === true) {
+      // 이메일이 유효하고 사용 가능할 때만 다음 화면으로 이동
+      handleEmailVerified();
     }
   };
 
-  // 중복 확인이 성공했을 때만 다음 화면으로 이동
+  // 이메일이 확인되었을 때 다음 화면으로 이동
   const handleEmailVerified = () => {
-    if (isEmailValid && !errorMessage && !isCheckingDuplicate) {
+    if (isEmailValid && isEmailAvailable === true && !isCheckingDuplicate) {
       // Zustand 스토어에 이메일 저장
       setSignupEmail(email);
       console.log('🔍 이메일 저장됨:', email);
@@ -112,14 +134,16 @@ const EmailInputScreen = ({ navigation }: any) => {
         <CustomButton
           text={isCheckingDuplicate ? '확인 중...' : '다음'}
           onPress={handleNext}
-          disabled={!isEmailValid || isCheckingDuplicate}
+          disabled={
+            !isEmailValid || isCheckingDuplicate || isEmailAvailable !== true
+          }
           backgroundColor={
-            isEmailValid && !isCheckingDuplicate
+            isEmailValid && !isCheckingDuplicate && isEmailAvailable === true
               ? theme.colors.primary
               : theme.colors.gray200
           }
           textColor={
-            isEmailValid && !isCheckingDuplicate
+            isEmailValid && !isCheckingDuplicate && isEmailAvailable === true
               ? theme.colors.white
               : theme.colors.gray500
           }

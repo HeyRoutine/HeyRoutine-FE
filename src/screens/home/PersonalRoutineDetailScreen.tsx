@@ -69,20 +69,30 @@ const PersonalRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
+  // 현재 날짜를 KST로 계산 (ActiveRoutineScreen과 동일한 로직)
+  const getCurrentDate = () => {
+    const today = new Date();
+    const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    const dateString = `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+    console.log('🔍 PersonalRoutineDetailScreen - 현재 날짜 계산:', {
+      today: today.toISOString(),
+      koreaTime: koreaTime.toISOString(),
+      dateString,
+    });
+    return dateString;
+  };
+
   const {
     data: existingRoutinesData,
     isLoading: isLoadingExistingRoutines,
     refetch: refetchRoutineDetails,
   } = usePersonalRoutineDetails(routineData?.id?.toString() || '', {
-    date: (() => {
-      const today = new Date();
-      const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-      return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
-    })(),
+    date: getCurrentDate(),
   });
 
   useFocusEffect(
     useCallback(() => {
+      console.log('🔍 PersonalRoutineDetailScreen 포커스됨, 데이터 새로고침');
       refetchRoutineDetails();
     }, [refetchRoutineDetails]),
   );
@@ -132,6 +142,8 @@ const PersonalRoutineDetailScreen = ({
   }, [setEditMode]);
 
   useEffect(() => {
+    console.log('🔍 existingRoutinesData 변경됨:', existingRoutinesData);
+
     if (
       existingRoutinesData?.result &&
       existingRoutinesData.result.length > 0
@@ -140,8 +152,16 @@ const PersonalRoutineDetailScreen = ({
         return a.routineId - b.routineId;
       });
 
+      console.log('🔍 정렬된 루틴들:', sortedRoutines);
+
       const existingItems = sortedRoutines.map((routine: any) => {
         const isCompleted = routine.isCompleted || routine.completed || false;
+        console.log(
+          `🔍 루틴 ${routine.routineName} 완료 상태:`,
+          isCompleted,
+          '원본:',
+          routine,
+        );
 
         return {
           emoji: routine.emojiUrl,
@@ -151,11 +171,13 @@ const PersonalRoutineDetailScreen = ({
         };
       });
 
+      console.log('🔍 최종 routineItems:', existingItems);
       setRoutineItems(existingItems);
     } else if (
       existingRoutinesData?.result &&
       existingRoutinesData.result.length === 0
     ) {
+      console.log('🔍 루틴이 없음');
       setRoutineItems([]);
     }
   }, [existingRoutinesData]);
@@ -401,6 +423,14 @@ const PersonalRoutineDetailScreen = ({
           )
         : [];
       const matchingRoutine = sortedRoutines[index];
+
+      console.log('🔍 PersonalRoutineDetailScreen - routineId 매칭:', {
+        index,
+        item,
+        sortedRoutines,
+        matchingRoutine,
+        routineId: matchingRoutine?.routineId,
+      });
 
       return {
         icon: item.emoji,

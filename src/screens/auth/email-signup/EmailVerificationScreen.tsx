@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+
 import { ActivityIndicator } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
@@ -9,6 +11,7 @@ import Header from '../../../components/common/Header';
 import OtpInput from '../../../components/common/OtpInput';
 import Timer from '../../../components/common/Timer';
 import { useAuthStore } from '../../../store';
+
 import { Ionicons } from '@expo/vector-icons';
 import { authCheck, mailSend } from '../../../api/user/user';
 import { AuthCheckRequest, MailSendRequest } from '../../../types/api';
@@ -212,10 +215,10 @@ const ResendButton = styled.TouchableOpacity`
   align-self: flex-start;
 `;
 
-const ResendText = styled.Text`
+const ResendText = styled.Text<{ disabled?: boolean }>`
   font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray600};
+  color: ${(props) => (props.disabled ? theme.colors.gray400 : theme.colors.gray600)};
   text-decoration-line: underline;
 `;
 

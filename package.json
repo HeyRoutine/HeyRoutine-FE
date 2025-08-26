@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -15,6 +15,8 @@
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@quidone/react-native-wheel-picker": "^1.5.2",
     "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-firebase/app": "^23.1.2",
+    "@react-native-firebase/messaging": "^23.1.2",
     "@react-navigation/bottom-tabs": "^7.4.6",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.25",
@@ -23,10 +25,13 @@
     "axios": "^1.11.0",
     "expo": "~53.0.20",
     "expo-constants": "~17.1.7",
+    "expo-device": "~7.1.4",
     "expo-font": "~13.3.2",
     "expo-image-picker": "~16.1.4",
     "expo-linear-gradient": "~14.1.5",
+    "expo-notifications": "^0.31.4",
     "expo-status-bar": "~2.2.3",
+    "firebase": "^12.1.0",
     "lottie-react-native": "^6.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
