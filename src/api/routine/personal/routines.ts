@@ -111,17 +111,37 @@ export const doneRoutineToMyRoutineList = async (
 ): Promise<ApiResponse<DonePersonalRoutineResponse>> => {
   const { date } = params;
 
-  const response = await apiClient.post<
-    ApiResponse<DonePersonalRoutineResponse>
-  >(
-    `/api/v1/my-routine/list/routine/complete/${routineId}`,
-    {},
-    {
-      params: { date },
-    },
-  );
+  console.log('🔍 doneRoutineToMyRoutineList API 호출:', {
+    routineId,
+    date,
+    url: `/api/v1/my-routine/list/routine/complete/${routineId}`,
+  });
 
-  return response.data;
+  try {
+    const response = await apiClient.post<
+      ApiResponse<DonePersonalRoutineResponse>
+    >(
+      `/api/v1/my-routine/list/routine/complete/${routineId}`,
+      {},
+      {
+        params: { date },
+      },
+    );
+
+    console.log('🔍 doneRoutineToMyRoutineList API 성공:', {
+      status: response.status,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('🔍 doneRoutineToMyRoutineList API 에러:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    throw error;
+  }
 };
 
 // 루틴리스트 기록하기 API
@@ -161,12 +181,35 @@ export const getPersonalRoutineDetails = async (
 ): Promise<ApiResponse<any>> => {
   const { date } = params;
 
-  const response = await apiClient.get<ApiResponse<any>>(
-    `/api/v1/my-routine/list/routine/${myRoutineListId}`,
-    {
-      params: { date },
-    },
-  );
+  console.log('🔍 getPersonalRoutineDetails API 호출:', {
+    myRoutineListId,
+    date,
+    url: `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+  });
 
-  return response.data;
+  try {
+    const response = await apiClient.get<ApiResponse<any>>(
+      `/api/v1/my-routine/list/routine/${myRoutineListId}`,
+      {
+        params: { date },
+      },
+    );
+
+    console.log('🔍 getPersonalRoutineDetails API 응답:', {
+      status: response.status,
+      data: response.data,
+      isSuccess: response.data?.isSuccess,
+      result: response.data?.result,
+      resultLength: response.data?.result?.length || 0,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('🔍 getPersonalRoutineDetails API 에러:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    throw error;
+  }
 };
