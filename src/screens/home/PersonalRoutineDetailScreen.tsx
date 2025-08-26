@@ -334,59 +334,44 @@ const PersonalRoutineDetailScreen = ({
     const getEmojiId = (emojiUrl: string) => {
       let emojiId = 1; // 기본값
       if (emojisData?.result?.items) {
-        const matchedEmoji = emojisData.result.items.find(
-          (emoji: any) => emoji.emojiUrl === emojiUrl,
+        const emoji = emojisData.result.items.find(
+          (e: any) => e.emojiUrl === emojiUrl,
         );
-        if (matchedEmoji) {
-          emojiId = matchedEmoji.emojiId;
+        if (emoji) {
+          emojiId = emoji.emojiId;
         }
       }
       return emojiId;
     };
 
-    // 수정된 루틴과 새로 추가된 루틴을 구분
-    const updateRoutine: Array<{
-      id: number;
-      routineName: string;
-      emojiId: number;
-      time: number;
-    }> = [];
+    // 업데이트할 루틴과 새로 만들 루틴을 분리
+    const updateRoutine: any[] = [];
+    const makeRoutine: any[] = [];
 
-    const makeRoutine: Array<{
-      routineName: string;
-      emojiId: number;
-      time: number;
-    }> = [];
-
-    // 기존 루틴과 새로운 루틴을 비교하여 실제로 변경된 것만 처리
-    const processedExistingRoutines = new Set(); // 이미 처리된 기존 루틴 추적
-
-    routineItems.forEach((item, index) => {
-      const existingRoutine = existingRoutines[index];
+    routineItems.forEach((item) => {
+      const existingRoutine = existingRoutines.find(
+        (existing: any) =>
+          existing.routineName === item.text &&
+          existing.time === parseInt(item.time.replace('분', '')) &&
+          existing.emojiUrl === item.emoji,
+      );
 
       if (existingRoutine) {
-        // 기존 루틴이 있는 경우 - 수정 여부 확인
-        const isModified =
+        // 기존 루틴이 수정된 경우
+        if (
           existingRoutine.routineName !== item.text ||
           existingRoutine.time !== parseInt(item.time.replace('분', '')) ||
-          existingRoutine.emojiUrl !== item.emoji;
-
-        if (isModified) {
-          // 수정된 경우 updateRoutine에 추가
-          console.log('🔍 기존 루틴 수정:', item.text);
+          existingRoutine.emojiUrl !== item.emoji
+        ) {
           updateRoutine.push({
             id: existingRoutine.routineId,
             routineName: item.text,
             emojiId: getEmojiId(item.emoji),
             time: parseInt(item.time.replace('분', '')),
           });
-        } else {
-          // 수정되지 않은 경우
-          console.log('🔍 기존 루틴과 동일 (변경 없음):', item.text);
         }
       } else {
-        // 기존 루틴이 없는 경우 - 새로 추가된 루틴
-        console.log('🔍 새로 추가된 루틴:', item.text);
+        // 새로 추가된 루틴
         makeRoutine.push({
           routineName: item.text,
           emojiId: getEmojiId(item.emoji),
@@ -395,96 +380,95 @@ const PersonalRoutineDetailScreen = ({
       }
     });
 
-    console.log('🔍 기존 루틴 개수:', existingRoutines.length);
-    console.log('🔍 새로운 루틴 개수:', routineItems.length);
-    console.log('🔍 추가될 루틴 개수:', makeRoutine.length);
+    // 삭제된 루틴 찾기
+    const deletedRoutines = existingRoutines.filter(
+      (existing: any) =>
+        !routineItems.some(
+          (item) =>
+            existing.routineName === item.text &&
+            existing.time === parseInt(item.time.replace('분', '')) &&
+            existing.emojiUrl === item.emoji,
+        ),
+    );
 
-    // updateRoutineInMyRoutineListV2 API 호출
-    const updateData = {
+    console.log('🔍 루틴 수정 데이터:', {
       updateRoutine,
       makeRoutine,
-    };
-
-    console.log('🔍 루틴 상세 수정 API 호출:', {
-      myRoutineListId: routineData.id,
-      updateData,
-      existingRoutinesCount: existingRoutines.length,
-      newRoutinesCount: routineItems.length,
-      updateRoutineCount: updateRoutine.length,
-      makeRoutineCount: makeRoutine.length,
+      deletedRoutines,
     });
 
-    updateRoutineDetail(
-      {
-        myRoutineListId: routineData.id.toString(),
-        data: updateData,
-      },
-      {
-        onSuccess: () => {
-          console.log('🔍 루틴 상세 수정 성공');
-          setEditMode(false);
-
-          // ResultScreen으로 이동
-          navigation.navigate('Result', {
-            type: 'success',
-            title: '루틴 상세 수정 완료',
-            description: '루틴 상세가 성공적으로 수정되었습니다.',
-            nextScreen: 'PersonalRoutineDetail',
-            updatedRoutineData: routineData,
+    // 삭제된 루틴들 먼저 삭제
+    const deletePromises = deletedRoutines.map(
+      (routine: any) =>
+        new Promise((resolve, reject) => {
+          deleteRoutineDetail(routine.routineId.toString(), {
+            onSuccess: () => resolve(routine.routineId),
+            onError: (error) => reject(error),
           });
-        },
-        onError: (error) => {
-          console.error('🔍 루틴 상세 수정 실패:', error);
-        },
-      },
+        }),
     );
-  };
 
-  // 오늘 날짜가 루틴의 선택된 요일에 포함되는지 확인하는 함수
-  const isTodayInSelectedDays = () => {
-    const today = new Date();
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayDay = dayNames[today.getDay()];
-    return selectedDays.includes(todayDay);
+    // 삭제 완료 후 업데이트 및 생성
+    Promise.all(deletePromises)
+      .then(() => {
+        // 업데이트할 루틴과 새로 만들 루틴이 있으면 한 번에 처리
+        if (updateRoutine.length > 0 || makeRoutine.length > 0) {
+          updateRoutineDetail(
+            {
+              myRoutineListId: routineData.id.toString(),
+              data: {
+                updateRoutine: updateRoutine,
+                makeRoutine: makeRoutine,
+              },
+            },
+            {
+              onSuccess: () => {
+                console.log('🔍 루틴 수정 성공');
+                // 모든 작업 완료 후 편집 모드 종료
+                setEditMode(false);
+                refetchRoutineDetails(); // 데이터 새로고침
+              },
+              onError: (error) => {
+                console.error('🔍 루틴 수정 실패:', error);
+                Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
+              },
+            },
+          );
+        } else {
+          // 수정할 내용이 없으면 바로 편집 모드 종료
+          setEditMode(false);
+          refetchRoutineDetails(); // 데이터 새로고침
+        }
+      })
+      .catch((error) => {
+        console.error('🔍 루틴 삭제 실패:', error);
+        Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
+      });
   };
 
   const handleStartRoutine = () => {
-    // 오늘 날짜가 선택된 요일에 포함되지 않으면 실행하지 않음
-    if (!isTodayInSelectedDays()) {
-      Alert.alert('알림', '오늘 날짜에 해당하는 루틴이 아닙니다.');
+    if (!routineData?.id) {
+      console.error('🔍 루틴 ID가 없습니다:', routineData);
       return;
     }
 
-    // 일반 모드일 때는 루틴 실행
-    const routineName = routineData?.name;
-    const tasks = routineItems.map((item) => ({
-      icon: item.emoji,
-      title: item.text,
-      duration: item.time,
-    }));
+    console.log('🔍 루틴 실행 시작:', routineData.id);
+    setActiveRoutineId(routineData.id.toString());
+
+    // ActiveRoutineScreen으로 이동
     navigation.navigate('ActiveRoutine', {
-      routineName,
-      tasks,
+      routineData: {
+        ...routineData,
+        tasks: routineItems.map((item) => ({
+          id: item.text, // 임시 ID
+          title: item.text,
+          emoji: item.emoji,
+          time: parseInt(item.time.replace('분', '')),
+          completed: item.completed,
+        })),
+      },
     });
   };
-
-  // 화면에 돌아오면(포커스 시) 편집 모드를 강제로 종료하고 데이터 새로 불러오기
-  useFocusEffect(
-    useCallback(() => {
-      setEditMode(false);
-      setEditingIndex(null);
-      // 화면에 포커스될 때마다 루틴 상세 데이터 새로 불러오기
-      if (routineData?.id) {
-        console.log(
-          '🔍 화면 포커스 시 루틴 상세 데이터 새로 불러오기:',
-          routineData.id,
-        );
-        refetchRoutineDetails();
-      }
-    }, [setEditMode, routineData?.id, refetchRoutineDetails]),
-  );
-
-  // 전역 동기화 제거: 실행 화면에서 전달되는 콜백(onTaskComplete)로만 완료 상태 반영
 
   const handleMorePress = () => {
     setMoreSheetVisible(true);
@@ -525,6 +509,14 @@ const PersonalRoutineDetailScreen = ({
   const handleEditRoutineDetail = () => {
     closeMoreSheet();
     setEditMode(true);
+  };
+
+  // 오늘이 선택된 요일에 포함되는지 확인하는 함수
+  const isTodayInSelectedDays = () => {
+    const today = new Date();
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const todayName = dayNames[today.getDay()];
+    return selectedDays.includes(todayName);
   };
 
   return (
@@ -627,66 +619,52 @@ const PersonalRoutineDetailScreen = ({
       <EmojiPickerModal
         visible={emojiPickerVisible}
         onRequestClose={() => setEmojiPickerVisible(false)}
-        onEmojiSelect={handleEmojiSelect}
+        onEmojiSelect={(emoji) => {
+          setSelectedEmoji(emoji);
+
+          // 편집 중인 아이템이 있으면 해당 아이템의 이모지를 업데이트
+          if (editingIndex !== null) {
+            const updatedItems = [...routineItems];
+            updatedItems[editingIndex] = {
+              ...updatedItems[editingIndex],
+              emoji: emoji,
+            };
+            setRoutineItems(updatedItems);
+          }
+
+          setEmojiPickerVisible(false);
+        }}
       />
 
       <RoutineSuggestionModal
         visible={routineSuggestionVisible}
         onRequestClose={handleRoutineSuggestionClose}
         onRoutineSelect={handleRoutineSuggestionSelect}
-        onPlusPress={() => setRoutineSuggestionVisible(true)}
-        onClockPress={handleClockPress}
-        onTextChange={handleTextChange}
-        onTimeChange={setSelectedTime}
-        selectedTime={selectedTime}
-        selectedEmoji={selectedEmoji}
-        currentText={currentText}
         templates={templatesData?.result?.items || []}
-        emojis={emojisData?.result?.items || []}
-        isLoading={isLoadingTemplates || isLoadingEmojis}
       />
 
-      {/* 더보기 바텀시트 */}
+      {/* 더보기 시트 */}
       <BottomSheetDialog
         visible={moreSheetVisible}
         onRequestClose={closeMoreSheet}
       >
         <SheetActions>
+          <CustomButton text="루틴 수정" onPress={handleEditRoutine} />
           <CustomButton
-            text="루틴 수정"
-            onPress={handleEditRoutine}
-            backgroundColor={theme.colors.white}
-            textColor={theme.colors.primary}
-            borderColor="#8B5CF6"
-            borderWidth={1}
-          />
-          <CustomButton
-            text="상세 루틴 수정"
+            text="루틴 상세 수정"
             onPress={handleEditRoutineDetail}
-            backgroundColor={theme.colors.white}
-            textColor={theme.colors.gray800}
-            borderColor={theme.colors.gray300}
-            borderWidth={1}
           />
-          <CustomButton
-            text="삭제"
-            onPress={handleDeleteRoutine}
-            backgroundColor={theme.colors.white}
-            textColor={theme.colors.gray800}
-            borderColor={theme.colors.gray300}
-            borderWidth={1}
-          />
+          <CustomButton text="루틴 삭제" onPress={handleDeleteRoutine} />
         </SheetActions>
       </BottomSheetDialog>
 
-      {/* 나가기 확인 모달 */}
+      {/* 편집 모드 종료 확인 모달 */}
       <BottomSheetDialog
         visible={exitConfirmVisible}
         onRequestClose={closeExitConfirm}
       >
-        <ModalTitle>정말 나가시겠습니까?</ModalTitle>
-        <ModalSubtitle>변경한 내용은 저장되지 않습니다.</ModalSubtitle>
-        <ButtonRow>
+        <SheetTitle>편집을 종료하시겠습니까?</SheetTitle>
+        <SheetActions>
           <ButtonWrapper>
             <CancelButton onPress={closeExitConfirm}>
               <CancelText>취소</CancelText>
@@ -694,55 +672,41 @@ const PersonalRoutineDetailScreen = ({
           </ButtonWrapper>
           <ButtonWrapper>
             <ConfirmButton onPress={handleConfirmExit}>
-              <ConfirmText>나가기</ConfirmText>
+              <ConfirmText>종료</ConfirmText>
             </ConfirmButton>
           </ButtonWrapper>
-        </ButtonRow>
+        </SheetActions>
       </BottomSheetDialog>
 
-      {/* 삭제 확인 모달 */}
+      {/* 루틴 삭제 확인 모달 */}
       <BottomSheetDialog
         visible={deleteConfirmVisible}
         onRequestClose={closeDeleteConfirm}
       >
-        <ModalTitle>루틴 삭제</ModalTitle>
-        <ModalSubtitle>
-          이 루틴을 삭제하시겠습니까?{'\n'}삭제된 루틴은 복구할 수 없습니다.
-        </ModalSubtitle>
-        <ButtonRow>
+        <SheetTitle>루틴을 삭제하시겠습니까?</SheetTitle>
+        <SheetActions>
           <ButtonWrapper>
             <CancelButton onPress={closeDeleteConfirm}>
               <CancelText>취소</CancelText>
             </CancelButton>
           </ButtonWrapper>
           <ButtonWrapper>
-            <CustomButton
-              text="삭제"
-              onPress={handleConfirmDelete}
-              backgroundColor={theme.colors.error}
-              textColor={theme.colors.white}
-            />
+            <ConfirmButton onPress={handleConfirmDelete}>
+              <ConfirmText>삭제</ConfirmText>
+            </ConfirmButton>
           </ButtonWrapper>
-        </ButtonRow>
+        </SheetActions>
       </BottomSheetDialog>
 
-      {/* 삭제 성공 모달 */}
+      {/* 루틴 삭제 성공 모달 */}
       <BottomSheetDialog
         visible={deleteSuccessVisible}
         onRequestClose={closeDeleteSuccess}
       >
-        <ModalTitle>삭제 완료</ModalTitle>
-        <ModalSubtitle>루틴이 삭제되었습니다.</ModalSubtitle>
-        <ButtonRow>
-          <ButtonWrapper>
-            <CustomButton
-              text="확인"
-              onPress={closeDeleteSuccess}
-              backgroundColor={theme.colors.primary}
-              textColor={theme.colors.white}
-            />
-          </ButtonWrapper>
-        </ButtonRow>
+        <SheetTitle>루틴이 삭제되었습니다.</SheetTitle>
+        <SheetActions>
+          <CustomButton text="확인" onPress={closeDeleteSuccess} />
+        </SheetActions>
       </BottomSheetDialog>
     </Container>
   );
@@ -752,25 +716,25 @@ export default PersonalRoutineDetailScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.gray50};
 `;
 
-const Content = styled.ScrollView`
+const Content = styled.View`
   flex: 1;
   padding: 16px;
 `;
 
 const RoutineCard = styled.View`
-  background-color: ${theme.colors.gray50};
-  border-radius: 12px;
-  padding: 24px 16px;
-  margin: 16px;
+  background-color: ${theme.colors.white};
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
 `;
 
 const RoutineTitle = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.Bold};
+  font-size: 20px;
+  color: ${theme.colors.gray900};
   margin-bottom: 4px;
 `;
 
