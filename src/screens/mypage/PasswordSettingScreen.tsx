@@ -8,6 +8,7 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { validatePassword } from '../../utils/validation';
 import { useMyPageResetPassword } from '../../hooks/user';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 
 interface IPasswordSettingScreenProps {
   navigation: any;
@@ -19,7 +20,10 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isValidForm, setIsValidForm] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
+  const [apiErrorMessage, setApiErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { mutateAsync: resetPasswordMutate } = useMyPageResetPassword();
+  const { handleApiError } = useErrorHandler();
 
   // 실시간 검증을 위한 useEffect (PasswordScreen과 동일한 방식)
   useEffect(() => {
@@ -73,6 +77,9 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
   const handlePasswordChange = async () => {
     if (!isValidForm) return;
 
+    setIsLoading(true);
+    setApiErrorMessage(''); // API 에러 메시지 초기화
+
     try {
       const response = await resetPasswordMutate({ password: newPassword });
       if (response.isSuccess) {
@@ -84,20 +91,22 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
           onSuccess: () => {},
         });
       } else {
-        navigation.replace('Result', {
-          type: 'failure',
-          title: '변경 실패',
-          description: response.message || '비밀번호 변경에 실패했어요',
-          nextScreen: 'ProfileEdit',
-        });
+        // API에서 실패 응답을 받은 경우 - Result 화면으로 이동하지 않고 에러메시지만 표시
+        setApiErrorMessage('현재 비밀번호가 기존과 일치하지 않습니다.');
       }
     } catch (error: any) {
-      navigation.replace('Result', {
-        type: 'failure',
-        title: '변경 실패',
-        description: error?.response?.data?.message || '비밀번호 변경에 실패했어요',
-        nextScreen: 'ProfileEdit',
-      });
+      // 공통 에러 핸들러를 사용하여 400번대와 500번대 에러 구분 처리
+      const errorMessage = handleApiError(error, false); // Alert 표시하지 않음
+
+      // 400번 에러만 현재 비밀번호 불일치로 처리
+      if (error?.response?.status === 400) {
+        setApiErrorMessage('현재 비밀번호가 기존과 일치하지 않습니다.');
+      } else {
+        // 그 외 모든 에러는 서버 오류 메시지 표시
+        setApiErrorMessage(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,6 +163,8 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
           <ErrorContainer>
             {validationMessage ? (
               <ErrorText>{validationMessage}</ErrorText>
+            ) : apiErrorMessage ? (
+              <ErrorText>{apiErrorMessage}</ErrorText>
             ) : null}
           </ErrorContainer>
         </PasswordSection>
@@ -161,13 +172,19 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
 
       <ButtonContainer>
         <CustomButton
-          text="비밀번호 변경"
+          text={isLoading ? '변경 중...' : '비밀번호 변경'}
           onPress={handlePasswordChange}
-          disabled={!isValidForm}
+          disabled={!isValidForm || isLoading}
           backgroundColor={
-            isValidForm ? theme.colors.primary : theme.colors.gray200
+            isValidForm && !isLoading
+              ? theme.colors.primary
+              : theme.colors.gray200
           }
-          textColor={isValidForm ? theme.colors.white : theme.colors.gray500}
+          textColor={
+            isValidForm && !isLoading
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonContainer>
     </Container>
