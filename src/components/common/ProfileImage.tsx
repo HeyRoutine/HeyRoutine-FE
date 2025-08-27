@@ -68,6 +68,8 @@ const ProfileImageContainer = styled.View<{ size: number }>`
   border-radius: ${(props) => props.size / 2}px;
   overflow: hidden;
   background-color: ${theme.colors.gray100};
+  border-width: 1px;
+  border-color: ${theme.colors.gray200};
 `;
 
 const Image = styled.Image`

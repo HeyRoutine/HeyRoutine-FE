@@ -93,13 +93,17 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       <Content>
         <ProfileSection insets={insets}>
           <ProfileImage
-            imageUri={myInfo?.result?.userImage || undefined}
+            imageUri={
+              userInfo?.profileImage || myInfo?.result?.userImage || undefined
+            }
             onEditPress={() => {}}
             size={64}
             showEditButton={false}
           />
           <ProfileInfo>
-            <UserName>{myInfo?.result?.nickname || '사용자'}</UserName>
+            <UserName>
+              {userInfo?.nickname || myInfo?.result?.nickname || '사용자'}
+            </UserName>
           </ProfileInfo>
         </ProfileSection>
 
