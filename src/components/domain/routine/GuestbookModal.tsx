@@ -220,9 +220,9 @@ const GuestbookModal = ({
 export default GuestbookModal;
 
 const Container = styled.View`
-  height: 50%;
-  min-height: 400px;
-  max-height: 60%;
+  height: 70%;
+  min-height: 500px;
+  max-height: 80%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;

@@ -592,78 +592,83 @@ const GroupRoutineDetailScreen = ({
           </RoutineListContainer>
         </SectionCard>
 
-        {/* 완료/미달성 섹션 */}
+        {/* 참여자 섹션 */}
         <SectionCard>
           <ParticipantsContainer>
-            {/* 완료 섹션 */}
-            <CompletedSection>
-              <CompletedHeader>
-                <CompletedTitle>완료</CompletedTitle>
-                <CompletedCountContainer>
-                  <CompletedIcon>👥</CompletedIcon>
-                  <CompletedCountText>
-                    {routine.completedCount}
-                  </CompletedCountText>
-                </CompletedCountContainer>
-              </CompletedHeader>
-              <CompletedAvatarContainer>
-                <CompletedAvatarRow
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {routine.completedParticipants
-                    .slice(0, 12)
-                    .map((uri, idx) => (
-                      <AvatarWrapper key={`completed-${idx}`}>
-                        <Avatar
-                          source={
-                            uri
-                              ? { uri }
-                              : require('../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() => {}}
-                        />
-                      </AvatarWrapper>
-                    ))}
-                </CompletedAvatarRow>
-              </CompletedAvatarContainer>
-            </CompletedSection>
+            <ParticipantsHeader>
+              <ParticipantsTitle>참여자</ParticipantsTitle>
+            </ParticipantsHeader>
+            <ParticipantsContent>
+              {/* 완료 참여자 */}
+              <CompletedSection>
+                <CompletedHeader>
+                  <CompletedTitle>완료</CompletedTitle>
+                  <CompletedCountContainer>
+                    <CompletedIcon>👥</CompletedIcon>
+                    <CompletedCountText>
+                      {routine.completedCount}
+                    </CompletedCountText>
+                  </CompletedCountContainer>
+                </CompletedHeader>
+                <CompletedAvatarContainer>
+                  <CompletedAvatarRow
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {routine.completedParticipants
+                      .slice(0, 12)
+                      .map((uri, idx) => (
+                        <AvatarWrapper key={`completed-${idx}`}>
+                          <Avatar
+                            source={
+                              uri
+                                ? { uri }
+                                : require('../../assets/images/default_profile.png')
+                            }
+                            defaultSource={require('../../assets/images/default_profile.png')}
+                            onError={() => {}}
+                          />
+                        </AvatarWrapper>
+                      ))}
+                  </CompletedAvatarRow>
+                </CompletedAvatarContainer>
+              </CompletedSection>
 
-            {/* 미달성 섹션 */}
-            <UnachievedSection>
-              <UnachievedHeader>
-                <UnachievedTitle>미달성</UnachievedTitle>
-                <UnachievedCountContainer>
-                  <UnachievedIcon>👥</UnachievedIcon>
-                  <UnachievedCountText>
-                    {routine.unachievedCount}
-                  </UnachievedCountText>
-                </UnachievedCountContainer>
-              </UnachievedHeader>
-              <UnachievedAvatarContainer>
-                <UnachievedAvatarRow
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {routine.unachievedParticipants
-                    .slice(0, 12)
-                    .map((uri, idx) => (
-                      <AvatarWrapper key={`unachieved-${idx}`}>
-                        <Avatar
-                          source={
-                            uri
-                              ? { uri }
-                              : require('../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() => {}}
-                        />
-                      </AvatarWrapper>
-                    ))}
-                </UnachievedAvatarRow>
-              </UnachievedAvatarContainer>
-            </UnachievedSection>
+              {/* 미달성 참여자 */}
+              <UnachievedSection>
+                <UnachievedHeader>
+                  <UnachievedTitle>미달성</UnachievedTitle>
+                  <UnachievedCountContainer>
+                    <UnachievedIcon>👥</UnachievedIcon>
+                    <UnachievedCountText>
+                      {routine.unachievedCount}
+                    </UnachievedCountText>
+                  </UnachievedCountContainer>
+                </UnachievedHeader>
+                <UnachievedAvatarContainer>
+                  <UnachievedAvatarRow
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {routine.unachievedParticipants
+                      .slice(0, 12)
+                      .map((uri, idx) => (
+                        <AvatarWrapper key={`unachieved-${idx}`}>
+                          <Avatar
+                            source={
+                              uri
+                                ? { uri }
+                                : require('../../assets/images/default_profile.png')
+                            }
+                            defaultSource={require('../../assets/images/default_profile.png')}
+                            onError={() => {}}
+                          />
+                        </AvatarWrapper>
+                      ))}
+                  </UnachievedAvatarRow>
+                </UnachievedAvatarContainer>
+              </UnachievedSection>
+            </ParticipantsContent>
           </ParticipantsContainer>
         </SectionCard>
       </ScrollContent>
@@ -942,9 +947,9 @@ const SectionCard = styled.View`
 `;
 
 const SectionHeader = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
   margin-bottom: 16px;
 `;
 
@@ -1081,6 +1086,20 @@ const SaveText = styled.Text`
 
 const ParticipantsContainer = styled.View`
   flex-direction: column;
+`;
+
+const ParticipantsHeader = styled.View`
+  margin-bottom: 16px;
+`;
+
+const ParticipantsTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
+`;
+
+const ParticipantsContent = styled.View`
+  flex-direction: column;
   gap: 16px;
 `;
 
@@ -1106,9 +1125,9 @@ const CompletedHeader = styled.View`
 `;
 
 const CompletedTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
 `;
 
 const CompletedCountContainer = styled.View`
@@ -1127,7 +1146,7 @@ const CompletedAvatarRow = styled.ScrollView``;
 
 const CompletedAvatarContainer = styled.View`
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
 `;
 
 const UnachievedHeader = styled.View`
@@ -1138,9 +1157,9 @@ const UnachievedHeader = styled.View`
 `;
 
 const UnachievedTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
 `;
 
 const UnachievedCountContainer = styled.View`
@@ -1164,13 +1183,13 @@ const UnachievedAvatarRow = styled.ScrollView``;
 
 const UnachievedAvatarContainer = styled.View`
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
 `;
 
 const AvatarWrapper = styled.View`
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   overflow: hidden;
   margin-right: 8px;
 `;
