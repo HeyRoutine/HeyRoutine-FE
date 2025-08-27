@@ -31,7 +31,8 @@ const EditRoutineModal: React.FC<EditRoutineModalProps> = ({
 
   const handleSave = () => {
     if (!selectedEmoji || !currentText.trim() || !selectedTime) {
-      Alert.alert('입력 오류', '모든 필드를 입력해주세요.');
+      // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+      console.log('입력 오류: 모든 필드를 입력해주세요.');
       return;
     }
     onSave(selectedEmoji, currentText.trim(), selectedTime);
@@ -45,22 +46,10 @@ const EditRoutineModal: React.FC<EditRoutineModalProps> = ({
       currentText !== initialText ||
       selectedTime !== initialTime
     ) {
-      Alert.alert('변경사항 저장', '변경사항을 저장하시겠습니까?', [
-        {
-          text: '취소',
-          style: 'cancel',
-          onPress: () => {
-            setSelectedEmoji(initialEmoji);
-            setCurrentText(initialText);
-            setSelectedTime(initialTime);
-            onClose();
-          },
-        },
-        {
-          text: '저장',
-          onPress: handleSave,
-        },
-      ]);
+      // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+      console.log('변경사항 저장: 변경사항을 저장하시겠습니까?');
+      // 임시로 저장 후 닫기
+      handleSave();
     } else {
       onClose();
     }

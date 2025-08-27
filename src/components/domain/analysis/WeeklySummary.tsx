@@ -84,15 +84,24 @@ const WeeklySummary = ({
           ))}
         </WeekHeaderRow>
 
-        {/* 루틴 행들 */}
-        {routines.map((routine, routineIndex) => (
-          <RoutineStatusRow
-            key={routineIndex}
-            routineName={routine.name}
-            status={routine.status}
-            selectedDayIndex={selectedDayIndex}
-          />
-        ))}
+        {/* 루틴 행들 또는 빈 상태 */}
+        {routines.length > 0 ? (
+          routines.map((routine, routineIndex) => (
+            <RoutineStatusRow
+              key={routineIndex}
+              routineName={routine.name}
+              status={routine.status}
+              selectedDayIndex={selectedDayIndex}
+            />
+          ))
+        ) : (
+          <EmptyStateContainer>
+            <EmptyStateImage
+              source={require('../../../assets/images/character_sol.png')}
+            />
+            <EmptyStateText>등록된 루틴이 없습니다.</EmptyStateText>
+          </EmptyStateContainer>
+        )}
       </TableContainer>
     </Container>
   );
@@ -155,4 +164,25 @@ const DayText = styled.Text<{ isSelected: boolean }>`
   font-family: ${theme.fonts.Regular};
   color: ${(props) =>
     props.isSelected ? theme.colors.primary : theme.colors.gray600};
+`;
+
+const EmptyStateContainer = styled.View`
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 200px;
+`;
+
+const EmptyStateImage = styled.Image`
+  width: 100px;
+  height: 100px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+`;
+
+const EmptyStateText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray600};
+  text-align: center;
 `;

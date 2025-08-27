@@ -266,8 +266,8 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
             achievement={`${maxStreak}일 달성`}
             routineName={selectedTab === 0 ? '일상 루틴' : '금융 루틴'}
             points={0}
-            progress={Math.min(((maxStreak % 7) / 7) * 100, 100)}
-            daysLeft={Math.max(7 - (maxStreak % 7), 0)}
+            progress={Math.min((maxStreak / 7) * 100, 100)}
+            daysLeft={Math.max(7 - maxStreak, 0)}
           />
 
           {/* AI 분석 카드 */}

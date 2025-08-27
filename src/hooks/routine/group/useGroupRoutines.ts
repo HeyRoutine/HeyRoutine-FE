@@ -279,10 +279,7 @@ export const useUpdateGroupRoutineStatus = () => {
       routineId: string;
       data: UpdateGroupRoutineStatusRequest;
     }) => updateGroupRoutineStatus(groupRoutineListId, routineId, data),
-    onSuccess: () => {
-      // 상태 업데이트 성공 시 관련 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
-    },
+    // onSuccess에서 invalidateQueries 제거 - 로컬 상태를 덮어쓰지 않도록
   });
 };
 
@@ -312,12 +309,14 @@ export const useUpdateGroupRoutineRecord = () => {
 export const useGroupGuestbooks = (
   groupRoutineListId: string,
   params: GroupGuestbookListParams = {},
+  enabled: boolean = true,
 ) => {
   return useQuery({
     queryKey: ['groupGuestbooks', groupRoutineListId, params],
     queryFn: () => getGroupGuestbooks(groupRoutineListId, params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    enabled: enabled && !!groupRoutineListId,
   });
 };
 

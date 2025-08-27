@@ -350,9 +350,17 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             ListFooterComponent={null}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              flexGrow: 0,
+              flexGrow: 1,
               paddingBottom: 0,
             }}
+            ListEmptyComponent={() => (
+              <EmptyRoutineContainer>
+                <EmptyRoutineImage
+                  source={require('../../assets/images/character_sol.png')}
+                />
+                <EmptyRoutineText>등록된 루틴이 없습니다.</EmptyRoutineText>
+              </EmptyRoutineContainer>
+            )}
           />
         </RoutineList>
       </Content>
@@ -496,4 +504,25 @@ const LoadingText = styled.Text`
   color: ${theme.colors.gray600};
   text-align: center;
   padding: 16px;
+`;
+
+const EmptyRoutineContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const EmptyRoutineImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+`;
+
+const EmptyRoutineText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+  text-align: center;
 `;

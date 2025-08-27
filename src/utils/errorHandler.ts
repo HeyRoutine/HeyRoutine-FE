@@ -52,12 +52,15 @@ class ErrorHandler {
   public handleApiError(error: any): string {
     const message = this.getErrorMessage(error);
 
-    // 에러 로깅
-    console.error('🔍 [API Error]', {
+    // 에러 로깅 (전체 응답 구조 확인)
+    console.error('🔍 [API Error] 전체 응답:', {
       status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
       message: error?.response?.data?.message,
       code: error?.response?.data?.code,
       url: error?.config?.url,
+      fullError: error,
     });
 
     return message;
@@ -77,9 +80,10 @@ class ErrorHandler {
     return message;
   }
 
-  // 사용자에게 에러 표시
+  // 사용자에게 에러 표시 (Alert 제거)
   public showError(message: string, title: string = '오류'): void {
-    Alert.alert(title, message);
+    // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+    console.log(`[${title}] ${message}`);
   }
 
   // 에러 처리 + 표시 (한번에)

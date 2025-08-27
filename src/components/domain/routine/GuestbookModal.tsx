@@ -33,8 +33,11 @@ const GuestbookModal = ({
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const { data: guestbookData, isLoading } =
-    useGroupGuestbooks(groupRoutineListId);
+  const { data: guestbookData, isLoading } = useGroupGuestbooks(
+    groupRoutineListId,
+    {},
+    isVisible,
+  );
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
   const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
@@ -81,29 +84,23 @@ const GuestbookModal = ({
   };
 
   const handleDelete = (guestbookId: number) => {
-    Alert.alert('방명록 삭제', '정말로 이 방명록을 삭제하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
+    // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+    console.log('방명록 삭제: 정말로 이 방명록을 삭제하시겠습니까?');
+    // 임시로 바로 삭제
+    deleteGuestbook(
       {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => {
-          deleteGuestbook(
-            {
-              groupRoutineListId,
-              guestbookId: guestbookId.toString(),
-            },
-            {
-              onSuccess: () => {
-                console.log('🔍 방명록 삭제 성공');
-              },
-              onError: (error) => {
-                console.error('🔍 방명록 삭제 실패:', error);
-              },
-            },
-          );
+        groupRoutineListId,
+        guestbookId: guestbookId.toString(),
+      },
+      {
+        onSuccess: () => {
+          console.log('🔍 방명록 삭제 성공');
+        },
+        onError: (error) => {
+          console.error('🔍 방명록 삭제 실패:', error);
         },
       },
-    ]);
+    );
   };
 
   const renderRightActions = (guestbookId: number) => {
