@@ -31,7 +31,21 @@ export const checkEmailDuplicate = async (
   const encodedEmail = encodeURIComponent(email);
   const url = `/api/v1/user/email-duplicate-check?email=${encodedEmail}`;
 
+  console.log('🔍 이메일 중복 확인 API 호출:', url);
+  console.log('🔍 원본 이메일:', email);
+  console.log('🔍 인코딩된 이메일:', encodedEmail);
+
   const response = await apiClient.post<ApiResponse<string>>(url);
+
+  console.log('🔍 이메일 중복 확인 API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    code: response.data?.code,
+    message: response.data?.message,
+    result: response.data?.result,
+  });
+
   return response.data;
 };
 
@@ -39,10 +53,43 @@ export const checkEmailDuplicate = async (
 export const checkNicknameDuplicate = async (
   nickname: string,
 ): Promise<ApiResponse<string>> => {
-  const response = await apiClient.post<ApiResponse<string>>(
-    `/api/v1/user/nickname-duplicate-check?nickname=${nickname}`,
-  );
-  return response.data;
+  // 닉네임 URL 인코딩
+  const encodedNickname = encodeURIComponent(nickname);
+  const url = `/api/v1/user/nickname-duplicate-check?nickname=${encodedNickname}`;
+
+  console.log('🔍 닉네임 중복 확인 API 호출:', url);
+  console.log('🔍 원본 닉네임:', nickname);
+  console.log('🔍 인코딩된 닉네임:', encodedNickname);
+
+  try {
+    const response = await apiClient.post<ApiResponse<string>>(url);
+
+    console.log('🔍 닉네임 중복 확인 API 응답:', {
+      status: response.status,
+      data: response.data,
+      isSuccess: response.data?.isSuccess,
+      code: response.data?.code,
+      message: response.data?.message,
+      result: response.data?.result,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error('🔍 닉네임 중복 확인 API 에러:', error);
+
+    // 에러 응답이 있는 경우
+    if (error.response?.data) {
+      return error.response.data;
+    }
+
+    // 네트워크 에러 등
+    return {
+      isSuccess: false,
+      code: 'NETWORK_ERROR',
+      message: '네트워크 오류가 발생했습니다.',
+      result: '',
+    };
+  }
 };
 
 // 로그인
