@@ -39,8 +39,10 @@ export const checkEmailDuplicate = async (
 export const checkNicknameDuplicate = async (
   nickname: string,
 ): Promise<ApiResponse<string>> => {
+  // 닉네임 URL 인코딩
+  const encodedNickname = encodeURIComponent(nickname);
   const response = await apiClient.post<ApiResponse<string>>(
-    `/api/v1/user/nickname-duplicate-check?nickname=${nickname}`,
+    `/api/v1/user/nickname-duplicate-check?nickname=${encodedNickname}`,
   );
   return response.data;
 };

@@ -9,6 +9,7 @@ import CustomButton from '../../components/common/CustomButton';
 import { useUserStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
 import { useResetNickname } from '../../hooks/user';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -20,6 +21,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
   const { mutateAsync: resetNicknameMutate } = useResetNickname();
+
+  // 공통 에러 처리 훅
+  const { handleApiError } = useErrorHandler();
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
@@ -77,6 +81,7 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     try {
       const response = await resetNicknameMutate({ nickname });
       if (response.isSuccess) {
+        // 성공 시에만 결과 화면으로 이동
         navigation.replace('Result', {
           type: 'success',
           title: '변경 완료',
@@ -87,20 +92,14 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
           },
         });
       } else {
-        navigation.replace('Result', {
-          type: 'failure',
-          title: '변경 실패',
-          description: response.message || '닉네임 변경에 실패했어요',
-          nextScreen: 'ProfileEdit',
-        });
+        // 실패 시 에러 메시지를 validationMessage에 표시
+        const errorMessage = response.message || '닉네임 변경에 실패했어요';
+        setValidationMessage(errorMessage);
       }
     } catch (error: any) {
-      navigation.replace('Result', {
-        type: 'failure',
-        title: '변경 실패',
-        description: error?.response?.data?.message || '닉네임 변경에 실패했어요',
-        nextScreen: 'ProfileEdit',
-      });
+      // 에러 시 간단한 에러 처리로 메시지 표시
+      const message = handleApiError(error, false); // Alert 표시 안함
+      setValidationMessage(message);
     }
   };
 

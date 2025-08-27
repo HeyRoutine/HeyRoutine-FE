@@ -51,6 +51,7 @@ export const useCheckNicknameDuplicate = (
     enabled: enabled && nickname.length > 0, // 닉네임이 있을 때만 실행
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    retry: false, // 재시도 안함
   });
 };
 

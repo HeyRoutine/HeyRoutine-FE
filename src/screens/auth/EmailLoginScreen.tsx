@@ -12,6 +12,7 @@ import CustomButton from '../../components/common/CustomButton';
 import { FormGroup, Label } from '../../components/domain/auth/authFormStyles';
 import { useSignIn } from '../../hooks/user/useUser';
 import { useAuthStore, useOnboardingStore, useUserStore } from '../../store';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 
 const EmailLoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -24,6 +25,9 @@ const EmailLoginScreen = ({ navigation }: any) => {
 
   // 로그인 API hook
   const { mutate: signIn, isPending: isSigningIn } = useSignIn();
+
+  // 공통 에러 처리 훅
+  const { handleApiError } = useErrorHandler();
 
   const isFormValid = email.length > 0 && password.length > 0;
 
@@ -89,12 +93,9 @@ const EmailLoginScreen = ({ navigation }: any) => {
         onError: (error: any) => {
           console.error('로그인 실패:', error);
 
-          // 에러 메시지 설정
-          if (error?.response?.data?.message) {
-            setErrorMessage(error.response.data.message);
-          } else {
-            setErrorMessage('로그인에 실패했습니다. 다시 시도해주세요.');
-          }
+          // 간단한 에러 처리
+          const message = handleApiError(error, false); // Alert 표시 안함
+          setErrorMessage(message);
         },
       },
     );
