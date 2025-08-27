@@ -32,6 +32,10 @@ const RoutineStatusRow = ({
   status,
   selectedDayIndex,
 }: IRoutineStatusRowProps) => {
+  // 루틴 이름이 4글자를 넘으면 4글자 + ... 으로 표시
+  const displayName =
+    routineName.length > 4 ? `${routineName.slice(0, 6)}...` : routineName;
+
   const getStatusStyle = (status: RoutineStatus, dayIndex: number) => {
     switch (status) {
       case 'completed':
@@ -73,7 +77,7 @@ const RoutineStatusRow = ({
   return (
     <Container>
       <RoutineNameCell>
-        <RoutineName>{routineName}</RoutineName>
+        <RoutineName numberOfLines={1}>{displayName}</RoutineName>
       </RoutineNameCell>
       {status.map((dayStatus, dayIndex) => (
         <StatusCell key={dayIndex}>
@@ -92,7 +96,8 @@ const Container = styled.View`
 `;
 
 const RoutineNameCell = styled.View`
-  flex: 1;
+  width: 80px;
+  /* flex: 1; */
   padding: 8px 4px;
 `;
 

@@ -48,17 +48,7 @@ const CreateGroupRoutineDetailScreen = ({
       time: string;
       isCompleted: boolean;
     }>
-  >(
-    mode === 'edit' && routineData?.routines
-      ? routineData.routines.map((routine: any) => ({
-          emoji: '☕', // 기본 이모지 (실제로는 API에서 받아온 이모지 사용)
-          emojiId: routine.emojiId || 1,
-          text: routine.name,
-          time: `${routine.time}분`,
-          isCompleted: false,
-        }))
-      : [],
-  );
+  >([]);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -90,6 +80,45 @@ const CreateGroupRoutineDetailScreen = ({
 
   // 이모지 조회 훅 - 모든 이모지를 가져오기 위해 카테고리 필터링 제거
   const { data: emojiData, isLoading: isLoadingEmojis } = useRoutineEmojis({});
+
+  // 수정 모드에서 루틴 데이터 초기화
+  useEffect(() => {
+    if (
+      mode === 'edit' &&
+      routineData?.RoutineInfos &&
+      emojiData?.result?.items
+    ) {
+      console.log('🔍 이모지 매칭 데이터:', {
+        routineInfos: routineData.RoutineInfos,
+        emojiItems: emojiData.result.items,
+      });
+
+      const emojiMap = new Map(
+        emojiData.result.items.map((emoji: any) => [
+          emoji.emojiId,
+          emoji.emojiUrl,
+        ]),
+      );
+
+      const initialRoutineItems = routineData.RoutineInfos.map(
+        (routine: any) => {
+          const emojiUrl = emojiMap.get(routine.emojiId) || '☕'; // 기본값
+          console.log(
+            `🔍 루틴 ${routine.name}: emojiId=${routine.emojiId}, emojiUrl=${emojiUrl}`,
+          );
+          return {
+            emoji: emojiUrl,
+            emojiId: routine.emojiId,
+            text: routine.name,
+            time: `${routine.time}분`,
+            isCompleted: false,
+          };
+        },
+      );
+
+      setRoutineItems(initialRoutineItems);
+    }
+  }, [mode, routineData?.RoutineInfos, emojiData?.result?.items]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -237,15 +266,15 @@ const CreateGroupRoutineDetailScreen = ({
       const routines = routineItems
         .map((item, index) => {
           // 실제 API에서 받아온 routineId 사용
-          const originalRoutine = routineData?.routines?.[index];
+          const originalRoutine = routineData?.RoutineInfos?.[index];
 
           // routineId가 undefined인 경우 건너뛰기
-          if (!originalRoutine?.id && !originalRoutine?.routineId) {
+          if (!originalRoutine?.id) {
             return null;
           }
 
           return {
-            routineId: originalRoutine?.id || originalRoutine?.routineId, // id 또는 routineId 사용
+            routineId: originalRoutine.id,
             templateId: null,
             emojiId: item.emojiId,
             name: item.text,
@@ -307,6 +336,8 @@ const CreateGroupRoutineDetailScreen = ({
         : 'FINANCE') as any,
       daysOfWeek: selectedDays,
     };
+
+    console.log('🔍 그룹 루틴 생성 데이터:', groupRoutineData);
 
     // 1단계: 그룹 루틴 생성
     createGroupRoutine(groupRoutineData, {
@@ -404,12 +435,28 @@ const CreateGroupRoutineDetailScreen = ({
                 item={item}
                 index={index}
                 onEdit={(index, emoji, text, time) => {
+                  console.log('🔍 CompletedRoutineItem onEdit:', {
+                    index,
+                    emoji,
+                    text,
+                    time,
+                  });
                   const updatedItems = [...routineItems];
-                  // 기존 아이템의 emojiId 유지
-                  const existingItem = routineItems[index];
+                  // 새로운 이모지에 해당하는 emojiId 찾기
+                  const emojiItem = emojiData?.result?.items?.find(
+                    (emojiData: any) => emojiData.emojiUrl === emoji,
+                  );
+                  const newEmojiId = emojiItem?.emojiId || 1;
+
+                  console.log('🔍 이모지 매칭 결과:', {
+                    selectedEmoji: emoji,
+                    foundEmojiItem: emojiItem,
+                    newEmojiId,
+                  });
+
                   updatedItems[index] = {
                     emoji,
-                    emojiId: existingItem?.emojiId || 1, // 기존 emojiId 유지
+                    emojiId: newEmojiId, // 새로운 emojiId 사용
                     text,
                     time,
                     isCompleted: false, // 생성 화면에서는 미완료 상태로

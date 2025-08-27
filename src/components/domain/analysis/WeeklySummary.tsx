@@ -76,7 +76,7 @@ const WeeklySummary = ({
       <TableContainer>
         {/* 요일 헤더 */}
         <WeekHeaderRow>
-          <HeaderCell />
+          <HeaderCellEmpty />
           {weekDays.map((day, index) => (
             <HeaderCell key={index} isSelected={index === selectedDayIndex}>
               <DayText isSelected={index === selectedDayIndex}>{day}</DayText>
@@ -155,6 +155,12 @@ const WeekHeaderRow = styled.View`
 
 const HeaderCell = styled.View<{ isSelected?: boolean }>`
   flex: 1;
+  align-items: center;
+  padding: 8px 4px;
+`;
+
+const HeaderCellEmpty = styled.View`
+  width: 80px; /* Adjust as needed for the empty cell */
   align-items: center;
   padding: 8px 4px;
 `;
