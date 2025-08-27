@@ -9,6 +9,7 @@ import { theme } from '../../../styles/theme';
 import { useAuthStore } from '../../../store';
 import { validateEmail } from '../../../utils/validation';
 import { useCheckEmailDuplicate } from '../../../hooks/user/useUser';
+import { useErrorHandler } from '../../../hooks/common/useErrorHandler';
 
 const EmailInputScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -17,6 +18,9 @@ const EmailInputScreen = ({ navigation }: any) => {
 
   // Zustand 스토어에서 이메일 설정 함수 가져오기
   const { setSignupEmail } = useAuthStore();
+
+  // 공통 에러 처리 훅
+  const { handleApiError } = useErrorHandler();
 
   // 이메일 중복 확인 API hook
   const {
@@ -41,8 +45,9 @@ const EmailInputScreen = ({ navigation }: any) => {
   useEffect(() => {
     if (shouldCheckDuplicate && !isCheckingDuplicate) {
       if (duplicateCheckError) {
-        // API 에러 처리
-        setErrorMessage('이메일 중복 확인 중 오류가 발생했습니다.');
+        // 간단한 에러 처리
+        const message = handleApiError(duplicateCheckError, false); // Alert 표시 안함
+        setErrorMessage(message);
         setShouldCheckDuplicate(false);
       } else if (duplicateCheckData) {
         // 중복 확인 성공 - 사용 가능한 이메일
@@ -57,6 +62,7 @@ const EmailInputScreen = ({ navigation }: any) => {
     isCheckingDuplicate,
     duplicateCheckData,
     duplicateCheckError,
+    handleApiError,
   ]);
 
   const handleNext = () => {
@@ -172,9 +178,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 100px 24px 0 24px;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

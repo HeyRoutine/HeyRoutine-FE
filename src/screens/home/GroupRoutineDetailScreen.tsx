@@ -6,7 +6,6 @@ import {
   Modal,
   TouchableWithoutFeedback,
   View,
-  Alert,
   ScrollView,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -169,6 +168,9 @@ const GroupRoutineDetailScreen = ({
   // 단체루틴 기록 업데이트 훅
   const updateGroupRoutineRecord = useUpdateGroupRoutineRecord();
 
+  // 전체 기록 업데이트는 별도의 조건이나 사용자 액션에 의해서만 호출
+  // useEffect로 자동 호출하지 않음
+
   const handleBack = () => navigation.goBack();
   const handleJoin = () => setJoinModalVisible(true);
   const handleCloseJoinModal = () => setJoinModalVisible(false);
@@ -195,20 +197,10 @@ const GroupRoutineDetailScreen = ({
         queryClient.invalidateQueries({
           queryKey: ['infiniteGroupRoutines'],
         });
-
-        Alert.alert('가입 완료', '그룹 루틴에 성공적으로 가입되었습니다.', [
-          {
-            text: '확인',
-            onPress: () => {
-              navigation.navigate('HomeMain');
-            },
-          },
-        ]);
       },
       onError: (error) => {
         console.error('🔍 그룹 루틴 가입 실패:', error);
         setJoinModalVisible(false);
-        Alert.alert('가입 실패', '그룹 루틴 가입에 실패했습니다.');
       },
     });
   };
@@ -341,14 +333,9 @@ const GroupRoutineDetailScreen = ({
           queryKey: ['infiniteGroupRoutines'],
         });
 
-        Alert.alert('나가기 완료', '그룹 루틴에서 성공적으로 나갔습니다.', [
-          {
-            text: '확인',
-            onPress: () => {
-              navigation.navigate('HomeMain');
-            },
-          },
-        ]);
+        // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+        console.log('나가기 완료: 그룹 루틴에서 성공적으로 나갔습니다.');
+        navigation.navigate('HomeMain');
       },
       onError: (error: any) => {
         console.error('🔍 그룹 루틴 나가기 실패:', error);
@@ -361,7 +348,8 @@ const GroupRoutineDetailScreen = ({
           errorMessage = '그룹 루틴을 찾을 수 없습니다.';
         }
 
-        Alert.alert('나가기 실패', errorMessage);
+        // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+        console.error('나가기 실패:', errorMessage);
       },
     });
   };
@@ -395,12 +383,35 @@ const GroupRoutineDetailScreen = ({
     const isTodayInSelectedDays = selectedDays.includes(todayDay);
 
     if (!isTodayInSelectedDays) {
-      Alert.alert('알림', '오늘 날짜에 해당하는 루틴이 아닙니다.');
+      // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+      console.log('알림: 오늘 날짜에 해당하는 루틴이 아닙니다.');
       return;
     }
 
     // 현재 상태의 반대값으로 업데이트
     const newStatus = !task.isCompleted;
+
+    // 즉시 UI 업데이트를 위해 로컬 상태 먼저 변경
+    queryClient.setQueryData(
+      ['groupRoutineDetail', routineId],
+      (oldData: any) => {
+        if (!oldData?.result) return oldData;
+
+        const updatedRoutineInfos = [...oldData.result.routineInfos];
+        updatedRoutineInfos[index] = {
+          ...updatedRoutineInfos[index],
+          isCompleted: newStatus,
+        };
+
+        return {
+          ...oldData,
+          result: {
+            ...oldData.result,
+            routineInfos: updatedRoutineInfos,
+          },
+        };
+      },
+    );
 
     updateGroupRoutineStatus.mutate(
       {
@@ -412,32 +423,76 @@ const GroupRoutineDetailScreen = ({
         onSuccess: () => {
           console.log('🔍 루틴 상태 업데이트 성공:', task.name, newStatus);
 
-          // 모든 루틴이 완료되었는지 확인
-          const updatedRoutineInfos = routineInfos.map((r, i) =>
-            i === index ? { ...r, isCompleted: newStatus } : r,
-          );
+          // 개별 루틴 상태 업데이트 성공 후, 서버에서 최신 데이터를 가져와서 모든 세부 루틴 완료 여부 확인
+          queryClient
+            .invalidateQueries({
+              queryKey: ['groupRoutineDetail', routineId],
+            })
+            .then(() => {
+              // 서버에서 최신 데이터를 가져온 후 확인
+              const currentData = queryClient.getQueryData([
+                'groupRoutineDetail',
+                routineId,
+              ]) as any;
+              if (currentData?.result) {
+                const routineInfos = currentData.result.routineInfos || [];
+                const allCompleted =
+                  routineInfos.length > 0 &&
+                  routineInfos.every((r: any) => r.isCompleted);
 
-          const allCompleted = updatedRoutineInfos.every((r) => r.isCompleted);
-
-          if (allCompleted && updatedRoutineInfos.length > 0) {
-            // 단체루틴 기록 성공 API 호출
-            updateGroupRoutineRecord.mutate(
-              {
-                groupRoutineListId: routineId,
-                data: { status: true },
-              },
-              {
-                onSuccess: () => {},
-                onError: (error) => {
-                  console.error('🔍 단체루틴 기록 업데이트 실패:', error);
-                },
-              },
-            );
-          }
+                if (allCompleted) {
+                  console.log(
+                    '🔍 모든 세부 루틴이 완료되었습니다. 전체 기록 업데이트 호출',
+                  );
+                  // 모든 세부 루틴이 완료된 경우 전체 기록 업데이트 API 호출
+                  updateGroupRoutineRecord.mutate(
+                    {
+                      groupRoutineListId: routineId,
+                      data: { status: true },
+                    },
+                    {
+                      onSuccess: () => {
+                        console.log('🔍 전체 기록 업데이트 성공');
+                      },
+                      onError: (error: any) => {
+                        console.error('🔍 전체 기록 업데이트 실패:', error);
+                        // 422 에러는 무시 (이미 완료된 상태)
+                        if (error?.response?.status !== 422) {
+                          console.error('🔍 예상치 못한 에러:', error);
+                        }
+                      },
+                    },
+                  );
+                }
+              }
+            });
         },
         onError: (error) => {
           console.error('🔍 루틴 상태 업데이트 실패:', error);
-          Alert.alert('오류', '루틴 상태 업데이트에 실패했습니다.');
+          // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+          console.log('오류: 루틴 상태 업데이트에 실패했습니다.');
+
+          // 실패 시 로컬 상태 롤백
+          queryClient.setQueryData(
+            ['groupRoutineDetail', routineId],
+            (oldData: any) => {
+              if (!oldData?.result) return oldData;
+
+              const updatedRoutineInfos = [...oldData.result.routineInfos];
+              updatedRoutineInfos[index] = {
+                ...updatedRoutineInfos[index],
+                isCompleted: !newStatus,
+              };
+
+              return {
+                ...oldData,
+                result: {
+                  ...oldData.result,
+                  routineInfos: updatedRoutineInfos,
+                },
+              };
+            },
+          );
         },
       },
     );
@@ -537,78 +592,83 @@ const GroupRoutineDetailScreen = ({
           </RoutineListContainer>
         </SectionCard>
 
-        {/* 완료/미달성 섹션 */}
+        {/* 참여자 섹션 */}
         <SectionCard>
           <ParticipantsContainer>
-            {/* 완료 섹션 */}
-            <CompletedSection>
-              <CompletedHeader>
-                <CompletedTitle>완료</CompletedTitle>
-                <CompletedCountContainer>
-                  <CompletedIcon>👥</CompletedIcon>
-                  <CompletedCountText>
-                    {routine.completedCount}
-                  </CompletedCountText>
-                </CompletedCountContainer>
-              </CompletedHeader>
-              <CompletedAvatarContainer>
-                <CompletedAvatarRow
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {routine.completedParticipants
-                    .slice(0, 12)
-                    .map((uri, idx) => (
-                      <AvatarWrapper key={`completed-${idx}`}>
-                        <Avatar
-                          source={
-                            uri
-                              ? { uri }
-                              : require('../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() => {}}
-                        />
-                      </AvatarWrapper>
-                    ))}
-                </CompletedAvatarRow>
-              </CompletedAvatarContainer>
-            </CompletedSection>
+            <ParticipantsHeader>
+              <ParticipantsTitle>참여자</ParticipantsTitle>
+            </ParticipantsHeader>
+            <ParticipantsContent>
+              {/* 완료 참여자 */}
+              <CompletedSection>
+                <CompletedHeader>
+                  <CompletedTitle>완료</CompletedTitle>
+                  <CompletedCountContainer>
+                    <CompletedIcon>👥</CompletedIcon>
+                    <CompletedCountText>
+                      {routine.completedCount}
+                    </CompletedCountText>
+                  </CompletedCountContainer>
+                </CompletedHeader>
+                <CompletedAvatarContainer>
+                  <CompletedAvatarRow
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {routine.completedParticipants
+                      .slice(0, 12)
+                      .map((uri, idx) => (
+                        <AvatarWrapper key={`completed-${idx}`}>
+                          <Avatar
+                            source={
+                              uri
+                                ? { uri }
+                                : require('../../assets/images/default_profile.png')
+                            }
+                            defaultSource={require('../../assets/images/default_profile.png')}
+                            onError={() => {}}
+                          />
+                        </AvatarWrapper>
+                      ))}
+                  </CompletedAvatarRow>
+                </CompletedAvatarContainer>
+              </CompletedSection>
 
-            {/* 미달성 섹션 */}
-            <UnachievedSection>
-              <UnachievedHeader>
-                <UnachievedTitle>미달성</UnachievedTitle>
-                <UnachievedCountContainer>
-                  <UnachievedIcon>👥</UnachievedIcon>
-                  <UnachievedCountText>
-                    {routine.unachievedCount}
-                  </UnachievedCountText>
-                </UnachievedCountContainer>
-              </UnachievedHeader>
-              <UnachievedAvatarContainer>
-                <UnachievedAvatarRow
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {routine.unachievedParticipants
-                    .slice(0, 12)
-                    .map((uri, idx) => (
-                      <AvatarWrapper key={`unachieved-${idx}`}>
-                        <Avatar
-                          source={
-                            uri
-                              ? { uri }
-                              : require('../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../assets/images/default_profile.png')}
-                          onError={() => {}}
-                        />
-                      </AvatarWrapper>
-                    ))}
-                </UnachievedAvatarRow>
-              </UnachievedAvatarContainer>
-            </UnachievedSection>
+              {/* 미달성 참여자 */}
+              <UnachievedSection>
+                <UnachievedHeader>
+                  <UnachievedTitle>미달성</UnachievedTitle>
+                  <UnachievedCountContainer>
+                    <UnachievedIcon>👥</UnachievedIcon>
+                    <UnachievedCountText>
+                      {routine.unachievedCount}
+                    </UnachievedCountText>
+                  </UnachievedCountContainer>
+                </UnachievedHeader>
+                <UnachievedAvatarContainer>
+                  <UnachievedAvatarRow
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {routine.unachievedParticipants
+                      .slice(0, 12)
+                      .map((uri, idx) => (
+                        <AvatarWrapper key={`unachieved-${idx}`}>
+                          <Avatar
+                            source={
+                              uri
+                                ? { uri }
+                                : require('../../assets/images/default_profile.png')
+                            }
+                            defaultSource={require('../../assets/images/default_profile.png')}
+                            onError={() => {}}
+                          />
+                        </AvatarWrapper>
+                      ))}
+                  </UnachievedAvatarRow>
+                </UnachievedAvatarContainer>
+              </UnachievedSection>
+            </ParticipantsContent>
           </ParticipantsContainer>
         </SectionCard>
       </ScrollContent>
@@ -634,9 +694,7 @@ const GroupRoutineDetailScreen = ({
         onRequestClose={handleCloseJoinModal}
       >
         <ModalTitle>단체루틴에 참여하시겠습니까?</ModalTitle>
-        <ModalSubtitle>
-          바로 단체 루틴에 (방장이 루틴을 수정시 루틴이 변경됩니다)
-        </ModalSubtitle>
+        <ModalSubtitle>방장이 루틴을 수정시 루틴이 변경됩니다.</ModalSubtitle>
 
         <ButtonRow>
           <ButtonWrapper>
@@ -861,9 +919,9 @@ const SectionCard = styled.View`
 `;
 
 const SectionHeader = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
   margin-bottom: 16px;
 `;
 
@@ -1000,6 +1058,20 @@ const SaveText = styled.Text`
 
 const ParticipantsContainer = styled.View`
   flex-direction: column;
+`;
+
+const ParticipantsHeader = styled.View`
+  margin-bottom: 16px;
+`;
+
+const ParticipantsTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
+`;
+
+const ParticipantsContent = styled.View`
+  flex-direction: column;
   gap: 16px;
 `;
 
@@ -1025,9 +1097,9 @@ const CompletedHeader = styled.View`
 `;
 
 const CompletedTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
 `;
 
 const CompletedCountContainer = styled.View`
@@ -1046,7 +1118,7 @@ const CompletedAvatarRow = styled.ScrollView``;
 
 const CompletedAvatarContainer = styled.View`
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
 `;
 
 const UnachievedHeader = styled.View`
@@ -1057,9 +1129,9 @@ const UnachievedHeader = styled.View`
 `;
 
 const UnachievedTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 12px;
+  color: #98989e;
 `;
 
 const UnachievedCountContainer = styled.View`
@@ -1083,13 +1155,13 @@ const UnachievedAvatarRow = styled.ScrollView``;
 
 const UnachievedAvatarContainer = styled.View`
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
 `;
 
 const AvatarWrapper = styled.View`
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   overflow: hidden;
   margin-right: 8px;
 `;
@@ -1178,7 +1250,6 @@ const ModalContainer = styled.View`
 
 const ModalButtonWrapper = styled.View`
   margin-bottom: 16px;
-  height: 48px;
 
   &:last-child {
     margin-bottom: 0;

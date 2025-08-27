@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
 import styled from 'styled-components/native';
@@ -13,7 +13,7 @@ import AddRoutineButton from '../../components/domain/routine/AddRoutineButton';
 import GroupRoutineCard from '../../components/domain/routine/GroupRoutineCard';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
-import { useRoutineStore } from '../../store';
+import { useRoutineStore, useUserStore } from '../../store';
 import {
   useInfinitePersonalRoutines,
   usePersonalRoutines,
@@ -23,6 +23,7 @@ import {
   useGroupRoutines,
   useInfiniteMyGroupRoutines,
 } from '../../hooks/routine/group/useGroupRoutines';
+import { useMyInfo } from '../../hooks/user/useUser';
 
 interface HomeScreenProps {
   navigation: any;
@@ -33,6 +34,32 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
 
   const { selectedDate, setSelectedDate } = useRoutineStore();
+  const { setUserInfo } = useUserStore();
+
+  // 사용자 정보 조회
+  const { data: myInfoData, isLoading: isMyInfoLoading } = useMyInfo();
+
+  // 사용자 정보가 로드되면 userStore에 저장
+  useEffect(() => {
+    if (myInfoData?.result) {
+      const userInfo = {
+        nickname: myInfoData.result.nickname,
+        profileImage: myInfoData.result.profileImage,
+        points: myInfoData.result.point,
+        bankAccount: myInfoData.result.bankAccount,
+        isMarketing: myInfoData.result.isMarketing,
+        accountCertificationStatus:
+          myInfoData.result.accountCertificationStatus,
+        // 기존 정보는 유지
+        email: '', // API에서 제공하지 않으므로 빈 문자열
+        accountInfo: undefined, // 기존 accountInfo는 별도로 관리
+        marketingConsent: myInfoData.result.isMarketing, // 기존 필드와 매핑
+        notificationConsent: true, // 기본값
+      };
+      setUserInfo(userInfo);
+      console.log('🔍 사용자 정보 저장됨:', userInfo);
+    }
+  }, [myInfoData, setUserInfo]);
 
   const today = new Date();
 
@@ -350,9 +377,17 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             ListFooterComponent={null}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              flexGrow: 0,
+              flexGrow: 1,
               paddingBottom: 0,
             }}
+            ListEmptyComponent={() => (
+              <EmptyRoutineContainer>
+                <EmptyRoutineImage
+                  source={require('../../assets/images/character_sol.png')}
+                />
+                <EmptyRoutineText>등록된 루틴이 없습니다.</EmptyRoutineText>
+              </EmptyRoutineContainer>
+            )}
           />
         </RoutineList>
       </Content>
@@ -496,4 +531,25 @@ const LoadingText = styled.Text`
   color: ${theme.colors.gray600};
   text-align: center;
   padding: 16px;
+`;
+
+const EmptyRoutineContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const EmptyRoutineImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+`;
+
+const EmptyRoutineText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray400};
+  text-align: center;
 `;

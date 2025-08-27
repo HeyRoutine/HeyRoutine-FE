@@ -21,6 +21,9 @@ interface UserInfo {
   accountInfo?: AccountInfo;
   marketingConsent?: boolean;
   notificationConsent?: boolean;
+  bankAccount?: string;
+  isMarketing?: boolean;
+  accountCertificationStatus?: boolean;
 }
 
 // 사용자 상태 타입 정의

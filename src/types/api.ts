@@ -190,6 +190,7 @@ export interface SignUpRequest {
   nickname: string;
   profileImage: string;
   roles: string[];
+  isMarketing: boolean;
 }
 
 // 회원가입 응답 타입
@@ -198,6 +199,32 @@ export interface SignUpResponse {
   username: string;
   nickname: string;
 }
+
+// 사용자 정보 응답 타입
+export interface MyInfoResponse {
+  nickname: string;
+  profileImage: string;
+  bankAccount: string;
+  point: number;
+  isMarketing: boolean;
+  accountCertificationStatus: boolean;
+}
+
+// 마케팅 수신동의 업데이트 요청 타입
+export interface UpdateIsMarketingRequest {
+  isMarketing: boolean;
+}
+
+// 마케팅 수신동의 업데이트 응답 타입
+export type UpdateIsMarketingResponse = string; // "마케팅 수신 동의/거부 업데이트 성공"
+
+// 프로필 이미지 업데이트 요청 타입
+export interface UpdateProfileImageRequest {
+  profileImageUrl: string;
+}
+
+// 프로필 이미지 업데이트 응답 타입
+export type UpdateProfileImageResponse = string; // "프로필 이미지 변경 성공"
 
 // 토큰 재발급 요청 타입
 export interface ReissueRequest {
@@ -477,6 +504,8 @@ export interface EmojiListResponse {
 // 이모지 조회 파라미터 타입
 export interface EmojiListParams {
   category?: string; // 카테고리 필터링 값 (예: "식사")
+  page?: number; // 페이지 번호 (기본값: 0)
+  size?: number; // 페이지 크기 (기본값: 20)
 }
 
 // ===== 개인루틴 관련 타입 =====
@@ -614,3 +643,34 @@ export interface DonePersonalRoutineParams {
 
 // 개인루틴 리스트 완료 응답 타입
 export type DoneMyRoutineListResponse = EmptyResponse;
+
+// ===== 분석(Analysis) - 주간 요약 =====
+
+// 주간 요약 요청 파라미터
+export interface GetWeeklySummaryParams {
+  startDate: string; // LocalDate (YYYY-MM-DD)
+  endDate: string; // LocalDate (YYYY-MM-DD)
+  routineType: RoutineType; // 'DAILY' | 'FINANCE'
+}
+
+// 요일별 상태 (영문 대문자 요일 키)
+export interface WeeklySummaryItem {
+  routineTitle: string;
+  dailyStatus: {
+    MONDAY: boolean;
+    TUESDAY: boolean;
+    WEDNESDAY: boolean;
+    THURSDAY: boolean;
+    FRIDAY: boolean;
+    SATURDAY: boolean;
+    SUNDAY: boolean;
+  };
+}
+
+// 주간 요약 응답 result 타입
+export type GetWeeklySummaryResponse = WeeklySummaryItem[];
+
+// ===== 분석(Analysis) - 최대 연속 일수(Max Streak) =====
+export interface GetMaxStreakResponse {
+  streakDays: number;
+}

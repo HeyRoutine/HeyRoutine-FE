@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { ApiResponse, ApiError } from '../types/api';
 import { useAuthStore } from '../store';
+import errorHandler from '../utils/errorHandler';
 
 // AxiosRequestConfig 타입 확장
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
@@ -111,8 +112,16 @@ apiClient.interceptors.response.use(
       logout();
     }
 
-    // 에러 처리 로직
-    console.error('API Error:', error);
+    // 공통 에러 처리
+    try {
+      await errorHandler.handleApiError(error, {
+        logError: true,
+        showAlert: false, // 인터셉터에서는 Alert 표시하지 않음
+      });
+    } catch (handlerError) {
+      console.error('Error handler failed:', handlerError);
+    }
+
     return Promise.reject(error);
   },
 );

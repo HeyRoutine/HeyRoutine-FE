@@ -115,7 +115,8 @@ const PersonalRoutineDetailScreen = ({
         setDeleteSuccessVisible(true);
       },
       onError: (error) => {
-        Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
+        // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+        console.log('삭제 실패: 루틴 삭제에 실패했습니다.');
       },
     });
   };
@@ -273,7 +274,8 @@ const PersonalRoutineDetailScreen = ({
           setRoutineItems(updatedItems);
         },
         onError: (error) => {
-          Alert.alert('삭제 실패', '루틴 삭제에 실패했습니다.');
+          // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+          console.log('삭제 실패: 루틴 삭제에 실패했습니다.');
         },
       });
     } else {
@@ -371,7 +373,8 @@ const PersonalRoutineDetailScreen = ({
                 refetchRoutineDetails();
               },
               onError: (error) => {
-                Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
+                // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+                console.log('수정 실패: 루틴 수정에 실패했습니다.');
               },
             },
           );
@@ -381,7 +384,8 @@ const PersonalRoutineDetailScreen = ({
         }
       })
       .catch((error) => {
-        Alert.alert('수정 실패', '루틴 수정에 실패했습니다.');
+        // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+        console.log('수정 실패: 루틴 수정에 실패했습니다.');
       });
   };
 

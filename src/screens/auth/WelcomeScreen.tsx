@@ -5,12 +5,12 @@ import styled from 'styled-components/native';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useAuthStore, useOnboardingStore, useUserStore } from '../../store';
-import { useSignUp, useSignIn } from '../../hooks/user/useUser';
+import { useSignUp, useSignIn, useMyInfo } from '../../hooks/user/useUser';
 
 // 모든 회원가입 데이터를 route.params로 받기
 const WelcomeScreen = ({ navigation, route }: any) => {
   const { nickname, email, password, profileImage } = route.params || {};
-  const { login } = useAuthStore();
+  const { login, signupData } = useAuthStore();
   const { resetOnboarding } = useOnboardingStore();
   const { setUserInfo } = useUserStore();
 
@@ -21,6 +21,8 @@ const WelcomeScreen = ({ navigation, route }: any) => {
   const { mutate: signUp, isPending: isSigningUp } = useSignUp();
   // 로그인 API hook (자동 로그인용)
   const { mutate: signIn, isPending: isSigningIn } = useSignIn();
+  // 사용자 정보 조회 hook
+  const { data: myInfoData } = useMyInfo();
 
   const handleStart = () => {
     // 회원가입 API 호출
@@ -31,6 +33,7 @@ const WelcomeScreen = ({ navigation, route }: any) => {
         nickname: nickname,
         profileImage: profileImage || '', // 기본 프로필 이미지
         roles: ['USER'], // 기본 역할
+        isMarketing: signupData.isMarketing, // 마케팅 수신동의 상태
       },
       {
         onSuccess: (data) => {
@@ -66,6 +69,11 @@ const WelcomeScreen = ({ navigation, route }: any) => {
                     email: email,
                     profileImage: profileImage || undefined,
                     points: 0,
+                    // 마케팅 수신동의 상태도 저장
+                    isMarketing: signupData.isMarketing,
+                    marketingConsent: signupData.isMarketing,
+                    // 계좌 인증 상태는 회원가입 시 무조건 false
+                    accountCertificationStatus: false,
                   });
 
                   // 로그인 상태 변경
