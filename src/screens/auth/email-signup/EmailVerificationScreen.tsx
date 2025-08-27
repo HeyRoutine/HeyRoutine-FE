@@ -10,6 +10,7 @@ import OtpInput from '../../../components/common/OtpInput';
 import Timer from '../../../components/common/Timer';
 import { useAuthStore } from '../../../store';
 import { mailSend, authCheck } from '../../../api/user/user';
+import { useMailSendForPassword } from '../../../hooks/user/useUser';
 import {
   MailSendRequest,
   ApiResponse,
@@ -25,8 +26,12 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   );
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  // route.params에서 이메일 가져오기
-  const { email, isEmailChange, onSuccess } = route.params || {};
+  // route.params에서 이메일과 모드 가져오기
+  const { email, isEmailChange, onSuccess, mode } = route.params || {};
+  const isPasswordResetMode = mode === 'passwordReset';
+
+  // 비밀번호 재설정 메일 발송 hook
+  const { mutate: sendPasswordResetMail, isPending: isSendingPasswordMail } = useMailSendForPassword();
 
   const isButtonEnabled = code.length === 6;
 
@@ -65,14 +70,24 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
       const message = e?.response?.data?.message;
       if (e?.response?.status === 400 && message === '인증번호가 틀렸습니다') {
         setVerifyError('인증번호가 틀렸습나다');
-      } else {
+        } else {
         setVerifyError(message || '인증 요청 중 오류가 발생했습니다');
       }
       console.warn('인증 요청 오류:', e);
       return;
     }
 
-    if (isEmailChange) {
+    if (isPasswordResetMode) {
+      // 비밀번호 찾기 모드일 때 - ResultScreen을 거쳐 PasswordSetting으로 이동
+      navigation.replace('Result', {
+        type: 'success',
+        title: '인증 완료',
+        description: '이메일 인증이 완료되었습니다. 비밀번호 재설정 페이지로 이동합니다.',
+        nextScreen: 'PasswordSetting',
+        nextScreenParams: { email: email, mode: 'passwordReset' },
+        buttonText: '비밀번호 재설정하기',
+      });
+    } else if (isEmailChange) {
       // 이메일 변경 모드일 때
       navigation.replace('Result', {
         type: 'success',
@@ -88,21 +103,46 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   };
   const sendVerificationMail = async () => {
     if (!email) return;
-    const payload: MailSendRequest = { email } as any;
+    
     try {
       setResendState('loading');
       // 누른 순간 타이머 3분(180초)으로 리셋
       setTimeLeft(180);
-      // 입력값은 유지 (요구사항 없음). 필요하면 아래 주석 해제
-      // setCode('');
-      const res = await mailSend(payload);
-      if (!res.isSuccess) {
-        console.warn('메일 전송 실패:', res.message);
-        setResendState('idle');
-      }
-      if (res.isSuccess) {
-        setResendState('done');
-        setTimeout(() => setResendState('idle'), 1500); // 1.5초 완료 표시 후 기본 상태
+      
+      if (isPasswordResetMode) {
+        // 비밀번호 찾기 모드일 때는 useMailSendForPassword hook 사용
+        sendPasswordResetMail(
+          { email },
+          {
+            onSuccess: (data) => {
+              console.log('🔍 비밀번호 재설정 메일 발송 성공:', data);
+              if (data.isSuccess) {
+                setResendState('done');
+                setTimeout(() => setResendState('idle'), 1500); // 1.5초 완료 표시 후 기본 상태
+              } else {
+                console.warn('메일 전송 실패:', data.message);
+                setResendState('idle');
+              }
+            },
+            onError: (error) => {
+              console.warn('메일 전송 오류:', error);
+              setResendState('idle');
+            },
+          },
+        );
+      } else {
+        // 일반 회원가입 모드일 때는 기존 API 호출
+        const payload: MailSendRequest = { email } as any;
+        const res = await mailSend(payload);
+        
+        if (!res.isSuccess) {
+          console.warn('메일 전송 실패:', res.message);
+          setResendState('idle');
+        }
+        if (res.isSuccess) {
+          setResendState('done');
+          setTimeout(() => setResendState('idle'), 1500); // 1.5초 완료 표시 후 기본 상태
+        }
       }
     } catch (e) {
       console.warn('메일 전송 오류:', e);
@@ -111,9 +151,11 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   };
 
   useEffect(() => {
-    // 화면 진입 시 인증메일 발송
-    sendVerificationMail();
-  }, []);
+    // 비밀번호 찾기 모드가 아닐 때만 화면 진입 시 인증메일 발송
+    if (!isPasswordResetMode) {
+      sendVerificationMail();
+    }
+  }, [isPasswordResetMode]);
 
   const handleCodeChange = (text: string) => {
     setCode(text);
@@ -125,14 +167,16 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
       <Header
         onBackPress={() => navigation.goBack()}
         rightComponent={
-          !isEmailChange ? <ProgressText>2/5</ProgressText> : null
+          !isEmailChange && !isPasswordResetMode ? <ProgressText>2/5</ProgressText> : null
         }
       />
 
       <Content>
         <Title>
-          안전한 사용을 위해{'\n'}
-          이메일 인증을 해주세요.
+          {isPasswordResetMode 
+            ? '비밀번호 재설정을 위해\n이메일 인증을 해주세요.'
+            : '안전한 사용을 위해\n이메일 인증을 해주세요.'
+          }
         </Title>
 
         <Timer timeLeft={timeLeft} />
@@ -144,8 +188,12 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
           autoFocus={true}
         />
 
-        <ResendButton onPress={sendVerificationMail} activeOpacity={0.7}>
-          {resendState === 'loading' ? (
+        <ResendButton 
+          onPress={sendVerificationMail} 
+          activeOpacity={0.7}
+          disabled={isPasswordResetMode && isSendingPasswordMail}
+        >
+          {resendState === 'loading' || (isPasswordResetMode && isSendingPasswordMail) ? (
             <ResendRow>
               <ActivityIndicator size="small" color={theme.colors.gray600} />
               <ResendText disabled>재발송 중...</ResendText>
@@ -176,7 +224,7 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
       {/* 하단 버튼 */}
       <ButtonWrapper>
         <CustomButton
-          text="인증하기"
+          text={isPasswordResetMode ? "인증 완료" : "인증하기"}
           onPress={handleVerify}
           // TODO: 6자리 숫자 입력 후 인증하기 버튼 활성화 + 타이머 종료 후 인증하기 버튼 비활성화
           // disabled={!isButtonEnabled}

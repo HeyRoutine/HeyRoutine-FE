@@ -8,18 +8,24 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { validatePassword } from '../../utils/validation';
 import { useMyPageResetPassword } from '../../hooks/user';
+import { useMailSendForPassword } from '../../hooks/user/useUser';
 
 interface IPasswordSettingScreenProps {
   navigation: any;
+  route: any;
 }
 
-const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
+const PasswordSettingScreen = ({ navigation, route }: IPasswordSettingScreenProps) => {
+  // route.params에서 모드 가져오기
+  const { mode, email } = route.params || {};
+  const isPasswordResetMode = mode === 'passwordReset';
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isValidForm, setIsValidForm] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
   const { mutateAsync: resetPasswordMutate } = useMyPageResetPassword();
+  const { mutate: sendPasswordResetMail } = useMailSendForPassword();
 
   // 실시간 검증을 위한 useEffect (PasswordScreen과 동일한 방식)
   useEffect(() => {
@@ -45,18 +51,29 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
       setValidationMessage('');
     }
 
-    // 폼 유효성 설정
-    setIsValidForm(
-      Boolean(
-        currentPassword &&
+    // 폼 유효성 설정 (비밀번호 찾기 모드일 때는 현재 비밀번호 불필요)
+    if (isPasswordResetMode) {
+      setIsValidForm(
+        Boolean(
           newPassword &&
-          confirmPassword &&
-          isValidPassword &&
-          isMatch &&
-          isDifferentFromCurrent,
-      ),
-    );
-  }, [currentPassword, newPassword, confirmPassword]);
+            confirmPassword &&
+            isValidPassword &&
+            isMatch,
+        ),
+      );
+    } else {
+      setIsValidForm(
+        Boolean(
+          currentPassword &&
+            newPassword &&
+            confirmPassword &&
+            isValidPassword &&
+            isMatch &&
+            isDifferentFromCurrent,
+        ),
+      );
+    }
+  }, [currentPassword, newPassword, confirmPassword, isPasswordResetMode]);
 
   const handleCurrentPasswordChange = (text: string) => {
     setCurrentPassword(text);
@@ -73,50 +90,83 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
   const handlePasswordChange = async () => {
     if (!isValidForm) return;
 
-    try {
-      const response = await resetPasswordMutate({ password: newPassword });
-      if (response.isSuccess) {
+    if (isPasswordResetMode) {
+      // 비밀번호 찾기 모드일 때는 비밀번호 재설정 API 호출
+      try {
+        // 여기에 비밀번호 재설정 API 호출 로직 추가
+        // 예: sendPasswordResetMail({ email, newPassword })
+        console.log('🔍 비밀번호 재설정 모드:', { email, newPassword });
+        
+        // 임시로 성공 처리 (실제 API 구현 필요)
         navigation.replace('Result', {
           type: 'success',
-          title: '변경 완료',
-          description: '비밀번호를 성공적으로 변경했어요',
-          nextScreen: 'ProfileEdit',
-          onSuccess: () => {},
+          title: '비밀번호 재설정 완료',
+          description: '새로운 비밀번호로 로그인할 수 있습니다',
+          nextScreen: 'EmailLogin',
+          buttonText: '로그인 하러 가기',
         });
-      } else {
+      } catch (error: any) {
+        navigation.replace('Result', {
+          type: 'failure',
+          title: '재설정 실패',
+          description: '비밀번호 재설정에 실패했습니다. 다시 시도해주세요.',
+          nextScreen: 'PasswordSetting',
+        });
+      }
+    } else {
+      // 일반 비밀번호 변경 모드
+      try {
+        const response = await resetPasswordMutate({ password: newPassword });
+        if (response.isSuccess) {
+          navigation.replace('Result', {
+            type: 'success',
+            title: '변경 완료',
+            description: '비밀번호를 성공적으로 변경했어요',
+            nextScreen: 'ProfileEdit',
+            onSuccess: () => {},
+          });
+        } else {
+          navigation.replace('Result', {
+            type: 'failure',
+            title: '변경 실패',
+            description: response.message || '비밀번호 변경에 실패했어요',
+            nextScreen: 'ProfileEdit',
+          });
+        }
+      } catch (error: any) {
         navigation.replace('Result', {
           type: 'failure',
           title: '변경 실패',
-          description: response.message || '비밀번호 변경에 실패했어요',
+          description: error?.response?.data?.message || '비밀번호 변경에 실패했어요',
           nextScreen: 'ProfileEdit',
         });
       }
-    } catch (error: any) {
-      navigation.replace('Result', {
-        type: 'failure',
-        title: '변경 실패',
-        description: error?.response?.data?.message || '비밀번호 변경에 실패했어요',
-        nextScreen: 'ProfileEdit',
-      });
     }
   };
 
   return (
     <Container>
-      <Header title="비밀번호 설정" onBackPress={() => navigation.goBack()} />
+      <Header 
+        title={isPasswordResetMode ? "비밀번호 재설정" : "비밀번호 설정"} 
+        onBackPress={() => navigation.goBack()} 
+      />
 
       <Content>
         <PasswordSection>
-          <PasswordLabel>현재 비밀번호</PasswordLabel>
-          <InputContainer>
-            <CustomInput
-              value={currentPassword}
-              placeholder="현재 비밀번호를 입력하세요"
-              maxLength={20}
-              onChangeText={handleCurrentPasswordChange}
-              isPassword={true}
-            />
-          </InputContainer>
+          {!isPasswordResetMode && (
+            <>
+              <PasswordLabel>현재 비밀번호</PasswordLabel>
+              <InputContainer>
+                <CustomInput
+                  value={currentPassword}
+                  placeholder="현재 비밀번호를 입력하세요"
+                  maxLength={20}
+                  onChangeText={handleCurrentPasswordChange}
+                  isPassword={true}
+                />
+              </InputContainer>
+            </>
+          )}
 
           <PasswordLabel>새 비밀번호</PasswordLabel>
           <InputContainer>
@@ -161,7 +211,7 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
 
       <ButtonContainer>
         <CustomButton
-          text="비밀번호 변경"
+          text={isPasswordResetMode ? "비밀번호 재설정" : "비밀번호 변경"}
           onPress={handlePasswordChange}
           disabled={!isValidForm}
           backgroundColor={

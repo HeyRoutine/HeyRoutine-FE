@@ -10,6 +10,8 @@ import NicknameScreen from '../screens/auth/NicknameScreen';
 import ProfileImageScreen from '../screens/auth/ProfileImageScreen';
 import TermsAgreementScreen from '../screens/auth/TermsAgreementScreen';
 import WelcomeScreen from '../screens/auth/WelcomeScreen';
+import ResultScreen from '../screens/common/ResultScreen';
+import PasswordSettingScreen from '../screens/mypage/PasswordSettingScreen';
 
 const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
@@ -31,6 +33,8 @@ const AuthNavigator = () => {
       <Stack.Screen name="ProfileImage" component={ProfileImageScreen} />
       <Stack.Screen name="TermsAgreeMent" component={TermsAgreementScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="Result" component={ResultScreen} />
+      <Stack.Screen name="PasswordSetting" component={PasswordSettingScreen} />
     </Stack.Navigator>
   );
 };

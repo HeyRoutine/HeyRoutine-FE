@@ -28,6 +28,7 @@ apiClient.interceptors.request.use(
       '/api/v1/user/sign-up',
       '/api/v1/user/email-duplicate-check',
       '/api/v1/user/nickname-duplicate-check',
+      '/api/v1/mail/send-password',
     ];
 
     const isAuthNotRequired = authNotRequired.some((path) =>

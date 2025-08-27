@@ -160,7 +160,17 @@ const EmailLoginScreen = ({ navigation }: any) => {
               아이디 찾기
             </FooterLink>
             <Separator>|</Separator>
-            <FooterLink onPress={() => navigation.navigate('FindPassword')}>
+            <FooterLink onPress={() => {
+              if (email) {
+                navigation.navigate('EmailVerification', { 
+                  email: email, 
+                  mode: 'passwordReset' 
+                });
+              } else {
+                // 이메일이 입력되지 않은 경우 이메일 입력 화면으로 이동
+                navigation.navigate('EmailInput', { mode: 'passwordReset' });
+              }
+            }}>
               비밀번호 찾기
             </FooterLink>
           </Footer>

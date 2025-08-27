@@ -18,7 +18,9 @@ interface IResultScreenProps {
   points?: number;
   lottieSource?: any;
   nextScreen?: string;
+  nextScreenParams?: any;
   onSuccess?: () => void;
+  buttonText?: string;
 }
 
 const ResultScreen = ({ navigation, route }: any) => {
@@ -31,8 +33,10 @@ const ResultScreen = ({ navigation, route }: any) => {
     points,
     lottieSource,
     nextScreen = 'MyPage',
+    nextScreenParams,
     onSuccess,
     updatedRoutineData,
+    buttonText,
   } = route.params || {};
 
   // 뒤로가기 버튼 차단
@@ -106,6 +110,14 @@ const ResultScreen = ({ navigation, route }: any) => {
         navigation.navigate('HomeMain');
       }
       return;
+    } else if (nextScreen === 'EmailLogin') {
+      // 로그인 화면으로 이동
+      navigation.navigate(nextScreen);
+      return;
+    } else if (nextScreen === 'PasswordSetting') {
+      // 비밀번호 재설정 화면으로 이동 (nextScreenParams 포함)
+      navigation.navigate(nextScreen, nextScreenParams);
+      return;
     } else if (typeof nextScreen === 'string' && nextScreen.length > 0) {
       navigation.navigate(nextScreen);
       return;
@@ -163,7 +175,7 @@ const ResultScreen = ({ navigation, route }: any) => {
 
       <ButtonWrapper>
         <CustomButton
-          text="완료"
+          text={buttonText || "완료"}
           onPress={handleComplete}
           backgroundColor={theme.colors.primary}
           textColor={theme.colors.white}
