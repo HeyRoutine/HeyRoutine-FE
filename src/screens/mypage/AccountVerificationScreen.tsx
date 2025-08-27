@@ -8,11 +8,30 @@ import CustomButton from '../../components/common/CustomButton';
 import Header from '../../components/common/Header';
 import OtpInput from '../../components/common/OtpInput';
 import Timer from '../../components/common/Timer';
+import {
+  useVerifyAccountCode,
+  useSendAccountCode,
+} from '../../hooks/user/useUser';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 
-const AccountVerificationScreen = ({ navigation }: any) => {
+const AccountVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
   const [errorMessage, setErrorMessage] = useState('');
+
+  // route.params에서 계좌번호 가져오기
+  const { accountNumber } = route.params || {};
+
+  // 계좌 인증번호 확인 훅
+  const { mutate: verifyAccountCode, isPending: isVerifying } =
+    useVerifyAccountCode();
+
+  // 계좌 인증번호 재전송 훅
+  const { mutate: resendAccountCode, isPending: isResending } =
+    useSendAccountCode();
+
+  // 공통 에러 처리 훅
+  const { handleApiError } = useErrorHandler();
 
   const isButtonEnabled = code.length === 4;
   const isTimeUp = timeLeft === 0;
@@ -28,15 +47,30 @@ const AccountVerificationScreen = ({ navigation }: any) => {
   }, [timeLeft]);
 
   const handleVerify = () => {
-    // TODO: 계좌 인증 로직 구현
+    if (!isButtonEnabled || isTimeUp) return;
 
-    // 임시로 성공 처리 (실제로는 API 응답에 따라 처리)
-    navigation.replace('Result', {
-      type: 'success',
-      title: '등록 성공',
-      description: '계좌 등록을 성공적으로 완료했어요',
-      nextScreen: 'ProfileEdit',
-    });
+    // 계좌 인증번호 확인 API 호출
+    verifyAccountCode(
+      { code },
+      {
+        onSuccess: (data) => {
+          console.log('🔍 계좌 인증 성공:', data);
+          // 성공 시 완료 화면으로 이동
+          navigation.replace('Result', {
+            type: 'success',
+            title: '등록 성공',
+            description: '계좌 등록을 성공적으로 완료했어요',
+            nextScreen: 'ProfileEdit',
+          });
+        },
+        onError: (error) => {
+          console.error('🔍 계좌 인증 실패:', error);
+          handleApiError(error);
+          // 에러 메시지 설정
+          setErrorMessage('인증번호가 올바르지 않습니다.');
+        },
+      },
+    );
   };
 
   const handleCodeChange = (text: string) => {
@@ -45,10 +79,30 @@ const AccountVerificationScreen = ({ navigation }: any) => {
   };
 
   const handleResendCode = () => {
-    // TODO: 1원 입금 재발송 로직 구현
-    setTimeLeft(180);
-    setCode('');
-    setErrorMessage('');
+    if (!accountNumber) {
+      setErrorMessage('계좌번호 정보가 없습니다.');
+      return;
+    }
+
+    // 1원 입금 재발송 API 호출
+    resendAccountCode(
+      { account: accountNumber },
+      {
+        onSuccess: (data) => {
+          console.log('🔍 계좌 인증번호 재전송 성공:', data);
+          // 타이머 리셋 및 입력값 초기화
+          setTimeLeft(180);
+          setCode('');
+          setErrorMessage('');
+        },
+        onError: (error) => {
+          console.error('🔍 계좌 인증번호 재전송 실패:', error);
+          handleApiError(error);
+          // 에러 메시지 설정
+          setErrorMessage('인증번호 재전송에 실패했습니다.');
+        },
+      },
+    );
   };
 
   return (
@@ -72,13 +126,18 @@ const AccountVerificationScreen = ({ navigation }: any) => {
           autoFocus={true}
         />
 
-        <ResendButton onPress={handleResendCode}>
-          <ResendText>1원 입금 재발송</ResendText>
+        <ResendButton onPress={handleResendCode} disabled={isResending}>
+          <ResendText disabled={isResending}>
+            {isResending ? '재발송 중...' : '1원 입금 재발송'}
+          </ResendText>
         </ResendButton>
 
         <ErrorContainer>
-          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
-          {isTimeUp && <ErrorMessage>인증 시간이 만료되었습니다.</ErrorMessage>}
+          {isTimeUp ? (
+            <ErrorMessage>인증 시간이 만료되었습니다.</ErrorMessage>
+          ) : errorMessage ? (
+            <ErrorMessage>{errorMessage}</ErrorMessage>
+          ) : null}
         </ErrorContainer>
 
         <CharacterImage
@@ -90,12 +149,19 @@ const AccountVerificationScreen = ({ navigation }: any) => {
       {/* 하단 버튼 */}
       <ButtonWrapper>
         <CustomButton
-          text="인증하기"
+          text={isVerifying ? '인증 중...' : '인증하기'}
           onPress={handleVerify}
-          // TODO: 4자리 숫자 입력 후 인증하기 버튼 활성화, 타이머 종료 후 인증하기 버튼 비활성화
-          // disabled={!isButtonEnabled || isTimeUp}
-          backgroundColor={theme.colors.primary}
-          textColor={theme.colors.white}
+          disabled={!isButtonEnabled || isTimeUp || isVerifying}
+          backgroundColor={
+            isButtonEnabled && !isTimeUp && !isVerifying
+              ? theme.colors.primary
+              : theme.colors.gray200
+          }
+          textColor={
+            isButtonEnabled && !isTimeUp && !isVerifying
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>
@@ -137,14 +203,16 @@ const Description = styled.Text`
   margin-bottom: 16px;
 `;
 
-const ResendButton = styled.TouchableOpacity`
+const ResendButton = styled.TouchableOpacity<{ disabled?: boolean }>`
   align-self: flex-start;
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 `;
 
-const ResendText = styled.Text`
+const ResendText = styled.Text<{ disabled?: boolean }>`
   font-size: ${theme.fonts.caption}px;
   font-family: ${theme.fonts.Medium};
-  color: ${theme.colors.gray600};
+  color: ${(props) =>
+    props.disabled ? theme.colors.gray400 : theme.colors.gray600};
   text-decoration-line: underline;
 `;
 

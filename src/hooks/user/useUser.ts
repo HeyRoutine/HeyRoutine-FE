@@ -15,6 +15,8 @@ import {
   myInfo,
   updateIsMarketing,
   updateProfileImage,
+  sendAccountCode,
+  verifyAccountCode,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -29,6 +31,8 @@ import {
   MyInfoResponse,
   UpdateIsMarketingRequest,
   UpdateProfileImageRequest,
+  SendAccountCodeRequest,
+  VerifyAccountCodeRequest,
 } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
@@ -261,4 +265,35 @@ export const useUpdateProfileImage = () => {
   });
 };
 
-// TODO: 다른 유저 API hooks 구현 예정
+// 계좌 인증번호 전송 훅 (1원 송금)
+export const useSendAccountCode = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SendAccountCodeRequest) => sendAccountCode(data),
+    onSuccess: (data) => {
+      // 계좌 인증번호 전송 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['account'] });
+
+      // TODO: 계좌 인증번호 전송 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 인증 화면으로 이동 등
+    },
+  });
+};
+
+// 계좌 인증번호 확인 훅 (1원 송금 검증)
+export const useVerifyAccountCode = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: VerifyAccountCodeRequest) => verifyAccountCode(data),
+    onSuccess: (data) => {
+      // 계좌 인증번호 확인 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['account'] });
+      queryClient.invalidateQueries({ queryKey: ['myInfo'] });
+
+      // TODO: 계좌 인증번호 확인 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 계좌 등록 완료 등
+    },
+  });
+};

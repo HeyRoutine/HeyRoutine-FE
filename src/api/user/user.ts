@@ -24,6 +24,10 @@ import {
   UpdateIsMarketingResponse,
   UpdateProfileImageRequest,
   UpdateProfileImageResponse,
+  SendAccountCodeRequest,
+  SendAccountCodeResponse,
+  VerifyAccountCodeRequest,
+  VerifyAccountCodeResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -221,10 +225,31 @@ export const updateIsMarketing = async (
 export const updateProfileImage = async (
   data: UpdateProfileImageRequest,
 ): Promise<ApiResponse<UpdateProfileImageResponse>> => {
-  const response = await apiClient.patch<
-    ApiResponse<UpdateProfileImageResponse>
-  >('/api/v1/user/profileImage', data);
+  const response = await apiClient.put<ApiResponse<UpdateProfileImageResponse>>(
+    '/api/v1/user/profileImage',
+    data,
+  );
   return response.data;
 };
 
-// TODO: 다른 유저 API 함수들 구현 예정
+// 계좌 인증번호 전송 (1원 송금)
+export const sendAccountCode = async (
+  data: SendAccountCodeRequest,
+): Promise<ApiResponse<SendAccountCodeResponse>> => {
+  const response = await apiClient.post<ApiResponse<SendAccountCodeResponse>>(
+    '/api/v1/user/accountCode',
+    data,
+  );
+  return response.data;
+};
+
+// 계좌 인증번호 확인 (1원 송금 검증)
+export const verifyAccountCode = async (
+  data: VerifyAccountCodeRequest,
+): Promise<ApiResponse<VerifyAccountCodeResponse>> => {
+  const response = await apiClient.post<ApiResponse<VerifyAccountCodeResponse>>(
+    '/api/v1/user/accountCode/verify',
+    data,
+  );
+  return response.data;
+};

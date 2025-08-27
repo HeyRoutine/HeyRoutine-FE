@@ -6,6 +6,8 @@ import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
+import { useSendAccountCode } from '../../hooks/user/useUser';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 
 interface IAccountRegistrationScreenProps {
   navigation: any;
@@ -16,6 +18,13 @@ const AccountRegistrationScreen = ({
 }: IAccountRegistrationScreenProps) => {
   const [accountNumber, setAccountNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 계좌 인증번호 전송 훅
+  const { mutate: sendAccountCode, isPending: isSendingCode } =
+    useSendAccountCode();
+
+  // 공통 에러 처리 훅
+  const { handleApiError } = useErrorHandler();
 
   // 계좌번호 유효성 검사 (임시)
   const isAccountValid = accountNumber.length >= 10;
@@ -30,8 +39,25 @@ const AccountRegistrationScreen = ({
 
   const handleRequestAuth = () => {
     if (isAccountValid) {
-      // 1원 인증 요청 로직
-      navigation.navigate('AccountVerification');
+      // 1원 인증 요청 API 호출
+      sendAccountCode(
+        { account: accountNumber },
+        {
+          onSuccess: (data) => {
+            console.log('🔍 계좌 인증번호 전송 성공:', data);
+            // 인증 화면으로 이동 (계좌번호도 함께 전달)
+            navigation.navigate('AccountVerification', {
+              accountNumber: accountNumber,
+            });
+          },
+          onError: (error) => {
+            console.error('🔍 계좌 인증번호 전송 실패:', error);
+            handleApiError(error);
+            // 에러 메시지 설정
+            setErrorMessage('계좌 인증번호 전송에 실패했습니다.');
+          },
+        },
+      );
     }
   };
 
@@ -56,13 +82,19 @@ const AccountRegistrationScreen = ({
 
       <ButtonWrapper>
         <CustomButton
-          text="1원 인증 요청"
+          text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
           onPress={handleRequestAuth}
-          disabled={!isAccountValid}
+          disabled={!isAccountValid || isSendingCode}
           backgroundColor={
-            isAccountValid ? theme.colors.primary : theme.colors.gray200
+            isAccountValid && !isSendingCode
+              ? theme.colors.primary
+              : theme.colors.gray200
           }
-          textColor={isAccountValid ? theme.colors.white : theme.colors.gray500}
+          textColor={
+            isAccountValid && !isSendingCode
+              ? theme.colors.white
+              : theme.colors.gray500
+          }
         />
       </ButtonWrapper>
     </Container>

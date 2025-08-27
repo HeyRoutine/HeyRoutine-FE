@@ -134,20 +134,20 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
     }
   };
 
-  // 계좌 정보 (userStore에서 관리)
-  const accountInfo = userInfo?.accountInfo || {
-    hasAccount: false,
-    accountNumber: '',
+  // 계좌번호 표시 로직 (항상 등록됨이 보장됨)
+  const getAccountDisplayText = () => {
+    const accountNumber = userInfo?.bankAccount;
+    if (accountNumber) {
+      // 계좌번호가 있으면 전체 표시하고 "신한" 텍스트 추가
+      return `${accountNumber} 신한`;
+    }
+    return '계좌번호를 불러오는 중...';
   };
 
   const handleAccountAction = () => {
-    if (accountInfo.hasAccount) {
-      // 계좌 삭제 로직
-      console.log('계좌 삭제');
-    } else {
-      // 계좌 등록 화면으로 이동
-      navigation.navigate('AccountRegistration');
-    }
+    // 테스트용: 인증 상태와 관계없이 항상 인증 화면으로 이동
+    console.log('계좌 인증 화면으로 이동');
+    navigation.navigate('AccountRegistration');
   };
 
   // 리스트 데이터
@@ -156,14 +156,12 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       id: 'account',
       type: 'item',
       title: '내 계좌 정보',
-      subtitle: accountInfo.hasAccount
-        ? accountInfo.accountNumber
-        : '계좌 등록이 필요합니다.',
-      rightText: accountInfo.hasAccount ? '삭제하기' : '등록하기',
-      rightTextColor: accountInfo.hasAccount
-        ? theme.colors.error
+      subtitle: getAccountDisplayText(),
+      rightText: userInfo?.accountCertificationStatus ? '인증완료' : '인증하기',
+      rightTextColor: userInfo?.accountCertificationStatus
+        ? theme.colors.gray400
         : theme.colors.primary,
-      onPress: handleAccountAction,
+      onPress: handleAccountAction, // 테스트용: 항상 클릭 가능
     },
     {
       id: 'password',
@@ -223,6 +221,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
         toggleValue={item.toggleValue}
         onToggleChange={item.onToggleChange}
         showArrow={item.type === 'item'}
+        // disabled={item.id === 'account' && userInfo?.accountCertificationStatus}
       />
     );
   };
