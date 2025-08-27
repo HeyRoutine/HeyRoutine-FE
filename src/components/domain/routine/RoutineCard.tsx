@@ -87,7 +87,11 @@ const RoutineCard = ({
           )}
         </HeaderRight>
       </Header>
-      {description && <Description>{description}</Description>}
+      {description && (
+        <Description numberOfLines={1} ellipsizeMode="tail">
+          {description}
+        </Description>
+      )}
       <TimeText>{formatTimeRange(timeRange)}</TimeText>
       <DayContainer>
         {sortDaysByOrder(selectedDays).map((day) => {

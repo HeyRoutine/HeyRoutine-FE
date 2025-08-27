@@ -12,6 +12,7 @@ import {
   useDonePersonalRoutine,
   useDonePersonalRoutineList,
 } from '../../hooks/routine/personal/usePersonalRoutines';
+import SvgImage from '../../components/common/SvgImage';
 
 const ActiveRoutineScreen = ({ navigation, route }: any) => {
   const [timeLeft, setTimeLeft] = useState(0);
@@ -241,11 +242,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                 />
                 <TimerContent>
                   {tasks[activeTaskIndex]?.icon?.startsWith('http') ? (
-                    <BreadIconImage
-                      source={{ uri: tasks[activeTaskIndex].icon }}
-                      resizeMode="contain"
-                      defaultSource={require('../../assets/images/robot.png')}
-                      onError={() => {}}
+                    <SvgImage
+                      uri={tasks[activeTaskIndex].icon}
+                      width={86}
+                      height={86}
                     />
                   ) : (
                     <BreadIcon>

@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../styles/theme';
+import SvgImage from '../../common/SvgImage';
 
 interface RoutineSuggestionItemProps {
   icon: string;
@@ -25,7 +26,7 @@ const RoutineSuggestionItem: React.FC<RoutineSuggestionItemProps> = ({
     <Container onPress={onPress}>
       <IconContainer>
         {isEmojiUrl ? (
-          <EmojiImage source={{ uri: icon }} resizeMode="contain" />
+          <SvgImage uri={icon} width={24} height={24} />
         ) : (
           <IconText>{icon}</IconText>
         )}

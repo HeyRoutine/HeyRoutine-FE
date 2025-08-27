@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { TextInput, Image } from 'react-native';
+import SvgImage from '../../common/SvgImage';
 
 interface RoutineItemAdderProps {
   onPlusPress: () => void;
@@ -53,14 +54,7 @@ const RoutineItemAdder = ({
         ) : selectedEmoji ? (
           // 이모지가 URL인지 텍스트 이모지인지 판단
           selectedEmoji.startsWith('http') ? (
-            <EmojiImage
-              source={{ uri: selectedEmoji }}
-              resizeMode="contain"
-              defaultSource={require('../../../assets/images/robot.png')}
-              onError={() =>
-                console.log('이모지 이미지 로드 실패:', selectedEmoji)
-              }
-            />
+            <SvgImage uri={selectedEmoji} width={24} height={24} />
           ) : (
             <EmojiText>{selectedEmoji}</EmojiText>
           )

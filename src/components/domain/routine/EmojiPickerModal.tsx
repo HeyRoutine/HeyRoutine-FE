@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
-import { ScrollView, TouchableOpacity, Text, Image } from 'react-native';
+import {
+  ScrollView,
+  TouchableOpacity,
+  Text,
+  Image,
+  FlatList,
+} from 'react-native';
 import { theme } from '../../../styles/theme';
 import BottomSheetDialog from '../../common/BottomSheetDialog';
 import { useRoutineEmojis } from '../../../hooks/routine/common/useCommonRoutines';
+import SvgImage from '../../common/SvgImage';
 
 interface EmojiPickerModalProps {
   visible: boolean;
@@ -61,20 +68,22 @@ const EmojiPickerModal = ({
         </CategoryScrollView>
       </CategoryContainer>
 
-      <EmojiGrid>
-        {isLoadingEmojis ? null : emojis.length === 0 ? (
-          <EmptyText>이모지가 없습니다.</EmptyText>
-        ) : (
-          emojis.slice(0, 24).map((emoji, index) => (
-            <EmojiButton
-              key={index}
-              onPress={() => handleEmojiPress(emoji.emojiUrl)}
-            >
-              <EmojiImage source={{ uri: emoji.emojiUrl }} />
-            </EmojiButton>
-          ))
+      <EmojiFlatList
+        data={emojis}
+        keyExtractor={(item, index) => `${item.emojiId}-${index}`}
+        renderItem={({ item }) => (
+          <EmojiButton onPress={() => handleEmojiPress(item.emojiUrl)}>
+            <SvgImage uri={item.emojiUrl} width={20} height={20} />
+          </EmojiButton>
         )}
-      </EmojiGrid>
+        numColumns={6}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={() => <EmptyText>이모지가 없습니다.</EmptyText>}
+        ListHeaderComponent={() =>
+          isLoadingEmojis ? <LoadingText>로딩 중...</LoadingText> : null
+        }
+        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 0 }}
+      />
     </BottomSheetDialog>
   );
 };
@@ -104,11 +113,8 @@ const CategoryText = styled.Text<{ isSelected: boolean }>`
     isSelected ? theme.colors.primary : theme.colors.gray600};
 `;
 
-const EmojiGrid = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  padding-bottom: 20px;
+const EmojiFlatList = styled(FlatList)`
+  height: 300px;
 `;
 
 const EmojiButton = styled(TouchableOpacity)`
@@ -118,18 +124,11 @@ const EmojiButton = styled(TouchableOpacity)`
   border-radius: 12px;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  margin-right: 12px;
+  margin: 5px;
 `;
 
 const EmojiText = styled.Text`
   font-size: 16px;
-`;
-
-const EmojiImage = styled.Image`
-  width: 20px;
-  height: 20px;
-  resize-mode: contain;
 `;
 
 const LoadingText = styled.Text`

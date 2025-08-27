@@ -172,8 +172,6 @@ const SubTitle = styled.Text`
 const ProfileImageContainer = styled.TouchableOpacity`
   align-self: center;
   position: relative;
-  margin-top: auto;
-  margin-bottom: auto;
 `;
 
 const ProfileImage = styled.Image`

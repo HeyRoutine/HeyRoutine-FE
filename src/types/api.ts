@@ -447,6 +447,8 @@ export interface EmojiListResponse {
 // 이모지 조회 파라미터 타입
 export interface EmojiListParams {
   category?: string; // 카테고리 필터링 값 (예: "식사")
+  page?: number; // 페이지 번호 (기본값: 0)
+  size?: number; // 페이지 크기 (기본값: 20)
 }
 
 // ===== 개인루틴 관련 타입 =====

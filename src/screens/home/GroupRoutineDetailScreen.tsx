@@ -1259,7 +1259,6 @@ const ModalContainer = styled.View`
 
 const ModalButtonWrapper = styled.View`
   margin-bottom: 16px;
-  height: 48px;
 
   &:last-child {
     margin-bottom: 0;

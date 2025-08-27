@@ -9,13 +9,15 @@ import {
 export const getRoutineEmoji = async (
   params: EmojiListParams = {},
 ): Promise<ApiResponse<EmojiListResponse>> => {
-  const { category } = params;
+  const { category, page = 0, size = 20 } = params;
 
   const response = await apiClient.get<ApiResponse<EmojiListResponse>>(
     '/api/v1/routines/emoji',
     {
       params: {
         ...(category && { category }),
+        page,
+        size,
       },
     },
   );
