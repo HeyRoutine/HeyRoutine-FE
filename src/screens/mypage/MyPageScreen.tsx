@@ -4,7 +4,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { FlatList } from 'react-native';
+import { FlatList, Linking } from 'react-native';
 
 import { theme } from '../../styles/theme';
 import ProfileImage from '../../components/common/ProfileImage';
@@ -53,25 +53,37 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       id: 'suggestion',
       type: 'item',
       title: '서비스 건의하기',
-      onPress: () => navigation.navigate('Suggestion'),
+      onPress: () =>
+        Linking.openURL(
+          'https://docs.google.com/forms/d/1CrX7R3cgbjMxtRW2j02MbHuCGam--J2ipUoZGiEXzoI/edit',
+        ),
     },
     {
       id: 'license',
       type: 'item',
       title: '오픈소스 라이선스',
-      onPress: () => navigation.navigate('License'),
+      onPress: () =>
+        Linking.openURL(
+          'https://ryuwon-project.notion.site/Open-Source-Licenses-23ea58d49be680d5bc21d691a47207cb?source=copy_link',
+        ),
     },
     {
       id: 'privacy',
       type: 'item',
       title: '개인정보 처리방침',
-      onPress: () => navigation.navigate('Privacy'),
+      onPress: () =>
+        Linking.openURL(
+          'https://ryuwon-project.notion.site/25ca58d49be6805497e2f4f26402572e?source=copy_link',
+        ),
     },
     {
       id: 'terms',
       type: 'item',
       title: '서비스 이용약관',
-      onPress: () => navigation.navigate('Terms'),
+      onPress: () =>
+        Linking.openURL(
+          'https://ryuwon-project.notion.site/25ca58d49be68065aefbffe89d194664?source=copy_link',
+        ),
     },
   ];
 
