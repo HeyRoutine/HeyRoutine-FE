@@ -81,7 +81,10 @@ type CategoryMeta = {
 // ];
 
 // API 카테고리 맵핑
-const CATEGORY_MAP: Record<Exclude<CategoryKey, 'all'>, '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리'> = {
+const CATEGORY_MAP: Record<
+  Exclude<CategoryKey, 'all'>,
+  '카페' | '편의점' | '패스트푸드' | '외식' | '베이커리'
+> = {
   cafe: '카페',
   convenience: '편의점',
   fastfood: '패스트푸드',
@@ -206,7 +209,9 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   }, [selectedCategory, allData, catData]);
 
   const isLoading =
-    selectedCategory === 'all' ? isAllLoading || isAllFetching : isCatLoading || isCatFetching;
+    selectedCategory === 'all'
+      ? isAllLoading || isAllFetching
+      : isCatLoading || isCatFetching;
 
   // Legacy: 화면 이동 시 기존에는 원본 아이템을 그대로 전달했습니다.
   // navigation.navigate('GifticonProduct', { product, userPoints: points });
@@ -337,7 +342,7 @@ const PointHeaderText = styled.Text`
 
 const PointValue = styled.Text`
   font-family: ${theme.fonts.SemiBold};
-  font-size: 20px;
+  font-size: ${theme.fonts.subtitle}px;
   color: ${theme.colors.primary};
 `;
 

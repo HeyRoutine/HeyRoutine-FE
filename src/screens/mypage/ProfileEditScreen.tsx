@@ -11,6 +11,7 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { useAuthStore, useUserStore } from '../../store';
 import {
   useUpdateProfileImage,
@@ -52,6 +53,9 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const marketingConsent = userInfo?.isMarketing ?? true;
   const notificationConsent = userInfo?.notificationConsent ?? true;
   const profileImageUri = userInfo?.profileImage;
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showWithdrawComplete, setShowWithdrawComplete] = useState(false);
 
   // 설정 변경 핸들러들
   const handleMarketingConsentChange = (value: boolean) => {
@@ -199,14 +203,39 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   ];
 
   const handleLogout = () => {
+    // 로그아웃 확인 모달 표시
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
     // Zustand 스토어의 logout 함수 사용
     logout();
-    console.log('로그아웃');
+    console.log('🔍 로그아웃 완료');
+    setShowLogoutModal(false);
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
   };
 
   const handleWithdraw = () => {
-    // 회원탈퇴 로직
-    console.log('회원탈퇴');
+    // 회원탈퇴 확인 모달 표시
+    setShowWithdrawModal(true);
+  };
+
+  const handleWithdrawConfirm = () => {
+    // 회원탈퇴 완료 화면 표시
+    setShowWithdrawModal(false);
+    setShowWithdrawComplete(true);
+  };
+
+  const handleWithdrawCancel = () => {
+    setShowWithdrawModal(false);
+  };
+
+  const handleWithdrawComplete = () => {
+    // 회원탈퇴 완료 후 내 정보 관리 화면으로 돌아가기
+    setShowWithdrawComplete(false);
   };
 
   const renderItem = ({ item }: { item: any }) => {
@@ -260,6 +289,67 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
           </FooterButton>
         </FooterSection>
       </Content>
+
+      <BottomSheetDialog
+        visible={showLogoutModal}
+        onRequestClose={handleLogoutCancel}
+      >
+        <ModalTitle>로그아웃</ModalTitle>
+        <ModalSubtitle>헤이루틴을 로그아웃 하시겠습니까?</ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleLogoutCancel}>
+              <CancelText>이전</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <LogoutButton onPress={handleLogoutConfirm}>
+              <LogoutText>로그아웃</LogoutText>
+            </LogoutButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 회원탈퇴 확인 모달 */}
+      <BottomSheetDialog
+        visible={showWithdrawModal}
+        onRequestClose={handleWithdrawCancel}
+      >
+        <ModalTitle>서비스 탈퇴</ModalTitle>
+        <WithdrawModalSubtitle>
+          정말 헤이루틴 서비스를{'\n'}탈퇴하시겠습니까?
+        </WithdrawModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CancelButton onPress={handleWithdrawCancel}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <WithdrawButton onPress={handleWithdrawConfirm}>
+              <WithdrawText>회원 탈퇴</WithdrawText>
+            </WithdrawButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
+
+      {/* 회원탈퇴 완료 화면 */}
+      <BottomSheetDialog
+        visible={showWithdrawComplete}
+        onRequestClose={handleWithdrawComplete}
+      >
+        <ModalTitle>탈퇴 완료</ModalTitle>
+        <ModalSubtitle>
+          탈퇴 완료되었습니다.{'\n'}이용해주셔서 감사합니다.
+        </ModalSubtitle>
+        <ButtonRow>
+          <ButtonWrapper>
+            <CompleteButton onPress={handleWithdrawComplete}>
+              <CompleteText>확인</CompleteText>
+            </CompleteButton>
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -338,4 +428,91 @@ const Divider = styled.View`
   height: 16px;
   background-color: ${theme.colors.gray100};
   margin: 0 8px;
+`;
+
+// 로그아웃 모달 스타일 컴포넌트
+const ModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
+`;
+
+const ModalSubtitle = styled.Text`
+  color: #6f7075;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex: 1;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.gray200};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CancelText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+`;
+
+const LogoutButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const LogoutText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const WithdrawButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const WithdrawText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
+`;
+
+const WithdrawModalSubtitle = styled.Text`
+  color: var(--Gray-Scale-600, #6f7075);
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const CompleteButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+`;
+
+const CompleteText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
 `;
