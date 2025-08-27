@@ -208,6 +208,10 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
 
   return (
     <Container edges={['top', 'left', 'right']}>
+      <BackButton onPress={() => navigation.goBack()}>
+        <Ionicons name="chevron-back" size={24} color={theme.colors.gray600} />
+      </BackButton>
+
       <ScrollContent
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
@@ -390,9 +394,8 @@ const ContentContainer = styled.View`
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.Medium};
   font-size: 36px;
-  font-weight: 700;
   color: #1f2021;
   text-align: center;
   margin-bottom: 12px;
@@ -468,7 +471,6 @@ const SuccessContainer = styled.View`
 
 const SuccessTextContainer = styled.View`
   align-items: center;
-  margin-top: 20px;
 `;
 
 const SuccessCircle = styled.View`
@@ -486,9 +488,9 @@ const CheckIcon = styled.View`
 `;
 
 const SuccessTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
+  font-family: ${theme.fonts.Medium};
   font-size: 32px;
-  font-weight: 700;
+  font-weight: ${theme.fonts.Bold};
   color: #7f7cfa;
   text-align: center;
 `;
@@ -600,4 +602,34 @@ const SkipText = styled.Text`
   font-weight: 600;
   color: #fff;
   text-align: center;
+`;
+
+const HeaderContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-top: 8px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${theme.colors.gray200};
+`;
+
+const BackButton = styled.TouchableOpacity`
+  position: absolute;
+  top: 60px;
+  left: 16px;
+  z-index: 1000;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+`;
+
+const HeaderTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 18px;
+  color: ${theme.colors.gray900};
+`;
+
+const Spacer = styled.View`
+  width: 40px;
 `;
