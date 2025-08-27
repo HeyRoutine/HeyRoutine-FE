@@ -5,7 +5,12 @@ import { ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../../styles/theme';
-import { AchievementCard, WeeklySummary, BubbleCard, ConsumptionAnalysisCard } from '../../components/domain/analysis';
+import {
+  AchievementCard,
+  WeeklySummary,
+  BubbleCard,
+  ConsumptionAnalysisCard,
+} from '../../components/domain/analysis';
 import { TabNavigation } from '../../components/common';
 import { useAnalysisStore } from '../../store';
 import { getMaxStreak, getWeeklySummary } from '../../api/analysis';
@@ -117,15 +122,65 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     const toStatusArray = (raw: WeeklySummaryItem['dailyStatus']) => {
       const ds = (raw || {}) as unknown as Record<string, any>;
       // 한글 키(월~일), 영문 키(MONDAY~SUNDAY), 약어(SUN~SAT), 전체 한글(월요일~일요일) 모두 대응
-      const sunday = coalesceBool(ds.SUNDAY, ds.Sun, ds.SUN, ds['일'], ds['일요일']);
-      const monday = coalesceBool(ds.MONDAY, ds.Mon, ds.MON, ds['월'], ds['월요일']);
-      const tuesday = coalesceBool(ds.TUESDAY, ds.Tue, ds.TUE, ds['화'], ds['화요일']);
-      const wednesday = coalesceBool(ds.WEDNESDAY, ds.Wed, ds.WED, ds['수'], ds['수요일']);
-      const thursday = coalesceBool(ds.THURSDAY, ds.Thu, ds.THU, ds['목'], ds['목요일']);
-      const friday = coalesceBool(ds.FRIDAY, ds.Fri, ds.FRI, ds['금'], ds['금요일']);
-      const saturday = coalesceBool(ds.SATURDAY, ds.Sat, ds.SAT, ds['토'], ds['토요일']);
+      const sunday = coalesceBool(
+        ds.SUNDAY,
+        ds.Sun,
+        ds.SUN,
+        ds['일'],
+        ds['일요일'],
+      );
+      const monday = coalesceBool(
+        ds.MONDAY,
+        ds.Mon,
+        ds.MON,
+        ds['월'],
+        ds['월요일'],
+      );
+      const tuesday = coalesceBool(
+        ds.TUESDAY,
+        ds.Tue,
+        ds.TUE,
+        ds['화'],
+        ds['화요일'],
+      );
+      const wednesday = coalesceBool(
+        ds.WEDNESDAY,
+        ds.Wed,
+        ds.WED,
+        ds['수'],
+        ds['수요일'],
+      );
+      const thursday = coalesceBool(
+        ds.THURSDAY,
+        ds.Thu,
+        ds.THU,
+        ds['목'],
+        ds['목요일'],
+      );
+      const friday = coalesceBool(
+        ds.FRIDAY,
+        ds.Fri,
+        ds.FRI,
+        ds['금'],
+        ds['금요일'],
+      );
+      const saturday = coalesceBool(
+        ds.SATURDAY,
+        ds.Sat,
+        ds.SAT,
+        ds['토'],
+        ds['토요일'],
+      );
 
-      const order = [sunday, monday, tuesday, wednesday, thursday, friday, saturday];
+      const order = [
+        sunday,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+      ];
       return order.map(booleanToStatus);
     };
 
@@ -141,7 +196,8 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
       setLoadingWeekly(true);
       setWeeklyError(null);
       try {
-        const routineType: RoutineType = selectedTab === 0 ? 'DAILY' : 'FINANCE';
+        const routineType: RoutineType =
+          selectedTab === 0 ? 'DAILY' : 'FINANCE';
         const res = await getWeeklySummary({
           startDate: startDateStr,
           endDate: endDateStr,
@@ -207,16 +263,11 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
           {/* 성취 카드 */}
           <AchievementCard
             title="최대 연속"
-            // achievement={selectedTab === 0 ? '6일 달성' : '5일 달성'}
             achievement={`${maxStreak}일 달성`}
-            // routineName={selectedTab === 0 ? '아침루틴' : '절약루틴'}
             routineName={selectedTab === 0 ? '일상 루틴' : '금융 루틴'}
-            // points={100}
             points={0}
-            // progress={selectedTab === 0 ? 85 : 70}
-            progress={100}
-            // daysLeft={selectedTab === 0 ? 1 : 2}
-            daysLeft={0}
+            progress={Math.min(((maxStreak % 7) / 7) * 100, 100)}
+            daysLeft={Math.max(7 - (maxStreak % 7), 0)}
           />
 
           {/* AI 분석 카드 */}
