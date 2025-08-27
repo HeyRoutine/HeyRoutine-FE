@@ -659,58 +659,30 @@ const GroupRoutineDetailScreen = ({
         </ButtonRow>
       </BottomSheetDialog>
 
-      {/* 메뉴 모달 */}
+      {/* 더보기 시트 */}
       <BottomSheetDialog
         visible={isMenuVisible}
         onRequestClose={() => setIsMenuVisible(false)}
       >
-        <ModalContainer>
+        <MoreSheetContainer>
           {routine.isAdmin ? (
             <>
-              <ModalButtonWrapper>
-                <CustomButton
-                  text="루틴 수정"
-                  onPress={handleEditRoutine}
-                  backgroundColor={theme.colors.white}
-                  textColor={theme.colors.gray800}
-                  borderColor={theme.colors.gray300}
-                  borderWidth={1}
-                />
-              </ModalButtonWrapper>
-              <ModalButtonWrapper>
-                <CustomButton
-                  text="상세 루틴 수정"
-                  onPress={handleEditRoutineDetail}
-                  backgroundColor={theme.colors.white}
-                  textColor={theme.colors.gray800}
-                  borderColor={theme.colors.gray300}
-                  borderWidth={1}
-                />
-              </ModalButtonWrapper>
-              <ModalButtonWrapper>
-                <CustomButton
-                  text="삭제"
-                  onPress={handleDeleteRoutine}
-                  backgroundColor={theme.colors.white}
-                  textColor={theme.colors.error}
-                  borderColor={theme.colors.error}
-                  borderWidth={1}
-                />
-              </ModalButtonWrapper>
+              <MoreButton onPress={handleEditRoutine}>
+                <MoreButtonText>루틴 수정</MoreButtonText>
+              </MoreButton>
+              <MoreButton onPress={handleEditRoutineDetail}>
+                <MoreButtonText>상세 루틴 수정</MoreButtonText>
+              </MoreButton>
+              <DeleteButton onPress={handleDeleteRoutine}>
+                <DeleteButtonText>삭제</DeleteButtonText>
+              </DeleteButton>
             </>
           ) : (
-            <ModalButtonWrapper>
-              <CustomButton
-                text="단체 루틴 나가기"
-                onPress={handleLeaveRoutine}
-                backgroundColor={theme.colors.white}
-                textColor={theme.colors.error}
-                borderColor={theme.colors.error}
-                borderWidth={1}
-              />
-            </ModalButtonWrapper>
+            <DeleteButton onPress={handleLeaveRoutine}>
+              <DeleteButtonText>단체 루틴 나가기</DeleteButtonText>
+            </DeleteButton>
           )}
-        </ModalContainer>
+        </MoreSheetContainer>
       </BottomSheetDialog>
 
       {/* 삭제 확인 모달 */}
@@ -1211,4 +1183,44 @@ const ModalButtonWrapper = styled.View`
   &:last-child {
     margin-bottom: 0;
   }
+`;
+
+// 더보기 시트 스타일
+const MoreSheetContainer = styled.View`
+  gap: 12px;
+  padding: 0;
+`;
+
+const MoreButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.white};
+  border: 1px solid ${theme.colors.gray300};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+`;
+
+const MoreButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  font-weight: 500;
+  color: #5c5d61;
+  text-align: center;
+  line-height: 22px;
+`;
+
+const DeleteButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.white};
+  border: 1px solid ${theme.colors.error};
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+`;
+
+const DeleteButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  font-weight: 500;
+  color: ${theme.colors.error};
+  text-align: center;
+  line-height: 22px;
 `;

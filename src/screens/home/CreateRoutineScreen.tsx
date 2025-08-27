@@ -49,8 +49,10 @@ const CreateRoutineScreen = ({
   const [selectedDays, setSelectedDays] = useState<string[]>(
     sortDaysByOrder(routineData?.dayTypes || []),
   );
-  const [startTime, setStartTime] = useState(routineData?.startTime || '');
-  const [endTime, setEndTime] = useState(routineData?.endTime || '');
+  const [startTime, setStartTime] = useState(
+    routineData?.startTime || '오전 00:00',
+  );
+  const [endTime, setEndTime] = useState(routineData?.endTime || '오전 00:00');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState(
@@ -59,6 +61,7 @@ const CreateRoutineScreen = ({
 
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [textWidth, setTextWidth] = useState(120);
 
   // 개인루틴 생성/수정 훅
   const { mutate: createRoutine, isPending: isCreating } =
@@ -177,7 +180,20 @@ const CreateRoutineScreen = ({
 
   // 시간을 HH:mm:ss 형식으로 변환하는 함수 (API 요청용)
   const formatTimeForAPI = (time: string): string => {
-    // HH:mm 형식을 HH:mm:ss 형식으로 변환
+    // "오전 09:00" 또는 "오후 02:30" 형식을 "09:00:00" 또는 "14:30:00"으로 변환
+    if (time.includes('오전')) {
+      const timePart = time.replace('오전 ', '');
+      const [hour, minute] = timePart.split(':');
+      const hourNum = parseInt(hour);
+      return `${hourNum.toString().padStart(2, '0')}:${minute}:00`;
+    } else if (time.includes('오후')) {
+      const timePart = time.replace('오후 ', '');
+      const [hour, minute] = timePart.split(':');
+      const hourNum = parseInt(hour) + 12;
+      return `${hourNum.toString().padStart(2, '0')}:${minute}:00`;
+    }
+
+    // 이미 HH:mm 형식이면 :ss 추가
     if (time.includes(':')) {
       return `${time}:00`;
     }
@@ -186,16 +202,16 @@ const CreateRoutineScreen = ({
 
   const handleStartTimeSelect = (time: string | number) => {
     if (typeof time === 'string') {
-      const displayTime = formatTimeForDisplay(time);
-      setStartTime(displayTime);
+      // "오전 12:00" 형식을 그대로 유지
+      setStartTime(time);
     }
     setShowStartTimePicker(false);
   };
 
   const handleEndTimeSelect = (time: string | number) => {
     if (typeof time === 'string') {
-      const displayTime = formatTimeForDisplay(time);
-      setEndTime(displayTime);
+      // "오전 12:00" 형식을 그대로 유지
+      setEndTime(time);
     }
     setShowEndTimePicker(false);
   };
@@ -224,7 +240,19 @@ const CreateRoutineScreen = ({
               onChangeText={setRoutineName}
               placeholderTextColor={theme.colors.gray400}
             />
-            <Underline />
+            <HiddenText
+              onLayout={(event) => {
+                const { width } = event.nativeEvent.layout;
+                setTextWidth(Math.max(width, 120));
+              }}
+            >
+              {routineName || '예) 아침루틴'}
+            </HiddenText>
+            <Underline
+              style={{
+                width: `${textWidth}px`,
+              }}
+            />
           </InputContainer>
         </InputSection>
 
@@ -300,7 +328,7 @@ const CreateRoutineScreen = ({
         onRequestClose={() => setShowStartTimePicker(false)}
         onTimeSelect={handleStartTimeSelect}
         type="time"
-        initialTime="09:00"
+        initialTime={startTime}
       />
 
       {/* 종료 시간 선택 모달 */}
@@ -309,7 +337,7 @@ const CreateRoutineScreen = ({
         onRequestClose={() => setShowEndTimePicker(false)}
         onTimeSelect={handleEndTimeSelect}
         type="time"
-        initialTime="11:00"
+        initialTime={endTime}
       />
     </Container>
   );
@@ -371,10 +399,19 @@ const NameInput = styled(TextInput)`
   text-align: center;
 `;
 
+const HiddenText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 28px;
+  color: transparent;
+  text-align: center;
+  height: 0;
+  overflow: hidden;
+`;
+
 const Underline = styled.View`
   height: 1px;
   background-color: ${theme.colors.gray300};
-  width: 100%;
+  align-self: center;
 `;
 
 const ButtonWrapper = styled.View`

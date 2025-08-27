@@ -10,6 +10,7 @@ import { theme } from '../../styles/theme';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import { useUserStore } from '../../store';
+import { useMyInfo } from '../../hooks/user/useUser';
 
 /**
  * MyPageScreen의 props 인터페이스
@@ -28,7 +29,10 @@ interface IMyPageScreenProps {
 const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
   const insets = useSafeAreaInsets();
 
-  // Zustand 스토어에서 사용자 정보 가져오기
+  // 내 정보 조회 API 호출
+  const { data: myInfo, isLoading } = useMyInfo();
+
+  // Zustand 스토어에서 사용자 정보 가져오기 (기존 포인트 정보 등)
   const { userInfo } = useUserStore();
 
   // 리스트 데이터
@@ -89,15 +93,13 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
       <Content>
         <ProfileSection insets={insets}>
           <ProfileImage
-            imageUri={userInfo?.profileImage}
+            imageUri={myInfo?.result?.userImage || undefined}
             onEditPress={() => {}}
             size={64}
             showEditButton={false}
           />
           <ProfileInfo>
-            <UserName>
-              {userInfo?.nickname || 'SSAFY 14기 부울경 화이팅'}
-            </UserName>
+            <UserName>{myInfo?.result?.nickname || '사용자'}</UserName>
           </ProfileInfo>
         </ProfileSection>
 

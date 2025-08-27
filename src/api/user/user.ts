@@ -19,6 +19,13 @@ import {
   MailSendForPasswordResponse,
   AuthCheckRequest,
   AuthCheckResponse,
+  MyInfoResponse,
+  SendAccountCodeRequest,
+  SendAccountCodeResponse,
+  VerifyAccountCodeRequest,
+  VerifyAccountCodeResponse,
+  SaveFcmTokenRequest,
+  SaveFcmTokenResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -186,6 +193,47 @@ export const authCheck = async (
 ): Promise<ApiResponse<AuthCheckResponse>> => {
   const response = await apiClient.post<ApiResponse<AuthCheckResponse>>(
     '/api/v1/mail/auth-check',
+    data,
+  );
+  return response.data;
+};
+
+// 내 정보 조회
+export const getMyInfo = async (): Promise<ApiResponse<MyInfoResponse>> => {
+  const response = await apiClient.get<ApiResponse<MyInfoResponse>>(
+    '/api/v1/user/my-info',
+  );
+  return response.data;
+};
+
+// 계좌 인증번호 전송 (1원 송금)
+export const sendAccountCode = async (
+  data: SendAccountCodeRequest,
+): Promise<ApiResponse<SendAccountCodeResponse>> => {
+  const response = await apiClient.post<ApiResponse<SendAccountCodeResponse>>(
+    '/api/v1/user/accountCode',
+    data,
+  );
+  return response.data;
+};
+
+// 계좌 인증번호 인증 (1원 송금 검증)
+export const verifyAccountCode = async (
+  data: VerifyAccountCodeRequest,
+): Promise<ApiResponse<VerifyAccountCodeResponse>> => {
+  const response = await apiClient.post<ApiResponse<VerifyAccountCodeResponse>>(
+    '/api/v1/user/accountCode/verify',
+    data,
+  );
+  return response.data;
+};
+
+// FCM 토큰 저장
+export const saveFcmToken = async (
+  data: SaveFcmTokenRequest,
+): Promise<ApiResponse<SaveFcmTokenResponse>> => {
+  const response = await apiClient.post<ApiResponse<SaveFcmTokenResponse>>(
+    '/api/v1/fcm/token',
     data,
   );
   return response.data;

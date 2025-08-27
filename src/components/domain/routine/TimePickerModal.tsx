@@ -19,11 +19,11 @@ const TimePickerModal = ({
   onRequestClose,
   onTimeSelect,
   type,
-  initialTime = '09:00',
+  initialTime = '오전 12:00',
   initialMinutes,
 }: TimePickerModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'오전' | '오후'>('오전');
-  const [selectedHour, setSelectedHour] = useState(9);
+  const [selectedHour, setSelectedHour] = useState(12);
   const [selectedMinute, setSelectedMinute] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(30); // 기본값 30분으로 설정 (UI용)
 
@@ -76,23 +76,44 @@ const TimePickerModal = ({
     console.log('🔍 TimePickerModal - initialMinutes:', initialMinutes);
 
     if (type === 'time' && initialTime) {
-      const [hours, minutes] = initialTime.split(':');
-      const hour = parseInt(hours);
-      const period = hour < 12 ? '오전' : '오후';
-      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const minute = parseInt(minutes);
+      // "오전 00:00" 또는 "오후 12:00" 형식 처리
+      if (initialTime.includes('오전') || initialTime.includes('오후')) {
+        const period = initialTime.includes('오전') ? '오전' : '오후';
+        const timePart = initialTime.replace('오전 ', '').replace('오후 ', '');
+        const [hour, minute] = timePart.split(':');
+        const hourNum = parseInt(hour);
+        const minuteNum = parseInt(minute);
 
-      console.log('🔍 TimePickerModal - 시간 파싱 결과:', {
-        original: initialTime,
-        hour,
-        period,
-        displayHour,
-        minute,
-      });
+        console.log('🔍 TimePickerModal - 오전/오후 형식 파싱 결과:', {
+          original: initialTime,
+          period,
+          hour: hourNum,
+          minute: minuteNum,
+        });
 
-      setSelectedPeriod(period);
-      setSelectedHour(displayHour);
-      setSelectedMinute(minute);
+        setSelectedPeriod(period);
+        setSelectedHour(hourNum === 0 ? 12 : hourNum);
+        setSelectedMinute(minuteNum);
+      } else {
+        // HH:mm 형식 처리 (기존 로직)
+        const [hours, minutes] = initialTime.split(':');
+        const hour = parseInt(hours);
+        const period = hour < 12 ? '오전' : '오후';
+        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        const minute = parseInt(minutes);
+
+        console.log('🔍 TimePickerModal - HH:mm 형식 파싱 결과:', {
+          original: initialTime,
+          hour,
+          period,
+          displayHour,
+          minute,
+        });
+
+        setSelectedPeriod(period);
+        setSelectedHour(displayHour);
+        setSelectedMinute(minute);
+      }
     } else if (type === 'minutes') {
       if (initialMinutes && initialMinutes >= 1 && initialMinutes <= 180) {
         console.log(

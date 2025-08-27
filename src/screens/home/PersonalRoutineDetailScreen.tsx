@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { BackHandler } from 'react-native';
+import { BackHandler, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -60,7 +60,7 @@ const PersonalRoutineDetailScreen = ({
   const [selectedEmoji, setSelectedEmoji] = useState<string>('');
   const [currentText, setCurrentText] = useState<string>('');
   const [moreSheetVisible, setMoreSheetVisible] = useState(false);
-  const [exitConfirmVisible, setExitConfirmVisible] = useState(false);
+
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleteSuccessVisible, setDeleteSuccessVisible] = useState(false);
 
@@ -164,7 +164,7 @@ const PersonalRoutineDetailScreen = ({
     React.useCallback(() => {
       const onBackPress = () => {
         if (isEditMode) {
-          setExitConfirmVisible(true);
+          setEditMode(false);
           return true;
         }
         return false;
@@ -181,7 +181,7 @@ const PersonalRoutineDetailScreen = ({
 
   const handleBack = () => {
     if (isEditMode) {
-      setExitConfirmVisible(true);
+      setEditMode(false);
     } else {
       navigation.goBack();
     }
@@ -423,13 +423,6 @@ const PersonalRoutineDetailScreen = ({
 
   const closeMoreSheet = () => setMoreSheetVisible(false);
 
-  const closeExitConfirm = () => setExitConfirmVisible(false);
-
-  const handleConfirmExit = () => {
-    closeExitConfirm();
-    setEditMode(false);
-  };
-
   const handleCancelEdit = () => {
     setEditMode(false);
   };
@@ -488,7 +481,10 @@ const PersonalRoutineDetailScreen = ({
   return (
     <Container>
       <Header title="루틴 상세" onBackPress={handleBack} />
-      <Content>
+      <ScrollContent
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+      >
         {/* 루틴 헤더 섹션 */}
         <RoutineCard>
           <HeaderContent>
@@ -580,7 +576,7 @@ const PersonalRoutineDetailScreen = ({
             {isEditMode ? '수정 완료' : '루틴 실행하기'}
           </CreateButtonText>
         </CreateButton>
-      </Content>
+      </ScrollContent>
 
       <EmojiPickerModal
         visible={emojiPickerVisible}
@@ -627,34 +623,13 @@ const PersonalRoutineDetailScreen = ({
         </MoreSheetContainer>
       </BottomSheetDialog>
 
-      {/* 편집 모드 종료 확인 모달 */}
-      <BottomSheetDialog
-        visible={exitConfirmVisible}
-        onRequestClose={closeExitConfirm}
-      >
-        <SheetTitle>편집을 종료하시겠습니까?</SheetTitle>
-        <SheetSubtitle>저장하지 않은 변경사항은 사라집니다.</SheetSubtitle>
-        <SheetActions>
-          <ButtonWrapper>
-            <CancelButton onPress={closeExitConfirm}>
-              <CancelText>취소</CancelText>
-            </CancelButton>
-          </ButtonWrapper>
-          <ButtonWrapper>
-            <ConfirmButton onPress={handleConfirmExit}>
-              <ConfirmText>종료</ConfirmText>
-            </ConfirmButton>
-          </ButtonWrapper>
-        </SheetActions>
-      </BottomSheetDialog>
-
       {/* 루틴 삭제 확인 모달 */}
       <BottomSheetDialog
         visible={deleteConfirmVisible}
         onRequestClose={closeDeleteConfirm}
       >
         <SheetTitle>루틴을 삭제하시겠습니까?</SheetTitle>
-        <SheetActions>
+        <ButtonRow>
           <ButtonWrapper>
             <CancelButton onPress={closeDeleteConfirm}>
               <CancelText>취소</CancelText>
@@ -665,7 +640,7 @@ const PersonalRoutineDetailScreen = ({
               <ConfirmText>삭제</ConfirmText>
             </ConfirmButton>
           </ButtonWrapper>
-        </SheetActions>
+        </ButtonRow>
       </BottomSheetDialog>
 
       {/* 루틴 삭제 성공 모달 */}
@@ -689,9 +664,8 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const Content = styled.View`
+const ScrollContent = styled(ScrollView)`
   flex: 1;
-  padding: 16px;
 `;
 
 const RoutineCard = styled.View`
@@ -879,10 +853,6 @@ const DaySelectorCard = styled.View`
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
-`;
-
-const ScrollContent = styled.ScrollView`
-  flex: 1;
 `;
 
 const RoutineCardContainer = styled.View`

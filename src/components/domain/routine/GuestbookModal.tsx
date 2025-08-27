@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView,
   TouchableOpacity,
   TextInput,
   View,
   Alert,
+  Keyboard,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -30,6 +31,7 @@ const GuestbookModal = ({
   groupRoutineListId,
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -38,6 +40,26 @@ const GuestbookModal = ({
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
   const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setIsKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+      },
+    );
+
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+    };
+  }, []);
 
   const handleSend = () => {
     if (message.trim()) {
@@ -138,12 +160,19 @@ const GuestbookModal = ({
         <ContentContainer>
           <ScrollView
             ref={scrollViewRef}
-            style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
+            scrollEnabled={true}
             onContentSizeChange={() => {
               // 데이터가 로드되거나 변경될 때 맨 아래로 스크롤
-              scrollViewRef.current?.scrollToEnd({ animated: false });
+              if (
+                guestbookData?.result?.items &&
+                guestbookData.result.items.length > 0
+              ) {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: false });
+                }, 100);
+              }
             }}
           >
             {isLoading ? null : guestbookData?.result?.items &&
@@ -223,12 +252,11 @@ const GuestbookModal = ({
 export default GuestbookModal;
 
 const Container = styled.View`
-  height: 50%;
-  min-height: 400px;
-  max-height: 60%;
+  height: 100%;
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
+  position: relative;
 `;
 
 const Header = styled.View`
@@ -255,11 +283,11 @@ const CloseButton = styled.TouchableOpacity`
 
 const ContentContainer = styled.View`
   flex: 1;
+  padding-bottom: 120px;
 `;
 
 const GuestbookList = styled.View`
   padding: 16px 20px;
-  gap: 16px;
 `;
 
 const GuestbookItem = styled.View`
@@ -267,6 +295,7 @@ const GuestbookItem = styled.View`
   border-radius: 12px;
   padding: 16px;
   gap: 12px;
+  margin-bottom: 16px;
 `;
 
 const ProfileSection = styled.View`
@@ -303,10 +332,14 @@ const MessageText = styled.Text`
   font-size: 14px;
   color: ${theme.colors.gray800};
   line-height: 20px;
-  margin-left: 60px;
+  margin-top: 8px;
 `;
 
 const InputSection = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 16px 20px 24px;
   border-top-width: 1px;
   border-top-color: ${theme.colors.gray100};
@@ -320,6 +353,7 @@ const InputContainer = styled.View`
   background-color: ${theme.colors.gray50};
   border-radius: 24px;
   padding: 8px 12px;
+  border: 1px solid ${theme.colors.gray200};
 `;
 
 const MessageInput = styled.TextInput`
@@ -340,11 +374,6 @@ const SendButton = styled.TouchableOpacity`
   background-color: ${theme.colors.white};
   justify-content: center;
   align-items: center;
-  shadow-color: ${theme.colors.gray900};
-  shadow-offset: 0px 1px;
-  shadow-opacity: 0.1;
-  shadow-radius: 2px;
-  elevation: 1;
 `;
 
 const LoadingText = styled.Text`
@@ -371,6 +400,7 @@ const DeleteActionContainer = styled.View`
   background-color: ${theme.colors.error};
   border-radius: 8px;
   margin-left: 10px;
+  margin-right: 20px;
 `;
 
 const DeleteActionButton = styled.TouchableOpacity`

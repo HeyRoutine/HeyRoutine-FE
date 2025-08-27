@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
@@ -8,7 +9,7 @@ import CustomInput from '../../components/common/CustomInput';
 import CustomButton from '../../components/common/CustomButton';
 import { useUserStore } from '../../store';
 import { validateNickname } from '../../utils/validation';
-import { useResetNickname } from '../../hooks/user';
+import { useResetNickname, useMyInfo } from '../../hooks/user';
 
 interface INicknameSettingScreenProps {
   navigation: any;
@@ -20,17 +21,21 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   const [currentNickname, setCurrentNickname] = useState(''); // 현재 사용자 닉네임
   const [validationMessage, setValidationMessage] = useState('');
   const { mutateAsync: resetNicknameMutate } = useResetNickname();
+  const queryClient = useQueryClient();
+
+  // 내 정보 조회 API 호출
+  const { data: myInfo } = useMyInfo();
 
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
 
-  // 현재 사용자 닉네임 가져오기 (Zustand 스토어에서 가져오기)
+  // 현재 사용자 닉네임 가져오기 (API에서 가져오기)
   useEffect(() => {
-    if (userInfo?.nickname) {
-      setCurrentNickname(userInfo.nickname);
-      setNickname(userInfo.nickname); // 입력창에도 현재 닉네임 표시
+    if (myInfo?.result?.nickname) {
+      setCurrentNickname(myInfo.result.nickname);
+      setNickname(myInfo.result.nickname); // 입력창에도 현재 닉네임 표시
     }
-  }, [userInfo?.nickname]);
+  }, [myInfo?.result?.nickname]);
 
   const validateNicknameInput = (text: string) => {
     // 빈 문자열 체크
@@ -77,6 +82,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     try {
       const response = await resetNicknameMutate({ nickname });
       if (response.isSuccess) {
+        // 내 정보 조회 캐시 무효화
+        queryClient.invalidateQueries({ queryKey: ['myInfo'] });
+
         navigation.replace('Result', {
           type: 'success',
           title: '변경 완료',
@@ -98,7 +106,8 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       navigation.replace('Result', {
         type: 'failure',
         title: '변경 실패',
-        description: error?.response?.data?.message || '닉네임 변경에 실패했어요',
+        description:
+          error?.response?.data?.message || '닉네임 변경에 실패했어요',
         nextScreen: 'ProfileEdit',
       });
     }

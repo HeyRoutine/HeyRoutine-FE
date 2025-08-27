@@ -90,7 +90,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
         }
       />
       <ParticipantInfo>
-        <ParticipantIcon source={require('../../assets/images/person.svg')} />
+        <ParticipantIcon source={require('../../assets/images/person.png')} />
         <ParticipantCount>{item.participantCount}</ParticipantCount>
       </ParticipantInfo>
     </RoutineCardWrapper>
@@ -110,7 +110,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
               <Banner>
                 <BannerIcon>
                   <SpeakerIcon
-                    source={require('../../assets/images/speaker.svg')}
+                    source={require('../../assets/images/speaker.png')}
                   />
                 </BannerIcon>
                 <BannerText>
@@ -146,6 +146,9 @@ const Banner = styled.View`
   flex-direction: row;
   align-items: center;
   margin: 12px 0 16px 0;
+  padding: 12px 8px 12px 0;
+  border-radius: 8px;
+  background-color: #f7f8fa;
 `;
 
 const Divider = styled.View`
@@ -159,6 +162,7 @@ const BannerIcon = styled.View`
   height: 32px;
   align-items: center;
   justify-content: center;
+  margin-left: 8px;
   margin-right: 10px;
 `;
 
@@ -190,7 +194,7 @@ const ParticipantInfo = styled.View`
   right: 16px;
   align-items: center;
   background-color: #f7f8fa;
-  padding: 6px 8px;
+  padding: 8px 12px;
   border-radius: 12px;
 `;
 
@@ -198,6 +202,7 @@ const ParticipantIcon = styled.Image`
   width: 24px;
   height: 24px;
   margin-bottom: 2px;
+  resize-mode: contain;
 `;
 
 const ParticipantCount = styled.Text`

@@ -11,6 +11,10 @@ import {
   mailSend,
   mailSendForPassword,
   authCheck,
+  getMyInfo,
+  sendAccountCode,
+  verifyAccountCode,
+  saveFcmToken,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -22,6 +26,9 @@ import {
   MailSendRequest,
   MailSendForPasswordRequest,
   AuthCheckRequest,
+  SendAccountCodeRequest,
+  VerifyAccountCodeRequest,
+  SaveFcmTokenRequest,
 } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
@@ -202,6 +209,65 @@ export const useAuthCheck = () => {
 
       // TODO: 인증번호 확인 성공 후 처리 로직 추가
       // 예: 성공 메시지 표시, 다음 단계로 이동 등
+    },
+  });
+};
+
+// 내 정보 조회 훅
+export const useMyInfo = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['myInfo'],
+    queryFn: getMyInfo,
+    enabled,
+    staleTime: 10 * 60 * 1000, // 10분간 fresh 상태 유지
+    gcTime: 30 * 60 * 1000, // 30분간 캐시 유지
+  });
+};
+
+// 계좌 인증번호 전송 훅
+export const useSendAccountCode = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SendAccountCodeRequest) => sendAccountCode(data),
+    onSuccess: (data) => {
+      // 계좌 인증번호 전송 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 계좌 인증번호 전송 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 인증번호 입력 화면으로 이동 등
+    },
+  });
+};
+
+// 계좌 인증번호 인증 훅
+export const useVerifyAccountCode = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: VerifyAccountCodeRequest) => verifyAccountCode(data),
+    onSuccess: (data) => {
+      // 계좌 인증번호 인증 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 계좌 인증번호 인증 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 계좌 인증 완료 화면으로 이동 등
+    },
+  });
+};
+
+// FCM 토큰 저장 훅
+export const useSaveFcmToken = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SaveFcmTokenRequest) => saveFcmToken(data),
+    onSuccess: (data) => {
+      // FCM 토큰 저장 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: FCM 토큰 저장 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시, 푸시 알림 설정 완료 등
     },
   });
 };

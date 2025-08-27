@@ -16,17 +16,49 @@ const TimeRangeSelector = ({
   onStartTimePress,
   onEndTimePress,
 }: TimeRangeSelectorProps) => {
+  const formatTimeDisplay = (time: string) => {
+    if (!time || time === '오전 00:00') {
+      return (
+        <>
+          <TimePeriod>오전</TimePeriod>
+          <TimeNumber>00:00</TimeNumber>
+        </>
+      );
+    }
+
+    if (time.includes('오전')) {
+      const timePart = time.replace('오전 ', '');
+      return (
+        <>
+          <TimePeriod>오전</TimePeriod>
+          <TimeNumber>{timePart}</TimeNumber>
+        </>
+      );
+    } else if (time.includes('오후')) {
+      const timePart = time.replace('오후 ', '');
+      return (
+        <>
+          <TimePeriod>오후</TimePeriod>
+          <TimeNumber>{timePart}</TimeNumber>
+        </>
+      );
+    }
+
+    return <TimeValue>{time}</TimeValue>;
+  };
+
   return (
     <Container>
-      <Label>시간</Label>
       <TimeContainer>
         <TimeButton onPress={onStartTimePress}>
           <TimeLabel>시작 시간</TimeLabel>
-          <TimeValue>{startTime ? `${startTime}` : '시간 선택'}</TimeValue>
+          <TimeValueContainer>
+            {formatTimeDisplay(startTime)}
+          </TimeValueContainer>
         </TimeButton>
         <TimeButton onPress={onEndTimePress}>
           <TimeLabel>완료 시간</TimeLabel>
-          <TimeValue>{endTime ? `${endTime}` : '시간 선택'}</TimeValue>
+          <TimeValueContainer>{formatTimeDisplay(endTime)}</TimeValueContainer>
         </TimeButton>
       </TimeContainer>
     </Container>
@@ -69,8 +101,29 @@ const TimeLabel = styled.Text`
   margin-bottom: 4px;
 `;
 
+const TimeValueContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+`;
+
+const TimePeriod = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 14px;
+  color: #b5b6bd;
+  font-weight: 500;
+`;
+
+const TimeNumber = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 20px;
+  color: #b5b6bd;
+  font-weight: 500;
+`;
+
 const TimeValue = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 20px;
-  color: ${theme.colors.gray900};
+  color: #b5b6bd;
+  font-weight: 500;
 `;

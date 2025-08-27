@@ -6,11 +6,15 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import { HomeStack, ProfileStack, AnalysisStack } from './stack';
 import { theme } from '../styles/theme';
+import { useMyInfo } from '../hooks/user/useUser';
 
 const Tab = createBottomTabNavigator();
 
 const MainNavigator = () => {
   const insets = useSafeAreaInsets();
+
+  // 앱 시작 시 내 정보 조회 API 호출
+  useMyInfo();
 
   // 탭 바를 숨길 화면 이름 목록 (공통으로 관리)
   const hideOnScreens = [

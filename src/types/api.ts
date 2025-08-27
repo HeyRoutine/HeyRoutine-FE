@@ -259,6 +259,36 @@ export interface AuthCheckRequest {
 // 인증번호 확인 응답 타입
 export type AuthCheckResponse = string; // UUID 형식의 문자열
 
+// 내 정보 조회 응답 타입
+export interface MyInfoResponse {
+  nickname: string;
+  userImage: string | null;
+}
+
+// 계좌 인증번호 전송 요청 타입
+export interface SendAccountCodeRequest {
+  account: string;
+}
+
+// 계좌 인증번호 전송 응답 타입
+export type SendAccountCodeResponse = string; // "해당 계좌는 유효합니다."
+
+// 계좌 인증번호 인증 요청 타입
+export interface VerifyAccountCodeRequest {
+  code: string;
+}
+
+// 계좌 인증번호 인증 응답 타입
+export type VerifyAccountCodeResponse = string; // "인증 성공"
+
+// FCM 토큰 저장 요청 타입
+export interface SaveFcmTokenRequest {
+  fcmToken: string;
+}
+
+// FCM 토큰 저장 응답 타입
+export type SaveFcmTokenResponse = string; // "토큰이 저장되었습니다."
+
 // ===== 포인트샵 (Point Shop) 타입 =====
 
 // 포인트 정보 타입
