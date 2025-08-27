@@ -11,6 +11,9 @@ import {
   mailSend,
   mailSendForPassword,
   authCheck,
+  myInfo,
+  updateIsMarketing,
+  updateProfileImage,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -22,6 +25,9 @@ import {
   MailSendRequest,
   MailSendForPasswordRequest,
   AuthCheckRequest,
+  MyInfoResponse,
+  UpdateIsMarketingRequest,
+  UpdateProfileImageRequest,
 } from '../../types/api';
 
 // ===== 유저 React Query Hooks =====
@@ -203,6 +209,50 @@ export const useAuthCheck = () => {
 
       // TODO: 인증번호 확인 성공 후 처리 로직 추가
       // 예: 성공 메시지 표시, 다음 단계로 이동 등
+    },
+  });
+};
+
+// 사용자 정보 조회 훅
+export const useMyInfo = () => {
+  return useQuery({
+    queryKey: ['myInfo'],
+    queryFn: myInfo,
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 마케팅 수신동의 업데이트 훅
+export const useUpdateIsMarketing = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateIsMarketingRequest) => updateIsMarketing(data),
+    onSuccess: (data) => {
+      // 마케팅 수신동의 업데이트 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['myInfo'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 마케팅 수신동의 업데이트 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시 등
+    },
+  });
+};
+
+// 프로필 이미지 업데이트 훅
+export const useUpdateProfileImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateProfileImageRequest) => updateProfileImage(data),
+    onSuccess: (data) => {
+      // 프로필 이미지 업데이트 성공 시 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['myInfo'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+
+      // TODO: 프로필 이미지 업데이트 성공 후 처리 로직 추가
+      // 예: 성공 메시지 표시 등
     },
   });
 };

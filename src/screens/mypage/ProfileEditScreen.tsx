@@ -12,6 +12,9 @@ import Header from '../../components/common/Header';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import { useAuthStore, useUserStore } from '../../store';
+import { useUpdateProfileImage } from '../../hooks/user/useUser';
+import { uploadImage } from '../../utils/s3';
+import * as ImagePicker from 'expo-image-picker';
 
 /**
  * ProfileEditScreen의 props 인터페이스
@@ -34,6 +37,10 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const { userInfo, updateUserInfo } = useUserStore();
   const { logout } = useAuthStore();
 
+  // 프로필 이미지 업데이트 훅
+  const { mutate: updateProfileImage, isPending: isUpdatingProfile } =
+    useUpdateProfileImage();
+
   // 사용자 설정 상태 (userStore에서 관리)
   const marketingConsent = userInfo?.marketingConsent ?? true;
   const notificationConsent = userInfo?.notificationConsent ?? true;
@@ -46,6 +53,61 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
 
   const handleNotificationConsentChange = (value: boolean) => {
     updateUserInfo({ notificationConsent: value });
+  };
+
+  // 프로필 이미지 선택 및 업데이트 핸들러
+  const handleProfileImageEdit = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const imageUri = result.assets[0].uri;
+
+      try {
+        // S3에 이미지 업로드
+        const fileName = `profile_${Date.now()}.jpg`;
+        const userEmail = userInfo?.email || '';
+        console.log('프로필 이미지 업로드 시작:', {
+          email: userEmail,
+          fileName,
+        });
+
+        const imageUrl = await uploadImage(
+          userEmail,
+          imageUri,
+          fileName,
+          'image/jpeg',
+        );
+        console.log('프로필 이미지 업로드 성공! 이미지 URL:', imageUrl);
+
+        // API 호출하여 프로필 이미지 업데이트
+        updateProfileImage(
+          { profileImageUrl: imageUrl },
+          {
+            onSuccess: (data) => {
+              console.log('프로필 이미지 업데이트 성공:', data);
+
+              // 로컬 상태도 즉시 업데이트 (낙관적 업데이트)
+              updateUserInfo({ profileImage: imageUrl });
+            },
+            onError: (error) => {
+              console.error('프로필 이미지 업데이트 실패:', error);
+            },
+          },
+        );
+      } catch (error) {
+        console.error('이미지 업로드 실패:', error);
+      }
+    }
   };
 
   // 계좌 정보 (userStore에서 관리)
@@ -113,10 +175,6 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
     },
   ];
 
-  const handleProfileEdit = () => {
-    navigation.navigate('ProfileImage');
-  };
-
   const handleLogout = () => {
     // Zustand 스토어의 logout 함수 사용
     logout();
@@ -152,8 +210,9 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
         <ProfileSection>
           <ProfileImage
             imageUri={userInfo?.profileImage || profileImageUri}
-            onEditPress={handleProfileEdit}
+            onEditPress={handleProfileImageEdit}
             size={100}
+            showEditButton={true}
           />
         </ProfileSection>
 

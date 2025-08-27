@@ -190,6 +190,7 @@ export interface SignUpRequest {
   nickname: string;
   profileImage: string;
   roles: string[];
+  isMarketing: boolean;
 }
 
 // 회원가입 응답 타입
@@ -198,6 +199,32 @@ export interface SignUpResponse {
   username: string;
   nickname: string;
 }
+
+// 사용자 정보 응답 타입
+export interface MyInfoResponse {
+  nickname: string;
+  profileImage: string;
+  bankAccount: string;
+  point: number;
+  isMarketing: boolean;
+  accountCertificationStatus: boolean;
+}
+
+// 마케팅 수신동의 업데이트 요청 타입
+export interface UpdateIsMarketingRequest {
+  isMarketing: boolean;
+}
+
+// 마케팅 수신동의 업데이트 응답 타입
+export type UpdateIsMarketingResponse = string; // "마케팅 수신 동의/거부 업데이트 성공"
+
+// 프로필 이미지 업데이트 요청 타입
+export interface UpdateProfileImageRequest {
+  profileImageUrl: string;
+}
+
+// 프로필 이미지 업데이트 응답 타입
+export type UpdateProfileImageResponse = string; // "프로필 이미지 변경 성공"
 
 // 토큰 재발급 요청 타입
 export interface ReissueRequest {

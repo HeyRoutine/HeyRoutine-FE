@@ -19,6 +19,11 @@ import {
   MailSendForPasswordResponse,
   AuthCheckRequest,
   AuthCheckResponse,
+  MyInfoResponse,
+  UpdateIsMarketingRequest,
+  UpdateIsMarketingResponse,
+  UpdateProfileImageRequest,
+  UpdateProfileImageResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -69,6 +74,7 @@ export const signUp = async (
     nickname: data.nickname,
     profileImage: data.profileImage,
     roles: data.roles,
+    isMarketing: data.isMarketing,
   });
 
   const response = await apiClient.post<ApiResponse<SignUpResponse>>(
@@ -190,6 +196,34 @@ export const authCheck = async (
     '/api/v1/mail/auth-check',
     data,
   );
+  return response.data;
+};
+
+// 사용자 정보 조회
+export const myInfo = async (): Promise<ApiResponse<MyInfoResponse>> => {
+  const response = await apiClient.get<ApiResponse<MyInfoResponse>>(
+    '/api/v1/user/my-info',
+  );
+  return response.data;
+};
+
+// 마케팅 수신동의 업데이트
+export const updateIsMarketing = async (
+  data: UpdateIsMarketingRequest,
+): Promise<ApiResponse<UpdateIsMarketingResponse>> => {
+  const response = await apiClient.patch<
+    ApiResponse<UpdateIsMarketingResponse>
+  >('/api/v1/user/marketing', data);
+  return response.data;
+};
+
+// 프로필 이미지 업데이트
+export const updateProfileImage = async (
+  data: UpdateProfileImageRequest,
+): Promise<ApiResponse<UpdateProfileImageResponse>> => {
+  const response = await apiClient.patch<
+    ApiResponse<UpdateProfileImageResponse>
+  >('/api/v1/user/profileImage', data);
   return response.data;
 };
 

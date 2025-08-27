@@ -15,7 +15,7 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   // Zustand 스토어에서 회원가입 데이터와 완료 함수 가져오기
-  const { signupData, completeSignup } = useAuthStore();
+  const { signupData, completeSignup, setSignupMarketing } = useAuthStore();
   const { nickname } = signupData;
 
   // '완료' 버튼 활성화 조건 (필수 약관 모두 동의)
@@ -24,6 +24,9 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
   const agreeAll = agreeTerms && agreePrivacy && agreeMarketing;
 
   const handleNext = () => {
+    // 마케팅 수신동의 상태를 스토어에 저장
+    setSignupMarketing(agreeMarketing);
+
     // 회원가입 완료 처리
     completeSignup();
     // route.params로 모든 데이터 전달

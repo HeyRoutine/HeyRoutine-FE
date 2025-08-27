@@ -23,6 +23,7 @@ interface SignupData {
   password: string;
   nickname: string;
   profileImage: string | null;
+  isMarketing: boolean;
 }
 
 // 인증 상태 타입 정의
@@ -45,6 +46,7 @@ interface AuthState {
   setSignupPassword: (password: string) => void;
   setSignupNickname: (nickname: string) => void;
   setSignupProfileImage: (profileImage: string | null) => void;
+  setSignupMarketing: (isMarketing: boolean) => void;
   clearSignupData: () => void;
   completeSignup: () => void;
 
@@ -63,6 +65,7 @@ const createAuthStore = (set: any, get: any) => ({
     password: '',
     nickname: '',
     profileImage: null,
+    isMarketing: false,
   },
 
   // 액션들
@@ -99,6 +102,7 @@ const createAuthStore = (set: any, get: any) => ({
         password: '',
         nickname: '',
         profileImage: null,
+        isMarketing: false,
       },
     });
 
@@ -136,6 +140,11 @@ const createAuthStore = (set: any, get: any) => ({
       signupData: { ...state.signupData, profileImage },
     })),
 
+  setSignupMarketing: (isMarketing: boolean) =>
+    set((state: any) => ({
+      signupData: { ...state.signupData, isMarketing },
+    })),
+
   clearSignupData: () =>
     set({
       signupData: {
@@ -143,6 +152,7 @@ const createAuthStore = (set: any, get: any) => ({
         password: '',
         nickname: '',
         profileImage: null,
+        isMarketing: false,
       },
     }),
 
