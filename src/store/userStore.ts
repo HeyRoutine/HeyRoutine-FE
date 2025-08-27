@@ -19,7 +19,6 @@ interface UserInfo {
   profileImage?: string;
   points: number;
   accountInfo?: AccountInfo;
-  marketingConsent?: boolean;
   notificationConsent?: boolean;
   bankAccount?: string;
   isMarketing?: boolean;

@@ -12,7 +12,10 @@ import Header from '../../components/common/Header';
 import ProfileImage from '../../components/common/ProfileImage';
 import MyPageListItem from '../../components/domain/mypage/MyPageListItem';
 import { useAuthStore, useUserStore } from '../../store';
-import { useUpdateProfileImage } from '../../hooks/user/useUser';
+import {
+  useUpdateProfileImage,
+  useUpdateIsMarketing,
+} from '../../hooks/user/useUser';
 import { uploadImage } from '../../utils/s3';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -41,14 +44,35 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const { mutate: updateProfileImage, isPending: isUpdatingProfile } =
     useUpdateProfileImage();
 
+  // 마케팅 수신동의 업데이트 훅
+  const { mutate: updateIsMarketing, isPending: isUpdatingMarketing } =
+    useUpdateIsMarketing();
+
   // 사용자 설정 상태 (userStore에서 관리)
-  const marketingConsent = userInfo?.marketingConsent ?? true;
+  const marketingConsent = userInfo?.isMarketing ?? true;
   const notificationConsent = userInfo?.notificationConsent ?? true;
   const profileImageUri = userInfo?.profileImage;
 
   // 설정 변경 핸들러들
   const handleMarketingConsentChange = (value: boolean) => {
-    updateUserInfo({ marketingConsent: value });
+    console.log('🔍 마케팅 수신동의 변경:', value ? 'ON' : 'OFF');
+
+    // API 호출하여 마케팅 수신동의 업데이트
+    updateIsMarketing(
+      { isMarketing: value },
+      {
+        onSuccess: (data) => {
+          console.log('🔍 마케팅 수신동의 업데이트 성공:', data);
+          // 로컬 상태도 즉시 업데이트 (낙관적 업데이트)
+          updateUserInfo({ isMarketing: value });
+        },
+        onError: (error) => {
+          console.error('🔍 마케팅 수신동의 업데이트 실패:', error);
+          // 실패 시 원래 상태로 되돌리기
+          updateUserInfo({ isMarketing: !value });
+        },
+      },
+    );
   };
 
   const handleNotificationConsentChange = (value: boolean) => {
@@ -172,6 +196,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       title: '마케팅 수신동의',
       toggleValue: marketingConsent,
       onToggleChange: handleMarketingConsentChange,
+      disabled: isUpdatingMarketing,
     },
   ];
 

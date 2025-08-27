@@ -71,7 +71,6 @@ const WelcomeScreen = ({ navigation, route }: any) => {
                     points: 0,
                     // 마케팅 수신동의 상태도 저장
                     isMarketing: signupData.isMarketing,
-                    marketingConsent: signupData.isMarketing,
                     // 계좌 인증 상태는 회원가입 시 무조건 false
                     accountCertificationStatus: false,
                   });

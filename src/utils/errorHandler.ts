@@ -1,5 +1,3 @@
-import { Alert } from 'react-native';
-
 // 기본 에러 메시지 (서버 메시지가 없을 때만 사용)
 const DEFAULT_MESSAGES = {
   NETWORK_ERROR: '인터넷 연결을 확인해주세요.',
@@ -49,19 +47,21 @@ class ErrorHandler {
   }
 
   // API 에러 처리
-  public handleApiError(error: any): string {
+  public handleApiError(error: any, options?: { logError?: boolean }): string {
     const message = this.getErrorMessage(error);
 
-    // 에러 로깅 (전체 응답 구조 확인)
-    console.error('🔍 [API Error] 전체 응답:', {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      message: error?.response?.data?.message,
-      code: error?.response?.data?.code,
-      url: error?.config?.url,
-      fullError: error,
-    });
+    // 에러 로깅 (옵션에 따라)
+    if (options?.logError !== false) {
+      console.error('🔍 [API Error] 전체 응답:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.response?.data?.message,
+        code: error?.response?.data?.code,
+        url: error?.config?.url,
+        fullError: error,
+      });
+    }
 
     return message;
   }
@@ -80,9 +80,9 @@ class ErrorHandler {
     return message;
   }
 
-  // 사용자에게 에러 표시 (Alert 제거)
+  // 사용자에게 에러 표시 (콘솔 로그만 출력)
   public showError(message: string, title: string = '오류'): void {
-    // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+    // 콘솔에만 출력 - 실제 UI에서는 토스트나 다른 컴포넌트 사용
     console.log(`[${title}] ${message}`);
   }
 

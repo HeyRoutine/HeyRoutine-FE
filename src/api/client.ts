@@ -23,6 +23,9 @@ const apiClient: AxiosInstance = axios.create({
 // 요청 인터셉터 (토큰 추가 등)
 apiClient.interceptors.request.use(
   (config) => {
+    // 모든 API 요청 URL 로깅
+    console.log('🔍 API 요청 URL:', config.url);
+
     // 인증이 필요 없는 API들은 토큰 제외
     const authNotRequired = [
       '/api/v1/user/sign-in',
@@ -38,7 +41,6 @@ apiClient.interceptors.request.use(
     // 토큰이 필요 없는 API가 아니면 토큰 추가
     if (!isAuthNotRequired) {
       const token = getAuthToken();
-      console.log('🔍 API 요청 URL:', config.url);
       console.log(
         '🔍 현재 토큰:',
         token ? `${token.substring(0, 20)}...` : 'null',
@@ -114,9 +116,8 @@ apiClient.interceptors.response.use(
 
     // 공통 에러 처리
     try {
-      await errorHandler.handleApiError(error, {
+      errorHandler.handleApiError(error, {
         logError: true,
-        showAlert: false, // 인터셉터에서는 Alert 표시하지 않음
       });
     } catch (handlerError) {
       console.error('Error handler failed:', handlerError);

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../store';
 import {
   checkEmailDuplicate,
   checkNicknameDuplicate,
@@ -215,9 +216,12 @@ export const useAuthCheck = () => {
 
 // 사용자 정보 조회 훅
 export const useMyInfo = () => {
+  const { accessToken, refreshToken } = useAuthStore();
+
   return useQuery({
     queryKey: ['myInfo'],
     queryFn: myInfo,
+    enabled: !!(accessToken && refreshToken), // 두 토큰이 모두 있을 때만 실행
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
   });
