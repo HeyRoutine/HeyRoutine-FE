@@ -177,12 +177,12 @@ const EmptyStateImage = styled.Image`
   width: 100px;
   height: 100px;
   margin-bottom: 12px;
-  opacity: 0.6;
+  opacity: 0.3;
 `;
 
 const EmptyStateText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
-  color: ${theme.colors.gray600};
+  color: ${theme.colors.gray400};
   text-align: center;
 `;
