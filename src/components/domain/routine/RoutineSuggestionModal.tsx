@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
+import { Modal, TouchableOpacity, ScrollView, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../styles/theme';
-import BottomSheetDialog from '../../common/BottomSheetDialog';
-import RoutineItemAdder from './RoutineItemAdder';
 import RoutineSuggestionItem from './RoutineSuggestionItem';
 import EmojiPickerModal from './EmojiPickerModal';
 import TimePickerModal from './TimePickerModal';
+import BottomSheetDialog from '../../common/BottomSheetDialog';
+import RoutineItemAdder from './RoutineItemAdder';
+import { useRoutineTemplates } from '../../../hooks/routine/common/useCommonRoutines';
 
 interface RoutineSuggestionModalProps {
   visible: boolean;
@@ -103,7 +104,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   selectedTime,
   selectedEmoji,
   currentText,
-  templates = [],
+  templates: propTemplates = [],
   emojis = [],
   isLoading = false,
 }) => {
@@ -145,6 +146,16 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
     'HOBBY',
   ];
   const selectedCategory = categoryIds[selectedCategoryIndex];
+
+  // 선택된 카테고리에 따라 템플릿 조회
+  const { data: templatesData, isLoading: isLoadingTemplates } =
+    useRoutineTemplates({
+      category: selectedCategory,
+      page: 0,
+      size: 50, // 충분한 수의 템플릿을 가져오기 위해 크기 증가
+    });
+
+  const templates = templatesData?.result?.items || [];
 
   // 이모지 ID를 URL로 매핑하는 함수 (성능 최적화)
   const getEmojiUrl = (emojiId: number) => {
@@ -192,17 +203,17 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
         title: template.name?.trim() || '', // 타이틀 앞뒤 공백 제거
         description: template.content || '',
         icon: getEmojiUrl(template.emojiId), // 템플릿의 emojiId에 해당하는 이모지 URL 사용
-        category: template.category || 'template', // 템플릿에 카테고리 정보가 있으면 사용
+        category: selectedCategory, // 현재 선택된 카테고리 사용
       }));
     }
     return routineSuggestions;
   }, [templates, emojis, isLoading]);
 
-  // 카테고리별 필터링 로직 수정 - 모든 템플릿 표시
+  // 카테고리별 필터링 로직 - 선택된 카테고리의 템플릿만 표시
   const filteredRoutines = availableRoutines.filter((routine) => {
-    // 템플릿 데이터인 경우 모든 카테고리에서 표시
+    // 템플릿 데이터인 경우 선택된 카테고리의 템플릿만 표시
     if (templates && templates.length > 0) {
-      return true; // 모든 템플릿 표시
+      return routine.category === selectedCategory;
     }
     // 기본 추천 루틴인 경우 카테고리별 필터링
     return routine.category === selectedCategory;
@@ -311,7 +322,10 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
                 {categoryTabs.map((category, index) => (
                   <CategoryButton
                     key={index}
-                    onPress={() => setSelectedCategoryIndex(index)}
+                    onPress={() => {
+                      setSelectedCategoryIndex(index);
+                      // 카테고리 변경 시 새로운 템플릿 데이터를 가져오기 위해 컴포넌트가 리렌더링됨
+                    }}
                     isSelected={selectedCategoryIndex === index}
                   >
                     <CategoryText isSelected={selectedCategoryIndex === index}>
@@ -325,7 +339,7 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
             {/* 루틴 목록 */}
             <RoutineList>
               <ScrollView showsVerticalScrollIndicator={false}>
-                {isLoading ? (
+                {isLoadingTemplates ? (
                   <LoadingContainer>{null}</LoadingContainer>
                 ) : filteredRoutines.length > 0 ? (
                   filteredRoutines.map((routine) => (

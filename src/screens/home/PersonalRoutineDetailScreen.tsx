@@ -95,7 +95,11 @@ const PersonalRoutineDetailScreen = ({
   const { mutate: deleteRoutineDetail } = useDeletePersonalRoutineDetail();
 
   const { data: templatesData, isLoading: isLoadingTemplates } =
-    useRoutineTemplates();
+    useRoutineTemplates({
+      category: 'LIFE', // 기본적으로 생활 카테고리 템플릿 조회
+      page: 0,
+      size: 50,
+    });
 
   const { data: emojisData, isLoading: isLoadingEmojis } = useRoutineEmojis();
 

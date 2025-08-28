@@ -73,9 +73,11 @@ const CreateGroupRoutineDetailScreen = ({
   const isPending = isCreatingGroup || isCreatingDetail || isUpdatingDetail;
 
   // 루틴 템플릿 조회 훅 - 모든 템플릿을 가져오기 위해 카테고리 필터링 제거
-  const { data: templateData, isLoading: isLoadingTemplates } =
+  const { data: templatesData, isLoading: isLoadingTemplates } =
     useRoutineTemplates({
-      size: 50, // 더 많은 템플릿을 가져오기 위해 size 증가
+      category: 'LIFE', // 기본적으로 생활 카테고리 템플릿 조회
+      page: 0,
+      size: 50,
     });
 
   // 이모지 조회 훅 - 모든 이모지를 가져오기 위해 카테고리 필터링 제거
@@ -135,7 +137,7 @@ const CreateGroupRoutineDetailScreen = ({
       return;
     }
 
-    if (templateData?.result?.items && templateData.result.items.length > 0) {
+    if (templatesData?.result?.items && templatesData.result.items.length > 0) {
       setRoutineSuggestionVisible(true);
     } else {
       // 템플릿이 없어도 모달을 열어서 직접 입력할 수 있도록 함
@@ -543,7 +545,7 @@ const CreateGroupRoutineDetailScreen = ({
         selectedTime={selectedTime}
         selectedEmoji={selectedEmoji}
         currentText={currentText}
-        templates={templateData?.result?.items || []} // 템플릿 데이터 전달
+        templates={templatesData?.result?.items || []} // 템플릿 데이터 전달
         emojis={emojiData?.result?.items || []} // 이모지 데이터 전달
         isLoading={isLoadingTemplates || isLoadingEmojis} // 로딩 상태 전달
       />
