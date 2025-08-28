@@ -14,6 +14,7 @@ import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import RoutineCard from '../../components/domain/routine/RoutineCard';
+import SvgImage from '../../components/common/SvgImage';
 import {
   useDeleteGroupRoutine,
   useJoinGroupRoutine,
@@ -612,7 +613,13 @@ const GroupRoutineDetailScreen = ({
             <SectionHeader>해야할 루틴</SectionHeader>
             {routine.tasks.map((task, index) => (
               <RoutineItemRow key={index}>
-                <TaskIcon>{task.icon}</TaskIcon>
+                <TaskIcon>
+                  {task.icon.startsWith('http') ? (
+                    <SvgImage uri={task.icon} width={20} height={20} />
+                  ) : (
+                    task.icon
+                  )}
+                </TaskIcon>
                 <TaskContent>
                   <TaskTitle>{task.title}</TaskTitle>
                 </TaskContent>
@@ -1042,10 +1049,11 @@ const ItemRow = styled.View`
   border-radius: 8px;
 `;
 
-const TaskIcon = styled.Text`
-  font-size: 20px;
+const TaskIcon = styled.View`
   margin-right: 12px;
   align-self: center;
+  justify-content: center;
+  align-items: center;
 `;
 
 const TaskContent = styled.View`

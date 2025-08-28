@@ -52,10 +52,14 @@ const SvgImage: React.FC<SvgImageProps> = ({
     );
   }
 
-  // 일반 이미지 파일인 경우 Image 사용
+  // SVG 로딩 중이거나 일반 이미지 파일인 경우 Image 사용
   return (
     <Image
-      source={{ uri }}
+      source={
+        uri.toLowerCase().endsWith('.svg')
+          ? fallbackSource || { uri: '' }
+          : { uri }
+      }
       style={[{ width, height }, style]}
       resizeMode="contain"
       onError={() => {
