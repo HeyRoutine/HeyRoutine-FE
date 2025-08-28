@@ -85,27 +85,24 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
       icon: [iconShopping, iconFood, iconTransport][index] || iconOthers,
     }));
 
-    // 그 외 카테고리들 (4번째부터)
-    const remainingCategories = categorySpendings.slice(3);
-    if (remainingCategories.length > 0) {
-      const remainingAmount = remainingCategories.reduce(
-        (sum, item) => sum + item.amount,
-        0,
-      );
-      const remainingPercentage = remainingCategories.reduce(
-        (sum, item) => sum + item.percentage,
-        0,
-      );
+    // 그 외 4개 카테고리 계산
+    const top3TotalAmount = top3Categories.reduce(
+      (sum, item) => sum + item.amount,
+      0,
+    );
+    const remainingAmount =
+      categoryData.result.myTotalSpending - top3TotalAmount;
+    const remainingPercentage =
+      (remainingAmount / categoryData.result.myTotalSpending) * 100;
 
-      top3Categories.push({
-        id: 'others',
-        label: `그 외 ${remainingCategories.length}개`,
-        ratio: remainingPercentage,
-        amount: remainingAmount,
-        color: '#E6E6E8',
-        icon: iconOthers,
-      });
-    }
+    top3Categories.push({
+      id: 'others',
+      label: '그 외 4개 항목',
+      ratio: Math.max(0, remainingPercentage),
+      amount: Math.max(0, remainingAmount),
+      color: '#E6E6E8',
+      icon: iconOthers,
+    });
 
     return top3Categories;
   }, [categoryData]);
@@ -456,6 +453,7 @@ const AIText = styled.Text`
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray700};
   flex: 1;
+  font-size: 12px;
 `;
 
 const ButtonRow = styled.View`
