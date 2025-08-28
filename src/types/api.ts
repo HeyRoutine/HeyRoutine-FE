@@ -721,3 +721,10 @@ export interface CategoryAnalysisResponse
 
 // 이번 주 소비패턴 분석 API 타입
 export type WeeklySpendingAnalysisResponse = ApiResponse<string[]>;
+
+// 설문 API 타입
+export interface SurveyRequest {
+  surveyList: boolean[];
+}
+
+export type SurveyResponse = ApiResponse<string>;

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import { useSurvey } from '../../hooks/user';
 
 interface InterestItem {
   id: string;
@@ -29,6 +30,9 @@ const AIRecommendationScreen = ({
     3: [],
     4: [],
   });
+
+  // 설문 API 훅
+  const { mutate: submitSurvey, isPending } = useSurvey();
 
   // 현재 페이지의 선택된 항목들
   const currentSelectedItems = selectedItemsByPage[currentPage] || [];
@@ -128,8 +132,50 @@ const AIRecommendationScreen = ({
     // 모든 페이지의 선택된 항목들을 수집
     const allSelectedItems = Object.values(selectedItemsByPage).flat();
     console.log('선택된 항목들:', allSelectedItems);
-    // TODO: AI 추천 루틴 생성 API 호출
-    navigation.navigate('HomeMain');
+
+    // 설문 데이터를 boolean 배열로 변환
+    const surveyList: boolean[] = [];
+
+    // 각 페이지의 모든 항목을 순서대로 체크
+    Object.keys(pageData).forEach((pageKey) => {
+      const pageNum = parseInt(pageKey);
+      const pageItems = pageData[pageNum as keyof typeof pageData];
+      const selectedItems = selectedItemsByPage[pageNum] || [];
+
+      pageItems.forEach((item) => {
+        surveyList.push(selectedItems.includes(item.id));
+      });
+    });
+
+    console.log('설문 데이터:', surveyList);
+
+    // 설문 API 요청
+    submitSurvey(
+      { surveyList },
+      {
+        onSuccess: (data) => {
+          console.log('설문 제출 성공:', data);
+          // AI 분석 로딩 화면으로 이동
+          navigation.navigate('Loading', {
+            title: 'AI 분석 중',
+            description: '설문 결과를 바탕으로 맞춤 루틴을 생성하고 있어요',
+            statusItems: [
+              { text: '설문 데이터 분석 중...' },
+              { text: '사용자 패턴 분석 중...' },
+              { text: 'AI 추천 알고리즘 실행 중...' },
+              { text: '맞춤 루틴 생성 중...' },
+              { text: '완료!' },
+            ],
+            nextScreen: 'AIRecommendationResult',
+            duration: 5000,
+          });
+        },
+        onError: (error) => {
+          console.error('설문 제출 실패:', error);
+          // 에러 처리 (나중에 토스트 메시지 등 추가)
+        },
+      },
+    );
   };
 
   // 뒤로가기
@@ -175,7 +221,9 @@ const AIRecommendationScreen = ({
       {/* 하단 버튼 */}
       <ButtonContainer>
         <CustomButton
-          text={currentPage === 4 ? '완료' : '다음'}
+          text={
+            currentPage === 4 ? (isPending ? '처리 중...' : '완료') : '다음'
+          }
           onPress={handleNext}
           backgroundColor={
             currentSelectedItems.length === 0
@@ -183,7 +231,7 @@ const AIRecommendationScreen = ({
               : theme.colors.primary
           }
           textColor={theme.colors.white}
-          disabled={currentSelectedItems.length === 0}
+          disabled={currentSelectedItems.length === 0 || isPending}
         />
       </ButtonContainer>
     </Container>

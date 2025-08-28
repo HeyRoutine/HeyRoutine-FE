@@ -25,7 +25,7 @@ const routineNoSpendIcon = require('../../assets/images/robot.png');
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
-  // 추천 루틴 데이터 가져오기 (나중에 4개만 추가 예정)
+  // 추천 루틴 데이터 가져오기 (현재 받아오는 데이터 없음 - 나중에 4개만 추가 예정)
   const { data: recommendData, isLoading, error } = useRecommendDaily();
 
   // 하드웨어 백 버튼 처리
