@@ -11,6 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Header from '../../components/common/Header';
 import BubbleCard from '../../components/domain/analysis/BubbleCard';
 import { theme } from '../../styles/theme';
+import { useRecommendDaily } from '../../hooks/analysis';
 
 const robotIcon = require('../../assets/images/robot.png');
 // const characterImg = require('../../assets/images/cute_image.png');
@@ -23,6 +24,9 @@ const routineNoSpendIcon = require('../../assets/images/robot.png');
 
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+
+  // 추천 루틴 데이터 가져오기 (나중에 4개만 추가 예정)
+  const { data: recommendData, isLoading, error } = useRecommendDaily();
 
   // 하드웨어 백 버튼 처리
   useFocusEffect(
@@ -50,7 +54,7 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         {/* AI 안내 버블 */}
@@ -80,19 +84,24 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
             <SectionTitle>추천 루틴</SectionTitle>
           </SectionHeader>
 
-          <RoutineItem>
-            <IconSquare color="#FFE4B5">
-              <RoutineIcon source={routineTumblerIcon} resizeMode="contain" />
-            </IconSquare>
-            <RoutineText>외출할 때 텀블러 챙기기</RoutineText>
-          </RoutineItem>
+          {isLoading && <LoadingText>추천 루틴을 불러오는 중...</LoadingText>}
 
-          <RoutineItem>
-            <IconSquare color="#D3F0E2">
-              <RoutineIcon source={routineNoSpendIcon} resizeMode="contain" />
-            </IconSquare>
-            <RoutineText>주 1회 무지출 데이 실천하기</RoutineText>
-          </RoutineItem>
+          {error && <ErrorText>추천 루틴을 불러오는데 실패했습니다.</ErrorText>}
+
+          {!isLoading &&
+            !error &&
+            recommendData?.result?.items?.length === 0 && (
+              <EmptyText>추천 루틴이 없습니다.</EmptyText>
+            )}
+
+          {recommendData?.result?.items?.map((routine, index) => (
+            <RoutineItem key={index}>
+              <IconSquare color={index % 2 === 0 ? '#FFE4B5' : '#D3F0E2'}>
+                <RoutineIcon source={routineTumblerIcon} resizeMode="contain" />
+              </IconSquare>
+              <RoutineText>{routine}</RoutineText>
+            </RoutineItem>
+          ))}
         </SectionCard>
 
         {/* 본문 끝 */}
@@ -241,4 +250,25 @@ const CharacterDecoration = styled.View`
 const CharacterImage = styled(Image)`
   width: 100%;
   height: 100%;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.gray600};
+  text-align: center;
+  padding: 20px;
+`;
+
+const ErrorText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.error};
+  text-align: center;
+  padding: 20px;
+`;
+
+const EmptyText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.gray600};
+  text-align: center;
+  padding: 20px;
 `;
