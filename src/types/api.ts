@@ -685,21 +685,14 @@ export interface GetMaxStreakResponse {
 export interface RecommendProductItem {
   bankName: string;
   accountTypeName: string;
-  accountDscription: string;
+  accountDescription: string;
   subscriptionPeriod: number;
-  interesRate: number;
+  interestRate: number;
   score: number;
   rank: number;
 }
 
-export interface RecommendProductResult {
-  results: RecommendProductItem[];
-  user_id: string;
-  top_k: number;
-}
-
-export interface RecommendProductResponse
-  extends ApiResponse<RecommendProductResult> {}
+export type RecommendProductResponse = ApiResponse<RecommendProductItem[]>;
 
 // 추천 루틴 API 타입
 export interface RecommendDailyResult {
