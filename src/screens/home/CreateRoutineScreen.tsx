@@ -182,12 +182,16 @@ const CreateRoutineScreen = ({
       const timePart = time.replace('오전 ', '');
       const [hour, minute] = timePart.split(':');
       const hourNum = parseInt(hour);
-      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+      // 오전 12시는 00:00으로 변환
+      const adjustedHour = hourNum === 12 ? 0 : hourNum;
+      return `${adjustedHour.toString().padStart(2, '0')}:${minute}`;
     } else if (time.includes('오후')) {
       const timePart = time.replace('오후 ', '');
       const [hour, minute] = timePart.split(':');
-      const hourNum = parseInt(hour) + 12;
-      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+      const hourNum = parseInt(hour);
+      // 오후 12시는 12:00으로 변환 (12 + 0 = 12)
+      const adjustedHour = hourNum === 12 ? 12 : hourNum + 12;
+      return `${adjustedHour.toString().padStart(2, '0')}:${minute}`;
     }
 
     return time; // 이미 HH:mm 형식이면 그대로 반환
@@ -200,12 +204,16 @@ const CreateRoutineScreen = ({
       const timePart = time.replace('오전 ', '');
       const [hour, minute] = timePart.split(':');
       const hourNum = parseInt(hour);
-      return `${hourNum.toString().padStart(2, '0')}:${minute}:00`;
+      // 오전 12시는 00:00:00으로 변환
+      const adjustedHour = hourNum === 12 ? 0 : hourNum;
+      return `${adjustedHour.toString().padStart(2, '0')}:${minute}:00`;
     } else if (time.includes('오후')) {
       const timePart = time.replace('오후 ', '');
       const [hour, minute] = timePart.split(':');
-      const hourNum = parseInt(hour) + 12;
-      return `${hourNum.toString().padStart(2, '0')}:${minute}:00`;
+      const hourNum = parseInt(hour);
+      // 오후 12시는 12:00:00으로 변환 (12 + 0 = 12)
+      const adjustedHour = hourNum === 12 ? 12 : hourNum + 12;
+      return `${adjustedHour.toString().padStart(2, '0')}:${minute}:00`;
     }
 
     // 이미 HH:mm 형식이면 :ss 추가

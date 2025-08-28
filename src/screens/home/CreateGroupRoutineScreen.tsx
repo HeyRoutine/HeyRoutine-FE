@@ -140,12 +140,16 @@ const CreateGroupRoutineScreen = ({
     let minute: string;
 
     if (time.includes('오전')) {
-      hour = time.replace('오전 ', '').split(':')[0];
+      const hourStr = time.replace('오전 ', '').split(':')[0];
       minute = time.split(':')[1];
-      return `${hour.padStart(2, '0')}:${minute}`;
+      // 오전 12시는 00:00으로 변환
+      const hourNum = hourStr === '12' ? 0 : parseInt(hourStr);
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
     } else if (time.includes('오후')) {
-      const hourNum = parseInt(time.replace('오후 ', '').split(':')[0]) + 12;
+      const hourStr = time.replace('오후 ', '').split(':')[0];
       minute = time.split(':')[1];
+      // 오후 12시는 12:00으로 변환 (12 + 0 = 12)
+      const hourNum = hourStr === '12' ? 12 : parseInt(hourStr) + 12;
       return `${hourNum.toString().padStart(2, '0')}:${minute}`;
     }
     return time; // 이미 HH:mm 형식이면 그대로 반환
@@ -197,22 +201,23 @@ const CreateGroupRoutineScreen = ({
               onChangeText={setRoutineName}
               placeholderTextColor={theme.colors.gray400}
             />
-            <Underline />
           </InputContainer>
         </InputSection>
 
         {/* 소개 입력 */}
         <InputSection>
-          <InputLabel>소개</InputLabel>
-          <DescriptionInput
-            placeholder="해당 루틴에 대한 소개를 해주세요."
-            value={description}
-            onChangeText={setDescription}
-            placeholderTextColor={theme.colors.gray400}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
+          <DescriptionContainer>
+            <DescriptionTitle>소개</DescriptionTitle>
+            <DescriptionInput
+              placeholder="해당 루틴에 대한 소개를 해주세요."
+              value={description}
+              onChangeText={setDescription}
+              placeholderTextColor={theme.colors.gray400}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          </DescriptionContainer>
         </InputSection>
 
         {/* 루틴 카테고리 선택 */}
@@ -349,22 +354,34 @@ const NameInput = styled(TextInput)`
   text-align: center;
 `;
 
-const DescriptionInput = styled(TextInput)`
-  font-family: ${theme.fonts.Regular};
-  font-size: 16px;
-  color: ${theme.colors.gray800};
-  padding: 16px;
-  border: 1px solid ${theme.colors.gray300};
-  border-radius: 12px;
+const DescriptionContainer = styled(TouchableOpacity)`
+  background-color: #fafafa;
+  border-radius: 10px;
+  padding: 24px;
   min-height: 80px;
-  background-color: ${theme.colors.white};
-  line-height: 24px;
 `;
 
-const Underline = styled.View`
-  height: 1px;
-  background-color: ${theme.colors.gray300};
-  width: 100%;
+const DescriptionTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 16px;
+  color: ${theme.colors.gray800};
+  margin-bottom: 8px;
+`;
+
+const DescriptionInput = styled(TextInput)`
+  font-family: ${theme.fonts.Regular};
+  font-size: 14px;
+  color: ${theme.colors.gray400};
+  line-height: 20px;
+  height: 60px;
+  padding: 0;
+`;
+
+const DescriptionText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+  line-height: 24px;
 `;
 
 const ButtonWrapper = styled.View`
