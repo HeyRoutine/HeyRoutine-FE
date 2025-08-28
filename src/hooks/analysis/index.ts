@@ -1,5 +1,5 @@
 // 분석 관련 hooks
-// export * from './useConsumption';
-// export * from './useAchievement';
-// export * from './useStreak';
-// export * from './useSummary';
+export { useRecommendProduct } from './useRecommendProduct';
+export { useRecommendDaily } from './useRecommendDaily';
+export { useCategoryAnalysis } from './useCategoryAnalysis';
+export { useWeeklySpendingAnalysis } from './useWeeklySpendingAnalysis';

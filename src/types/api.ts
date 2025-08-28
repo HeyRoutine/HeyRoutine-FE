@@ -678,3 +678,56 @@ export type GetWeeklySummaryResponse = WeeklySummaryItem[];
 export interface GetMaxStreakResponse {
   streakDays: number;
 }
+
+// 맞춤 금융 상품 추천 API 타입
+export interface RecommendProductItem {
+  bankName: string;
+  accountTypeName: string;
+  accountDscription: string;
+  subscriptionPeriod: number;
+  interesRate: number;
+  score: number;
+  rank: number;
+}
+
+export interface RecommendProductResult {
+  results: RecommendProductItem[];
+  user_id: string;
+  top_k: number;
+}
+
+export interface RecommendProductResponse
+  extends ApiResponse<RecommendProductResult> {}
+
+// 추천 루틴 API 타입
+export interface RecommendDailyResult {
+  items: string[];
+}
+
+export interface RecommendDailyResponse
+  extends ApiResponse<RecommendDailyResult> {}
+
+// 소비 패턴 분석 API 타입
+export interface CategorySpendingItem {
+  categoryName: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface CategoryAnalysisResult {
+  averageSpendingFor20s: number;
+  myTotalSpending: number;
+  comparisonPercentage: number;
+  categorySpendings: CategorySpendingItem[];
+}
+
+export interface CategoryAnalysisResponse
+  extends ApiResponse<CategoryAnalysisResult> {}
+
+// 이번 주 소비패턴 분석 API 타입
+export interface WeeklySpendingAnalysisResult {
+  result: string[];
+}
+
+export interface WeeklySpendingAnalysisResponse
+  extends ApiResponse<WeeklySpendingAnalysisResult> {}

@@ -235,7 +235,7 @@ const CardGrid = styled.View`
 `;
 
 const InterestCard = styled(TouchableOpacity)<{ isSelected: boolean }>`
-  padding: 12px 16px;
+  padding: 12px 24px;
   border-radius: 20px;
   background-color: ${({ isSelected }) =>
     isSelected ? theme.colors.primary : theme.colors.gray100};
