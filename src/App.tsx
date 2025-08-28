@@ -16,7 +16,7 @@ import { useAuthStore, useOnboardingStore } from './store';
 import ResultScreen from './screens/common/ResultScreen';
 
 // React Query 클라이언트 생성
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1, // 실패 시 1번만 재시도

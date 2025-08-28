@@ -4,15 +4,15 @@ import {
   TouchableOpacity,
   TextInput,
   View,
-  Alert,
   Keyboard,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
-import BottomSheetDialog from '../../common/BottomSheetDialog';
 import {
   useGroupGuestbooks,
   useCreateGroupGuestbook,
@@ -25,13 +25,14 @@ interface GuestbookModalProps {
   groupRoutineListId: string;
 }
 
+const { height: screenHeight } = Dimensions.get('window');
+
 const GuestbookModal = ({
   isVisible,
   onClose,
   groupRoutineListId,
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -44,25 +45,28 @@ const GuestbookModal = ({
     useCreateGroupGuestbook();
   const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
 
+  // 초기 로딩 시 맨 아래로 스크롤
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => {
-        setIsKeyboardVisible(true);
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setIsKeyboardVisible(false);
-      },
-    );
+    if (guestbookData?.result?.items && guestbookData.result.items.length > 0) {
+      // 더 긴 지연시간으로 스크롤뷰가 완전히 렌더링된 후 스크롤
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 300);
+    }
+  }, [guestbookData]);
 
-    return () => {
-      keyboardDidShowListener?.remove();
-      keyboardDidHideListener?.remove();
-    };
-  }, []);
+  // 모달이 열릴 때마다 맨 아래로 스크롤
+  useEffect(() => {
+    if (
+      isVisible &&
+      guestbookData?.result?.items &&
+      guestbookData.result.items.length > 0
+    ) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 500);
+    }
+  }, [isVisible, guestbookData]);
 
   const handleSend = () => {
     if (message.trim()) {
@@ -106,9 +110,10 @@ const GuestbookModal = ({
   };
 
   const handleDelete = (guestbookId: number) => {
-    // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
+    // 스와이프 상태 초기화
+    swipeableRefs.current[guestbookId]?.close();
+
     console.log('방명록 삭제: 정말로 이 방명록을 삭제하시겠습니까?');
-    // 임시로 바로 삭제
     deleteGuestbook(
       {
         groupRoutineListId,
@@ -136,139 +141,168 @@ const GuestbookModal = ({
   };
 
   return (
-    <BottomSheetDialog
+    <Modal
       visible={isVisible}
+      transparent
+      animationType="slide"
       onRequestClose={onClose}
-      dismissible={false}
-      showHandle={true}
     >
-      <Container>
-        <Header>
-          <Title>방명록</Title>
-          <CloseButton onPress={onClose}>
-            <MaterialIcons
-              name="close"
-              size={24}
-              color={theme.colors.gray600}
-            />
-          </CloseButton>
-        </Header>
-
-        <ContentContainer>
-          <ScrollView
-            ref={scrollViewRef}
-            showsVerticalScrollIndicator={false}
-            nestedScrollEnabled={true}
-            scrollEnabled={true}
-            onContentSizeChange={() => {
-              // 데이터가 로드되거나 변경될 때 맨 아래로 스크롤
-              if (
-                guestbookData?.result?.items &&
-                guestbookData.result.items.length > 0
-              ) {
-                setTimeout(() => {
-                  scrollViewRef.current?.scrollToEnd({ animated: false });
-                }, 100);
-              }
-            }}
-          >
-            {isLoading ? null : guestbookData?.result?.items &&
-              guestbookData.result.items.length > 0 ? (
-              <GuestbookList>
-                {guestbookData.result.items.map((item) => (
-                  <Swipeable
-                    key={item.id}
-                    ref={(ref) => {
-                      swipeableRefs.current[item.id] = ref;
-                    }}
-                    renderRightActions={
-                      item.isWriter
-                        ? () => renderRightActions(item.id)
-                        : undefined
-                    }
-                    rightThreshold={40}
-                    enabled={item.isWriter}
-                  >
-                    <GuestbookItem>
-                      <ProfileSection>
-                        <ProfileImage
-                          source={
-                            item.profileImageUrl
-                              ? { uri: item.profileImageUrl }
-                              : require('../../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../../assets/images/default_profile.png')}
-                        />
-                        <UserInfo>
-                          <UserName>{item.nickname}</UserName>
-                          <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
-                        </UserInfo>
-                      </ProfileSection>
-                      <MessageText>{item.content}</MessageText>
-                    </GuestbookItem>
-                  </Swipeable>
-                ))}
-              </GuestbookList>
-            ) : (
-              <EmptyText>아직 방명록이 없어요.</EmptyText>
-            )}
-          </ScrollView>
-        </ContentContainer>
-
-        <InputSection>
-          <InputContainer>
-            <MessageInput
-              placeholder="팀원들에게 응원을 해봐요."
-              value={message}
-              onChangeText={setMessage}
-              multiline
-              maxLength={200}
-              placeholderTextColor={theme.colors.gray400}
-            />
-            <SendButton
-              onPress={handleSend}
-              disabled={!message.trim() || isCreating}
-            >
+      <ModalOverlay>
+        <ModalContainer>
+          {/* 헤더 */}
+          <HeaderContainer>
+            <HeaderTitle>방명록</HeaderTitle>
+            <CloseButton onPress={onClose}>
               <MaterialIcons
-                name="send"
-                size={20}
-                color={
-                  message.trim() && !isCreating
-                    ? theme.colors.primary
-                    : theme.colors.gray400
-                }
+                name="close"
+                size={24}
+                color={theme.colors.gray600}
               />
-            </SendButton>
+            </CloseButton>
+          </HeaderContainer>
+
+          {/* 스크롤 영역 */}
+          <ScrollContainer>
+            <ScrollView
+              ref={scrollViewRef}
+              showsVerticalScrollIndicator={true}
+              scrollEnabled={true}
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 0 }}
+              onLayout={() => {
+                // 레이아웃이 완료되면 맨 아래로 스크롤
+                if (
+                  guestbookData?.result?.items &&
+                  guestbookData.result.items.length > 0
+                ) {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: false });
+                  }, 100);
+                }
+              }}
+            >
+              {isLoading ? (
+                <LoadingContainer>
+                  <LoadingText>로딩 중...</LoadingText>
+                </LoadingContainer>
+              ) : guestbookData?.result?.items &&
+                guestbookData.result.items.length > 0 ? (
+                <GuestbookListContainer>
+                  {guestbookData.result.items.map((item) => {
+                    console.log('🔍 방명록 아이템:', {
+                      id: item.id,
+                      nickname: item.nickname,
+                      isWriter: item.isWriter,
+                      content: item.content,
+                    });
+                    return (
+                      <Swipeable
+                        key={item.id}
+                        ref={(ref) => {
+                          swipeableRefs.current[item.id] = ref;
+                        }}
+                        renderRightActions={
+                          item.isWriter
+                            ? () => renderRightActions(item.id)
+                            : undefined
+                        }
+                        rightThreshold={40}
+                        enabled={item.isWriter}
+                      >
+                        <GuestbookItemContainer>
+                          <ProfileContainer>
+                            <ProfileImage
+                              source={
+                                item.profileImageUrl
+                                  ? { uri: item.profileImageUrl }
+                                  : require('../../../assets/images/default_profile.png')
+                              }
+                              defaultSource={require('../../../assets/images/default_profile.png')}
+                            />
+                            <UserInfoContainer>
+                              <UserNameTimeContainer>
+                                <UserNameText>{item.nickname}</UserNameText>
+                                <TimeText>
+                                  {formatTimeAgo(item.createdAt)}
+                                </TimeText>
+                              </UserNameTimeContainer>
+                            </UserInfoContainer>
+                          </ProfileContainer>
+                          <MessageContainer>
+                            <MessageText>{item.content}</MessageText>
+                          </MessageContainer>
+                        </GuestbookItemContainer>
+                      </Swipeable>
+                    );
+                  })}
+                </GuestbookListContainer>
+              ) : (
+                <EmptyContainer>
+                  <EmptyText>아직 방명록이 없어요.</EmptyText>
+                </EmptyContainer>
+              )}
+            </ScrollView>
+          </ScrollContainer>
+
+          {/* 입력 영역 */}
+          <InputContainer>
+            <InputWrapper>
+              <MessageInput
+                placeholder="팀원들에게 응원을 해봐요."
+                value={message}
+                onChangeText={setMessage}
+                multiline
+                maxLength={200}
+                placeholderTextColor={theme.colors.gray400}
+              />
+              <SendButton
+                onPress={handleSend}
+                disabled={!message.trim() || isCreating}
+              >
+                <MaterialIcons
+                  name="send"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              </SendButton>
+            </InputWrapper>
           </InputContainer>
-        </InputSection>
-      </Container>
-    </BottomSheetDialog>
+        </ModalContainer>
+      </ModalOverlay>
+    </Modal>
   );
 };
 
 export default GuestbookModal;
 
-const Container = styled.View`
-  height: 100%;
+// 스타일 컴포넌트
+const ModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const ModalContainer = styled.View`
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  position: relative;
+  height: ${screenHeight * 0.8}px;
+  width: 100%;
 `;
 
-const Header = styled.View`
+const HeaderContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 20px 20px 16px;
+  padding: 20px;
   border-bottom-width: 1px;
   border-bottom-color: ${theme.colors.gray100};
   position: relative;
 `;
 
-const Title = styled.Text`
+const HeaderTitle = styled.Text`
   font-family: ${theme.fonts.Medium};
-  font-size: 16px;
+  font-size: 18px;
   color: ${theme.colors.gray800};
 `;
 
@@ -278,41 +312,60 @@ const CloseButton = styled.TouchableOpacity`
   padding: 4px;
 `;
 
-const ContentContainer = styled.View`
+const ScrollContainer = styled.View`
   flex: 1;
-  padding-bottom: 120px;
+  background-color: ${theme.colors.white};
 `;
 
-const GuestbookList = styled.View`
-  padding: 16px 20px;
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
 `;
 
-const GuestbookItem = styled.View`
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+`;
+
+const GuestbookListContainer = styled.View`
+  padding: 16px;
+`;
+
+const GuestbookItemContainer = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 12px;
   padding: 16px;
-  gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  border: 1px solid ${theme.colors.gray100};
 `;
 
-const ProfileSection = styled.View`
+const ProfileContainer = styled.View`
   flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
 `;
 
 const ProfileImage = styled.Image`
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  margin-right: 12px;
 `;
 
-const UserInfo = styled.View`
+const UserInfoContainer = styled.View`
   flex: 1;
-  gap: 4px;
 `;
 
-const UserName = styled.Text`
+const UserNameTimeContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`;
+
+const UserNameText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray800};
@@ -324,33 +377,41 @@ const TimeText = styled.Text`
   color: ${theme.colors.gray500};
 `;
 
+const MessageContainer = styled.View`
+  margin-left: 52px;
+`;
+
 const MessageText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
   color: ${theme.colors.gray800};
   line-height: 20px;
-  margin-top: 8px;
 `;
 
-const InputSection = styled.View`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px 20px 24px;
-  border-top-width: 1px;
-  border-top-color: ${theme.colors.gray100};
-  background-color: ${theme.colors.white};
+const EmptyContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+`;
+
+const EmptyText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
 `;
 
 const InputContainer = styled.View`
+  padding: 16px;
+  background-color: ${theme.colors.white};
+`;
+
+const InputWrapper = styled.View`
   flex-direction: row;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-end;
   background-color: ${theme.colors.gray50};
   border-radius: 24px;
   padding: 8px 12px;
-  border: 1px solid ${theme.colors.gray200};
 `;
 
 const MessageInput = styled.TextInput`
@@ -361,7 +422,7 @@ const MessageInput = styled.TextInput`
   font-family: ${theme.fonts.Regular};
   font-size: 14px;
   color: ${theme.colors.gray800};
-  text-align-vertical: center;
+  /* text-align-vertical: top; */
 `;
 
 const SendButton = styled.TouchableOpacity`
@@ -371,22 +432,7 @@ const SendButton = styled.TouchableOpacity`
   background-color: ${theme.colors.white};
   justify-content: center;
   align-items: center;
-`;
-
-const LoadingText = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  padding: 40px 20px;
-`;
-
-const EmptyText = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  padding: 40px 20px;
+  margin-left: 8px;
 `;
 
 const DeleteActionContainer = styled.View`
@@ -397,7 +443,6 @@ const DeleteActionContainer = styled.View`
   background-color: ${theme.colors.error};
   border-radius: 8px;
   margin-left: 10px;
-  margin-right: 20px;
 `;
 
 const DeleteActionButton = styled.TouchableOpacity`

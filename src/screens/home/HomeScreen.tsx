@@ -178,6 +178,16 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     groupRoutinesData?.pages?.flatMap(
       (page) =>
         page.result?.items?.map((item) => {
+          // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
+          const today = new Date();
+          const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+          const todayDay = dayNames[today.getDay()];
+
+          const completedDays =
+            (item.percent || 0) >= 100 && item.dayOfWeek.includes(todayDay)
+              ? [todayDay]
+              : [];
+
           return {
             id: item.id.toString(),
             category: item.routineType === 'DAILY' ? '생활' : '소비',
@@ -186,7 +196,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             description: item.description,
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
             selectedDays: item.dayOfWeek,
-            completedDays: [],
+            completedDays,
           };
         }) || [],
     ) || [];
@@ -197,6 +207,15 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   // 선택된 요일의 루틴만 필터링
+  console.log('🔍 필터링 디버깅:', {
+    selectedDayLabel,
+    personalRoutines: personalRoutines.map((r) => ({
+      id: r.id,
+      title: r.title,
+      selectedDays: r.selectedDays,
+      includesSelectedDay: r.selectedDays.includes(selectedDayLabel),
+    })),
+  });
 
   const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
     routine.selectedDays.includes(selectedDayLabel),
@@ -216,20 +235,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       routine.selectedDays.includes(dayLabel),
     );
 
-    const personalCompleted = dayPersonalRoutines.length > 0 ? false : false;
-
-    const groupCompleted =
-      dayGroupRoutines.length > 0
-        ? dayGroupRoutines.every((routine) => (routine.progress || 0) >= 100)
-        : false;
-
-    const isCompleted = personalCompleted || groupCompleted;
+    const hasRoutines =
+      dayPersonalRoutines.length > 0 || dayGroupRoutines.length > 0;
 
     return {
       day: dayLabel,
-      isCompleted,
-      hasRoutines:
-        dayPersonalRoutines.length > 0 || dayGroupRoutines.length > 0,
+      hasRoutines,
     };
   });
 
@@ -322,12 +333,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                   <DayText day={item.day}>{item.day}</DayText>
                   <DateButton
                     isSelected={isSameDate(item.fullDate, selectedDate)}
-                    isCompleted={completionStatus?.isCompleted}
                     onPress={() => handleDateSelect(item.fullDate)}
                   >
                     <DateText
                       isSelected={isSameDate(item.fullDate, selectedDate)}
-                      isCompleted={completionStatus?.isCompleted}
                     >
                       {item.date}
                     </DateText>
@@ -470,13 +479,11 @@ const DayText = styled.Text<{ day: string }>`
 
 const DateButton = styled.TouchableOpacity<{
   isSelected: boolean;
-  isCompleted?: boolean;
 }>`
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background-color: ${({ isSelected, isCompleted }) => {
-    if (isCompleted) return theme.colors.primary;
+  background-color: ${({ isSelected }) => {
     if (isSelected) return theme.colors.primary;
     return 'transparent';
   }};
@@ -484,11 +491,11 @@ const DateButton = styled.TouchableOpacity<{
   justify-content: center;
 `;
 
-const DateText = styled.Text<{ isSelected: boolean; isCompleted?: boolean }>`
+const DateText = styled.Text<{ isSelected: boolean }>`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
-  color: ${({ isSelected, isCompleted }) => {
-    if (isCompleted || isSelected) return theme.colors.white;
+  color: ${({ isSelected }) => {
+    if (isSelected) return theme.colors.white;
     return theme.colors.gray800;
   }};
 `;

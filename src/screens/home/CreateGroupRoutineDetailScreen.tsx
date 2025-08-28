@@ -192,7 +192,28 @@ const CreateGroupRoutineDetailScreen = ({
           emoji.emojiUrl === selectedEmoji ||
           emoji.emojiId?.toString() === selectedEmoji,
       );
-      const emojiId = emojiItem?.emojiId || 1; // 기본값 1
+
+      // 이모지 ID를 찾지 못한 경우 로깅
+      if (!emojiItem) {
+        console.log('🔍 이모지 ID를 찾을 수 없음:', {
+          selectedEmoji,
+          availableEmojis: emojiData?.result?.items?.map((e: any) => ({
+            emojiId: e.emojiId,
+            emojiUrl: e.emojiUrl,
+          })),
+        });
+      }
+
+      const emojiId = emojiItem?.emojiId;
+
+      // 이모지 ID가 없으면 에러 처리
+      if (!emojiId) {
+        console.error(
+          '🔍 이모지 ID를 찾을 수 없어서 루틴을 추가할 수 없습니다:',
+          selectedEmoji,
+        );
+        return;
+      }
 
       if (editingIndex !== null) {
         // 기존 아이템 수정
@@ -234,7 +255,27 @@ const CreateGroupRoutineDetailScreen = ({
   // 루틴 추천 선택 핸들러 (완료 버튼 클릭 시 호출)
   const handleRoutineSuggestionSelect = (routine: any) => {
     // 이모지 ID 찾기 (템플릿의 emojiId 사용)
-    const emojiId = routine.emojiId || 1; // 기본값 1
+    let emojiId = routine.emojiId;
+
+    // 템플릿에 emojiId가 없으면 이모지 URL로 찾기
+    if (!emojiId && routine.icon) {
+      const emojiItem = emojiData?.result?.items?.find(
+        (emoji: any) => emoji.emojiUrl === routine.icon,
+      );
+      emojiId = emojiItem?.emojiId;
+    }
+
+    // 이모지 ID를 찾지 못한 경우 로깅
+    if (!emojiId) {
+      console.log('🔍 템플릿에서 이모지 ID를 찾을 수 없음:', {
+        routine,
+        availableEmojis: emojiData?.result?.items?.map((e: any) => ({
+          emojiId: e.emojiId,
+          emojiUrl: e.emojiUrl,
+        })),
+      });
+      return; // 이모지 ID가 없으면 루틴 추가하지 않음
+    }
 
     // 완성된 루틴 아이템을 화면에 추가
     const newItem = {

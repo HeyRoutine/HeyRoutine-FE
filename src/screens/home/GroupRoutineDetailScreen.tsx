@@ -22,6 +22,7 @@ import {
   useUpdateGroupRoutineStatus,
   useUpdateGroupRoutineRecord,
 } from '../../hooks/routine/group/useGroupRoutines';
+import { useRoutineEmojis } from '../../hooks/routine/common/useCommonRoutines';
 import GuestbookModal from '../../components/domain/routine/GuestbookModal';
 import RoutineSuggestionModal from '../../components/domain/routine/RoutineSuggestionModal';
 
@@ -75,6 +76,19 @@ const GroupRoutineDetailScreen = ({
     const routineInfos = result.routineInfos || [];
     const memberInfo = result.groupRoutineMemberInfo;
 
+    // 단체루틴 상세 조회 데이터 로깅
+    console.log('🔍 단체루틴 상세 조회 데이터:', {
+      groupRoutineInfo,
+      routineInfos: routineInfos.map((r: any) => ({
+        name: r.name,
+        time: r.time,
+        isCompleted: r.isCompleted,
+        emojiUrl: r.emojiUrl,
+        emojiId: r.emojiId,
+      })),
+      memberInfo,
+    });
+
     // 완료/미달성 참여자 계산
     const completedParticipants =
       memberInfo?.successPeopleProfileImageUrl || [];
@@ -87,8 +101,15 @@ const GroupRoutineDetailScreen = ({
     const allCompleted =
       routineInfos.length > 0 && routineInfos.every((r: any) => r.isCompleted);
 
-    // 모든 루틴이 완료되었다면 선택된 요일을 완료된 요일로 설정
-    const completedDays = allCompleted ? groupRoutineInfo?.dayOfWeek || [] : [];
+    // 모든 루틴이 완료되었다면 오늘 날짜의 요일만 완료된 요일로 설정
+    const today = new Date();
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const todayDay = dayNames[today.getDay()];
+
+    const completedDays =
+      allCompleted && groupRoutineInfo?.dayOfWeek?.includes(todayDay)
+        ? [todayDay]
+        : [];
 
     const routineObject = {
       id: routineId,
@@ -106,7 +127,7 @@ const GroupRoutineDetailScreen = ({
       routineType: groupRoutineInfo?.routineType || 'DAILY',
       routineNums: groupRoutineInfo?.routineNums || 0,
       tasks: routineInfos.map((r: any) => ({
-        icon: '☕', // 이모지는 별도로 처리 필요
+        icon: r.emojiUrl || '🔍', // 서버에서 받은 이모지 URL 사용, 없으면 기본값
         title: r.name,
         duration: `${r.time}분`,
         isCompleted: r.isCompleted,
@@ -453,6 +474,13 @@ const GroupRoutineDetailScreen = ({
                     {
                       onSuccess: () => {
                         console.log('🔍 전체 기록 업데이트 성공');
+                        // 홈 화면과 그룹 게시판 화면의 데이터도 업데이트
+                        queryClient.invalidateQueries({
+                          queryKey: ['myGroupRoutines'],
+                        });
+                        queryClient.invalidateQueries({
+                          queryKey: ['groupRoutines'],
+                        });
                       },
                       onError: (error: any) => {
                         console.error('🔍 전체 기록 업데이트 실패:', error);

@@ -67,9 +67,8 @@ const RoutineCard = ({
   };
 
   const isDayCompleted = (day: string) => {
-    const today = getTodayDay();
-    // 오늘에 해당하는 요일이고 completedDays에 포함된 경우에만 완료로 표시
-    return day === today && completedDays.includes(day);
+    // completedDays에 포함된 요일은 완료된 것으로 표시
+    return completedDays.includes(day);
   };
 
   return (

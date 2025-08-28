@@ -111,7 +111,27 @@ export const showMyRoutineList = async (
       result: response.data?.result,
       items: response.data?.result?.items,
       itemsCount: response.data?.result?.items?.length || 0,
+      totalItems: response.data?.result?.totalItems,
+      totalPages: response.data?.result?.totalPages,
+      page: response.data?.result?.page,
+      pageSize: response.data?.result?.pageSize,
     });
+
+    // 각 루틴의 상세 정보 로깅
+    if (response.data?.result?.items) {
+      console.log(
+        '🔍 개인루틴 상세 정보:',
+        response.data.result.items.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          routineType: item.routineType,
+          dayTypes: item.dayTypes,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          percent: item.percent,
+        })),
+      );
+    }
     return response.data;
   } catch (error: any) {
     console.error('🔍 showMyRoutineList API 에러:', {

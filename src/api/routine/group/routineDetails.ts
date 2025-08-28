@@ -49,9 +49,20 @@ export const deleteGroupRoutineDetail = async (
 
 // 단체루틴 상세 조회 API
 export const getGroupRoutineDetail = async (groupRoutineListId: string) => {
+  console.log('🔍 getGroupRoutineDetail API 호출:', groupRoutineListId);
+
   const response = await apiClient.get<ApiResponse<GroupRoutineDetailResponse>>(
     `/api/v1/routines/groups/${groupRoutineListId}`,
   );
+
+  console.log('🔍 getGroupRoutineDetail API 응답:', {
+    status: response.status,
+    data: response.data,
+    isSuccess: response.data?.isSuccess,
+    result: response.data?.result,
+    routineInfos: response.data?.result?.routineInfos,
+  });
+
   return response.data;
 };
 

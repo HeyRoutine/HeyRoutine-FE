@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, Alert, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { theme } from '../../styles/theme';
 
@@ -22,6 +23,7 @@ const EmailLoginScreen = ({ navigation }: any) => {
   const { login, setAccessToken, setRefreshToken } = useAuthStore();
   const { completeOnboarding } = useOnboardingStore();
   const { setUserInfo } = useUserStore();
+  const queryClient = useQueryClient();
 
   // 로그인 API hook
   const { mutate: signIn, isPending: isSigningIn } = useSignIn();
@@ -57,6 +59,10 @@ const EmailLoginScreen = ({ navigation }: any) => {
               accessToken: data.result.accessToken,
               refreshToken: data.result.refreshToken,
             });
+
+            // React Query 캐시 초기화 (이전 사용자 데이터 제거)
+            queryClient.clear();
+            console.log('🔍 React Query 캐시 초기화 완료');
 
             setAccessToken(data.result.accessToken);
             setRefreshToken(data.result.refreshToken);

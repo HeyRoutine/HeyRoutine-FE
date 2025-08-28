@@ -116,6 +116,7 @@ const createAuthStore = (set: any, get: any) => ({
         console.log('userStore 초기화 실패:', error);
       }
     }
+
     console.log('🔍 로그아웃 완료 - 모든 스토어 초기화됨');
   },
 

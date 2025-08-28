@@ -6,6 +6,7 @@ import {
 } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -36,6 +37,7 @@ interface IProfileEditScreenProps {
  */
 const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
 
   // Zustand 스토어에서 사용자 정보와 인증 상태 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
@@ -208,6 +210,10 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   };
 
   const handleLogoutConfirm = () => {
+    // React Query 캐시 초기화
+    queryClient.clear();
+    console.log('🔍 React Query 캐시 초기화 완료');
+
     // Zustand 스토어의 logout 함수 사용
     logout();
     console.log('🔍 로그아웃 완료');

@@ -56,7 +56,12 @@ const CreateRoutineScreen = ({
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState(
-    routineData?.startDate || '',
+    routineData?.startDate ||
+      (() => {
+        const today = new Date();
+        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+        return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+      })(),
   );
 
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -83,6 +88,16 @@ const CreateRoutineScreen = ({
         : 'FINANCE') as RoutineType,
       dayTypes: selectedDays as DayType[],
     };
+
+    console.log('🔍 루틴 생성 API 요청 데이터:', submitData);
+    console.log('🔍 원본 데이터:', {
+      routineName,
+      selectedStartDate,
+      startTime,
+      endTime,
+      selectedCategory,
+      selectedDays,
+    });
 
     if (mode === 'edit') {
       // 수정 모드
