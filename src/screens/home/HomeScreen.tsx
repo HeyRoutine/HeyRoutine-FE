@@ -11,6 +11,7 @@ import TabNavigation from '../../components/common/TabNavigation';
 import RoutineCard from '../../components/domain/routine/RoutineCard';
 import AddRoutineButton from '../../components/domain/routine/AddRoutineButton';
 import GroupRoutineCard from '../../components/domain/routine/GroupRoutineCard';
+import RankBoardCard from '../../components/domain/routine/RankBoardCard';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import CustomButton from '../../components/common/CustomButton';
 import { useRoutineStore, useUserStore } from '../../store';
@@ -248,6 +249,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     navigation.navigate('GroupBoard');
   };
 
+  const handleRankBannerPress = () => {
+    navigation.navigate('RankBoard');
+  };
+
   const handleRoutinePress = (routineId: string) => {
     if (selectedTab === 0) {
       const routine = personalRoutines.find((r) => r.id === routineId);
@@ -353,11 +358,21 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </WeekContainer>
         </DateSelector>
 
-        {/* 단체 루틴 카드 */}
-        <GroupRoutineCard
-          onPress={handleGroupBannerPress}
-          iconSource={require('../../assets/images/group.png')}
-        />
+        {/* 단체/랭킹 배너 (기존 카드 컴포넌트 재사용, 반폭 2열) */}
+        <CardsRow>
+          <CardCol style={{ marginRight: 8 }}>
+            <GroupRoutineCard
+              onPress={handleGroupBannerPress}
+              iconSource={require('../../assets/images/group.png')}
+            />
+          </CardCol>
+          <CardCol>
+            <RankBoardCard
+              onPress={handleRankBannerPress}
+              iconSource={require('../../assets/images/speaker.png')}
+            />
+          </CardCol>
+        </CardsRow>
 
         {/* 탭 선택 */}
         <TabNavigation
@@ -566,4 +581,15 @@ const EmptyRoutineText = styled.Text`
   font-size: 16px;
   color: ${theme.colors.gray400};
   text-align: center;
+`;
+
+// 배너 레이아웃 (반폭 2열, 기존 카드 재사용)
+const CardsRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 8px;
+`;
+
+const CardCol = styled.View`
+  flex: 1;
 `;

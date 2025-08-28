@@ -2,6 +2,7 @@ export { default as RoutineCard } from './RoutineCard';
 export { default as AddRoutineButton } from './AddRoutineButton';
 export { default as RoutineItemAdder } from './RoutineItemAdder';
 export { default as GroupRoutineCard } from './GroupRoutineCard';
+export { default as RankBoardCard } from './RankBoardCard';
 export { default as DayButton } from './DayButton';
 export { default as DayOfWeekSelector } from './DayOfWeekSelector';
 export { default as TimeRangeSelector } from './TimeRangeSelector';
