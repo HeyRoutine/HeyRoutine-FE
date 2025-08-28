@@ -87,6 +87,7 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
       });
 
       if (response.isSuccess) {
+        // 비밀번호 변경 완료 후 ResultScreen으로 이동
         navigation.replace('Result', {
           type: 'success',
           title: '변경 완료',

@@ -49,7 +49,7 @@ const MyPageListItem = ({
   disabled = false,
 }: IMyPageListItemProps) => {
   return (
-    <Container onPress={onPress} disabled={disabled || isToggle}>
+    <Container onPress={onPress} disabled={disabled}>
       <LeftContent>
         <Title>{title}</Title>
         {subtitle && <Subtitle>{subtitle}</Subtitle>}

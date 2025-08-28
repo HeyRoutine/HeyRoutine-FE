@@ -311,7 +311,10 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
 
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="내 정보 관리" onBackPress={() => navigation.goBack()} />
+      <Header
+        title="내 정보 관리"
+        onBackPress={() => navigation.navigate('MyPage')}
+      />
 
       <Content>
         <ProfileSection>

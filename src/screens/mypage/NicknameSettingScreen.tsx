@@ -29,6 +29,16 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
   // Zustand 스토어에서 사용자 정보 가져오기
   const { userInfo, updateUserInfo } = useUserStore();
 
+  // 화면 진입 시 현재 닉네임 설정
+  useEffect(() => {
+    if (userInfo?.nickname) {
+      setCurrentNickname(userInfo.nickname);
+      setNickname(userInfo.nickname); // 입력 필드에 현재 닉네임 미리 표시
+      // 초기 유효성 검사 실행 (현재 닉네임과 동일하므로 에러 메시지 표시)
+      validateNicknameInput(userInfo.nickname);
+    }
+  }, [userInfo?.nickname]);
+
   const validateNicknameInput = (text: string) => {
     // 빈 문자열 체크
     if (text.length === 0) {
@@ -51,9 +61,9 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
       return;
     }
 
-    // 이전 닉네임과 동일한지 체크
+    // 현재 닉네임과 동일한지 체크 (변경이 없는 경우)
     if (text === currentNickname) {
-      setValidationMessage('이전 닉네임과 동일합니다.');
+      setValidationMessage('현재 닉네임과 동일합니다.');
       setIsValidNickname(false);
       return;
     }
@@ -74,15 +84,14 @@ const NicknameSettingScreen = ({ navigation }: INicknameSettingScreenProps) => {
     try {
       const response = await resetNicknameMutate({ nickname });
       if (response.isSuccess) {
-        // 성공 시에만 결과 화면으로 이동
+        // 닉네임 변경 완료 후 ResultScreen으로 이동
+        updateUserInfo({ nickname });
         navigation.replace('Result', {
           type: 'success',
           title: '변경 완료',
           description: '닉네임을 성공적으로 변경했어요',
           nextScreen: 'ProfileEdit',
-          onSuccess: () => {
-            updateUserInfo({ nickname });
-          },
+          onSuccess: () => {},
         });
       } else {
         // 실패 시 에러 메시지를 validationMessage에 표시
