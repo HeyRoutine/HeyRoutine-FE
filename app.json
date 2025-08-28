@@ -21,14 +21,13 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.ungnam.shinhanHeyRoutine"
+      "package": "com.ungnam.shinhanHeyRoutine",
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./src/assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-font"
-    ],
+    "plugins": ["expo-font"],
     "extra": {
       "eas": {
         "projectId": "eb5ddc79-724a-454b-9da5-f464b9742eb4"
