@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Dimensions } from 'react-native';
+import { Modal, Dimensions, FlatList } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Swipeable, ScrollView } from 'react-native-gesture-handler';
+import { Swipeable } from 'react-native-gesture-handler';
 
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
@@ -26,7 +26,7 @@ const GuestbookModal = ({
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
   const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   const { data: guestbookData, isLoading } = useGroupGuestbooks(
     groupRoutineListId,
@@ -40,9 +40,9 @@ const GuestbookModal = ({
   // 초기 로딩 시 맨 아래로 스크롤
   useEffect(() => {
     if (guestbookData?.result?.items && guestbookData.result.items.length > 0) {
-      // 더 긴 지연시간으로 스크롤뷰가 완전히 렌더링된 후 스크롤
+      // 더 긴 지연시간으로 FlatList가 완전히 렌더링된 후 스크롤
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false });
+        flatListRef.current?.scrollToEnd({ animated: false });
       }, 300);
     }
   }, [guestbookData]);
@@ -55,7 +55,7 @@ const GuestbookModal = ({
       guestbookData.result.items.length > 0
     ) {
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false });
+        flatListRef.current?.scrollToEnd({ animated: false });
       }, 500);
     }
   }, [isVisible, guestbookData]);
@@ -73,7 +73,7 @@ const GuestbookModal = ({
             console.log('🔍 방명록 작성 성공');
             // 새 댓글 작성 후 맨 아래로 스크롤
             setTimeout(() => {
-              scrollViewRef.current?.scrollToEnd({ animated: true });
+              flatListRef.current?.scrollToEnd({ animated: true });
             }, 100);
           },
           onError: (error) => {
@@ -155,85 +155,80 @@ const GuestbookModal = ({
 
           {/* 스크롤 영역 */}
           <ScrollContainer>
-            <ScrollView
-              ref={scrollViewRef}
-              showsVerticalScrollIndicator={true}
-              scrollEnabled={true}
-              style={{ flex: 1 }}
-              contentContainerStyle={{ paddingBottom: 0 }}
-              onLayout={() => {
-                // 레이아웃이 완료되면 맨 아래로 스크롤
-                if (
-                  guestbookData?.result?.items &&
-                  guestbookData.result.items.length > 0
-                ) {
-                  setTimeout(() => {
-                    scrollViewRef.current?.scrollToEnd({ animated: false });
-                  }, 100);
-                }
-              }}
-            >
-              {isLoading ? (
-                <LoadingContainer>
-                  <LoadingText>로딩 중...</LoadingText>
-                </LoadingContainer>
-              ) : guestbookData?.result?.items &&
-                guestbookData.result.items.length > 0 ? (
-                <GuestbookListContainer>
-                  {guestbookData.result.items.map((item) => {
-                    console.log('🔍 방명록 아이템:', {
-                      id: item.id,
-                      nickname: item.nickname,
-                      isWriter: item.isWriter,
-                      content: item.content,
-                    });
-                    return (
-                      <Swipeable
-                        key={item.id}
-                        ref={(ref) => {
-                          swipeableRefs.current[item.id] = ref;
-                        }}
-                        renderRightActions={
-                          item.isWriter
-                            ? () => renderRightActions(item.id)
-                            : undefined
-                        }
-                        rightThreshold={40}
-                        enabled={item.isWriter}
-                      >
-                        <GuestbookItemContainer>
-                          <ProfileContainer>
-                            <ProfileImage
-                              source={
-                                item.profileImageUrl
-                                  ? { uri: item.profileImageUrl }
-                                  : require('../../../assets/images/default_profile.png')
-                              }
-                              defaultSource={require('../../../assets/images/default_profile.png')}
-                            />
-                            <UserInfoContainer>
-                              <UserNameTimeContainer>
-                                <UserNameText>{item.nickname}</UserNameText>
-                                <TimeText>
-                                  {formatTimeAgo(item.createdAt)}
-                                </TimeText>
-                              </UserNameTimeContainer>
-                            </UserInfoContainer>
-                          </ProfileContainer>
-                          <MessageContainer>
-                            <MessageText>{item.content}</MessageText>
-                          </MessageContainer>
-                        </GuestbookItemContainer>
-                      </Swipeable>
-                    );
-                  })}
-                </GuestbookListContainer>
-              ) : (
-                <EmptyContainer>
-                  <EmptyText>아직 방명록이 없어요.</EmptyText>
-                </EmptyContainer>
-              )}
-            </ScrollView>
+            {isLoading ? (
+              <LoadingContainer>
+                <LoadingText>로딩 중...</LoadingText>
+              </LoadingContainer>
+            ) : guestbookData?.result?.items &&
+              guestbookData.result.items.length > 0 ? (
+              <FlatList
+                ref={flatListRef}
+                data={guestbookData.result.items}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => {
+                  console.log('🔍 방명록 아이템:', {
+                    id: item.id,
+                    nickname: item.nickname,
+                    isWriter: item.isWriter,
+                    content: item.content,
+                  });
+                  return (
+                    <Swipeable
+                      ref={(ref) => {
+                        swipeableRefs.current[item.id] = ref;
+                      }}
+                      renderRightActions={
+                        item.isWriter
+                          ? () => renderRightActions(item.id)
+                          : undefined
+                      }
+                      rightThreshold={60}
+                      enabled={item.isWriter}
+                      friction={2}
+                      overshootRight={false}
+                      overshootLeft={false}
+                    >
+                      <GuestbookItemContainer>
+                        <ProfileImage
+                          source={
+                            item.profileImageUrl
+                              ? { uri: item.profileImageUrl }
+                              : require('../../../assets/images/default_profile.png')
+                          }
+                          defaultSource={require('../../../assets/images/default_profile.png')}
+                        />
+                        <UserInfoContainer>
+                          <UserNameTimeContainer>
+                            <UserNameText>{item.nickname}</UserNameText>
+                            <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
+                          </UserNameTimeContainer>
+                          <MessageText numberOfLines={1} ellipsizeMode="tail">
+                            {item.content}
+                          </MessageText>
+                        </UserInfoContainer>
+                      </GuestbookItemContainer>
+                    </Swipeable>
+                  );
+                }}
+                contentContainerStyle={{ padding: 16 }}
+                showsVerticalScrollIndicator={true}
+                onLayout={() => {
+                  // 레이아웃이 완료되면 맨 아래로 스크롤
+                  if (
+                    guestbookData?.result?.items &&
+                    guestbookData.result.items.length > 0
+                  ) {
+                    setTimeout(() => {
+                      flatListRef.current?.scrollToEnd({ animated: false });
+                    }, 100);
+                  }
+                }}
+              />
+            ) : (
+              <EmptyContainer>
+                <EmptyText>아직 방명록이 없어요.</EmptyText>
+              </EmptyContainer>
+            )}
           </ScrollContainer>
 
           {/* 입력 영역 */}
@@ -322,28 +317,26 @@ const LoadingText = styled.Text`
   color: ${theme.colors.gray600};
 `;
 
-const GuestbookListContainer = styled.View`
-  padding: 16px;
-`;
-
 const GuestbookItemContainer = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   margin-bottom: 12px;
-  border: 1px solid ${theme.colors.gray100};
+  height: 60px;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const ProfileContainer = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 12px;
+  flex: 1;
 `;
 
 const ProfileImage = styled.Image`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   margin-right: 12px;
 `;
 
@@ -355,6 +348,7 @@ const UserNameTimeContainer = styled.View`
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  margin-bottom: 4px;
 `;
 
 const UserNameText = styled.Text`
@@ -370,14 +364,15 @@ const TimeText = styled.Text`
 `;
 
 const MessageContainer = styled.View`
-  margin-left: 52px;
+  flex: 1;
+  margin-left: 0;
 `;
 
 const MessageText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
+  font-size: 13px;
   color: ${theme.colors.gray800};
-  line-height: 20px;
+  line-height: 16px;
 `;
 
 const EmptyContainer = styled.View`
@@ -428,13 +423,14 @@ const SendButton = styled.TouchableOpacity`
 `;
 
 const DeleteActionContainer = styled.View`
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   justify-content: center;
   align-items: center;
   background-color: ${theme.colors.error};
   border-radius: 8px;
-  margin-left: 10px;
+  margin-left: 0;
+  align-self: center;
 `;
 
 const DeleteActionButton = styled.TouchableOpacity`
@@ -442,5 +438,4 @@ const DeleteActionButton = styled.TouchableOpacity`
   height: 100%;
   justify-content: center;
   align-items: center;
-  border-radius: 8px;
 `;
