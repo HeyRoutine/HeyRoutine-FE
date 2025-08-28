@@ -62,7 +62,7 @@ const CreateGroupRoutineDetailScreen = ({
   const [routineSuggestionVisible, setRoutineSuggestionVisible] =
     useState(false);
 
-  // 그룹루틴 생성 + 상세 생성/수정 훅
+  // 단체루틴 생성 + 상세 생성/수정 훅
   const { mutate: createGroupRoutine, isPending: isCreatingGroup } =
     useCreateGroupRoutine();
   const { mutate: createGroupRoutineDetail, isPending: isCreatingDetail } =
@@ -302,7 +302,7 @@ const CreateGroupRoutineDetailScreen = ({
 
   const handleSave = () => {
     if (mode === 'edit') {
-      // 수정 모드: 그룹 루틴 상세 수정
+      // 수정 모드: 단체 루틴 상세 수정
 
       const routines = routineItems
         .map((item, index) => {
@@ -349,8 +349,8 @@ const CreateGroupRoutineDetailScreen = ({
 
             navigation.navigate('Result', {
               type: 'success',
-              title: '그룹 루틴 상세 수정 완료',
-              description: '그룹 루틴 상세가 성공적으로 수정되었습니다.',
+              title: '단체 루틴 상세 수정 완료',
+              description: '단체 루틴 상세가 성공적으로 수정되었습니다.',
               nextScreen: 'GroupRoutineDetail',
               updatedRoutineData: {
                 routineId: routineData.groupRoutineListId || routineData.id,
@@ -358,7 +358,7 @@ const CreateGroupRoutineDetailScreen = ({
             });
           },
           onError: (error) => {
-            console.error('🔍 그룹 루틴 상세 수정 실패:', error);
+            console.error('🔍 단체 루틴 상세 수정 실패:', error);
             // 에러 처리 (나중에 토스트나 알림 추가)
           },
         },
@@ -366,10 +366,10 @@ const CreateGroupRoutineDetailScreen = ({
       return;
     }
 
-    // 생성 모드: 그룹 루틴 생성 데이터 준비
+    // 생성 모드: 단체 루틴 생성 데이터 준비
     const groupRoutineData = {
-      title: routineData?.name || '새 그룹 루틴',
-      description: routineData?.description || '그룹 루틴 설명', // 전달받은 설명 사용
+      title: routineData?.name || '새 단체 루틴',
+      description: routineData?.description || '단체 루틴 설명', // 전달받은 설명 사용
       startTime: routineData?.startTime || '09:00',
       endTime: routineData?.endTime || '11:00',
       routineType: (routineData?.category === 'life'
@@ -378,19 +378,19 @@ const CreateGroupRoutineDetailScreen = ({
       daysOfWeek: selectedDays,
     };
 
-    console.log('🔍 그룹 루틴 생성 데이터:', groupRoutineData);
+    console.log('🔍 단체 루틴 생성 데이터:', groupRoutineData);
 
-    // 1단계: 그룹 루틴 생성
+    // 1단계: 단체 루틴 생성
     createGroupRoutine(groupRoutineData, {
       onSuccess: (groupData) => {
-        // 생성된 그룹 루틴 ID 추출 (result 자체가 ID 값)
+        // 생성된 단체 루틴 ID 추출 (result 자체가 ID 값)
         const groupRoutineId = groupData.result;
 
         if (!groupRoutineId) {
           return;
         }
 
-        // 2단계: 그룹 루틴 상세 생성
+        // 2단계: 단체 루틴 상세 생성
         const detailData = {
           routines: routineItems.map((item) => ({
             templateId: null, // 템플릿 연결 안 함
@@ -409,9 +409,9 @@ const CreateGroupRoutineDetailScreen = ({
             onSuccess: (detailData) => {
               navigation.navigate('Result', {
                 type: 'success',
-                title: '그룹 루틴 생성 완료',
+                title: '단체 루틴 생성 완료',
                 description:
-                  '그룹 루틴과 상세 루틴이 성공적으로 생성되었습니다.',
+                  '단체 루틴과 상세 루틴이 성공적으로 생성되었습니다.',
                 nextScreen: 'HomeMain',
               });
             },
@@ -423,7 +423,7 @@ const CreateGroupRoutineDetailScreen = ({
         );
       },
       onError: (error) => {
-        console.error('🔍 그룹 루틴 생성 실패:', error);
+        console.error('🔍 단체 루틴 생성 실패:', error);
         // 에러 처리 (나중에 토스트나 알림 추가)
       },
     });
@@ -432,13 +432,13 @@ const CreateGroupRoutineDetailScreen = ({
   return (
     <Container edges={['top', 'left', 'right', 'bottom']}>
       <Header
-        title={mode === 'edit' ? '그룹 루틴 상세 수정' : '그룹 루틴 상세 생성'}
+        title={mode === 'edit' ? '단체 루틴 상세 수정' : '단체 루틴 상세 생성'}
         onBackPress={handleBack}
       />
       <Content>
         <RoutineCard>
           <RoutineTitle>
-            {routineData?.title || routineData?.name || '새 그룹 루틴'}
+            {routineData?.title || routineData?.name || '새 단체 루틴'}
           </RoutineTitle>
           <DescriptionText>{routineData.description}</DescriptionText>
           <RoutineTime>
@@ -514,7 +514,7 @@ const CreateGroupRoutineDetailScreen = ({
         {/* 루틴 생성 버튼 */}
         <CreateButton onPress={handleSave} disabled={!isFormValid}>
           <CreateButtonText isDisabled={!isFormValid}>
-            {mode === 'edit' ? '그룹 루틴 상세 수정' : '그룹 루틴 상세 생성'}
+            {mode === 'edit' ? '단체 루틴 상세 수정' : '단체 루틴 상세 생성'}
           </CreateButtonText>
         </CreateButton>
       </Content>

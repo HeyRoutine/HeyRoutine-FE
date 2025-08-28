@@ -3,7 +3,7 @@
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 
-// 여러 화면에서 재사용될 '입력창 그룹' 스타일
+// 여러 화면에서 재사용될 '입력창 단체' 스타일
 export const FormGroup = styled.View`
   width: 100%;
   margin-bottom: 24px;

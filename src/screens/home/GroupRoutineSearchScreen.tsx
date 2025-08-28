@@ -1,24 +1,36 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { FlatList } from 'react-native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
-import { AddRoutineButton } from '../../components/domain/routine';
+import { SearchInput } from '../../components/domain/routine';
 import RoutineCard from '../../components/domain/routine/RoutineCard';
-import { useGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
+import { useSearchGroupRoutines } from '../../hooks/routine/group/useGroupRoutines';
 
-const GroupBoardScreen = ({ navigation }: any) => {
+const GroupRoutineSearchScreen = ({ navigation }: any) => {
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
   const {
-    data: groupRoutinesData,
-    isLoading: isGroupRoutinesLoading,
-    error: groupRoutinesError,
-  } = useGroupRoutines({
-    page: 0,
-    size: 50,
-  });
+    data: searchResultsData,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useSearchGroupRoutines(
+    { keyword: searchKeyword },
+    isSearching && !!searchKeyword.trim(),
+  );
+
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    setIsSearching(true);
+  };
+
+  const handleClearSearch = () => {
+    setSearchKeyword('');
+    setIsSearching(false);
+  };
 
   const formatTimeForDisplay = (time: any): string => {
     if (!time) return '00:00';
@@ -43,7 +55,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
   };
 
   const groupRoutines =
-    groupRoutinesData?.result?.items?.map((item) => {
+    searchResultsData?.result?.items?.map((item) => {
       // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
       const today = new Date();
       const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -111,40 +123,43 @@ const GroupBoardScreen = ({ navigation }: any) => {
 
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="단체루틴 목록" onBackPress={() => navigation.goBack()} />
+      <Header title="단체루틴 검색" onBackPress={() => navigation.goBack()} />
+
+      <SearchContainer>
+        <SearchInput
+          placeholder="루틴명을 입력해주세요."
+          onSearch={handleSearch}
+          onClear={handleClearSearch}
+          hasSearchResults={
+            isSearching &&
+            searchResultsData?.result?.items &&
+            searchResultsData.result.items.length > 0
+          }
+        />
+      </SearchContainer>
 
       <ListWrapper>
         <FlatList
           data={groupRoutines}
           renderItem={renderRoutine}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={() => (
-            <>
-              <Banner>
-                <BannerIcon>
-                  <SpeakerIcon
-                    source={require('../../assets/images/speaker.png')}
-                  />
-                </BannerIcon>
-                <BannerText>
-                  부적절한 게시글을 작성할 경우, 앱 이용이 제한될 수 있습니다.
-                </BannerText>
-              </Banner>
-              <SearchButton
-                onPress={() => navigation.navigate('GroupRoutineSearch')}
-              >
-                <SearchButtonText>루틴명을 검색해주세요</SearchButtonText>
-                <SearchIcon>
-                  <Ionicons
-                    name="search"
-                    size={16}
-                    color={theme.colors.gray400}
-                  />
-                </SearchIcon>
-              </SearchButton>
-              <Divider />
-            </>
-          )}
+          ListEmptyComponent={() => {
+            if (isSearchLoading) {
+              return (
+                <EmptyContainer>
+                  <EmptyText>검색 중...</EmptyText>
+                </EmptyContainer>
+              );
+            }
+            return (
+              <EmptyContainer>
+                <EmptyStateImage
+                  source={require('../../assets/images/character_sol.png')}
+                />
+                <EmptyText>검색 결과가 없습니다.</EmptyText>
+              </EmptyContainer>
+            );
+          }}
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: 100,
@@ -152,56 +167,19 @@ const GroupBoardScreen = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
         />
       </ListWrapper>
-
-      <AddRoutineButton
-        onPress={() => navigation.navigate('CreateGroupRoutine')}
-      />
     </Container>
   );
 };
 
-export default GroupBoardScreen;
+export default GroupRoutineSearchScreen;
 
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
 `;
 
-const Banner = styled.View`
-  flex-direction: row;
-  align-items: center;
-  margin: 12px 0 16px 0;
-  padding: 12px 8px 12px 0;
-  border-radius: 8px;
-  background-color: #f7f8fa;
-`;
-
-const Divider = styled.View`
-  height: 1px;
-  background-color: #e5e5e5;
-  margin: 16px 0;
-`;
-
-const BannerIcon = styled.View`
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  margin-right: 10px;
-`;
-
-const SpeakerIcon = styled.Image`
-  width: 32px;
-  height: 32px;
-`;
-
-const BannerText = styled.Text`
-  flex: 1;
-  font-family: ${theme.fonts.Regular};
-  font-size: 11px;
-  font-weight: 400;
-  color: #6f7075;
+const SearchContainer = styled.View`
+  padding: 16px;
 `;
 
 const ListWrapper = styled.View`
@@ -242,33 +220,20 @@ const EmptyContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding: 40px 0;
+  padding: 80px 0;
 `;
 
 const EmptyText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
+  font-size: 16px;
   color: ${theme.colors.gray500};
   text-align: center;
 `;
 
-const SearchButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #f7f8fa;
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin: 8px 0;
-`;
-
-const SearchButtonText = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray400};
-`;
-
-const SearchIcon = styled.View`
-  align-items: center;
-  justify-content: center;
+const EmptyStateImage = styled.Image`
+  width: 160px;
+  height: 160px;
+  margin-bottom: 20px;
+  resize-mode: contain;
+  opacity: 0.3;
 `;

@@ -100,7 +100,7 @@ export interface UpdateGroupRoutineRequest {
 }
 
 // 단체루틴 생성 응답 타입
-export type CreateGroupRoutineResponse = number; // 생성된 그룹 루틴 ID (직접 숫자 값)
+export type CreateGroupRoutineResponse = number; // 생성된 단체 루틴 ID (직접 숫자 값)
 
 // 단체루틴 상세 생성 응답 타입
 export type CreateGroupRoutineDetailResponse = EmptyResponse;
@@ -152,6 +152,11 @@ export interface GroupRoutineListParams {
   page?: number;
   size?: number;
   joined?: boolean; // 참여 여부 필터링 (true: 참여한 루틴만, false: 참여하지 않은 루틴만, undefined: 전체)
+}
+
+// 단체루틴 검색 파라미터 타입
+export interface GroupRoutineSearchParams {
+  keyword: string;
 }
 
 // API 에러 타입

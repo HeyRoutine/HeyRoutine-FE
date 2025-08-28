@@ -189,7 +189,7 @@ const GroupRoutineDetailScreen = ({
     }
   }, [routineDetailData]);
 
-  // 그룹 루틴 관련 훅들
+  // 단체 루틴 관련 훅들
   const { mutate: deleteGroupRoutine, isPending: isDeleting } =
     useDeleteGroupRoutine();
   const { mutate: joinGroupRoutine, isPending: isJoining } =
@@ -234,7 +234,7 @@ const GroupRoutineDetailScreen = ({
         });
       },
       onError: (error) => {
-        console.error('🔍 그룹 루틴 가입 실패:', error);
+        console.error('🔍 단체 루틴 가입 실패:', error);
         setJoinModalVisible(false);
       },
     });
@@ -321,13 +321,13 @@ const GroupRoutineDetailScreen = ({
         setIsDeleteModalVisible(false);
         navigation.navigate('Result', {
           type: 'success',
-          title: '그룹 루틴 삭제 완료',
-          description: '그룹 루틴이 성공적으로 삭제되었습니다.',
+          title: '단체 루틴 삭제 완료',
+          description: '단체 루틴이 성공적으로 삭제되었습니다.',
           nextScreen: 'HomeMain',
         });
       },
       onError: (error) => {
-        console.error('🔍 그룹 루틴 삭제 실패:', error);
+        console.error('🔍 단체 루틴 삭제 실패:', error);
         setIsDeleteModalVisible(false);
       },
     });
@@ -369,21 +369,21 @@ const GroupRoutineDetailScreen = ({
         });
 
         // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
-        console.log('나가기 완료: 그룹 루틴에서 성공적으로 나갔습니다.');
+        console.log('나가기 완료: 단체 루틴에서 성공적으로 나갔습니다.');
         navigation.reset({
           index: 0,
           routes: [{ name: 'GroupBoard' }],
         });
       },
       onError: (error: any) => {
-        console.error('🔍 그룹 루틴 나가기 실패:', error);
+        console.error('🔍 단체 루틴 나가기 실패:', error);
         setIsLeaveModalVisible(false);
 
-        let errorMessage = '그룹 루틴 나가기에 실패했습니다.';
+        let errorMessage = '단체 루틴 나가기에 실패했습니다.';
         if (error.response?.status === 403) {
           errorMessage = '권한이 없습니다. 방장은 나갈 수 없습니다.';
         } else if (error.response?.status === 404) {
-          errorMessage = '그룹 루틴을 찾을 수 없습니다.';
+          errorMessage = '단체 루틴을 찾을 수 없습니다.';
         }
 
         // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
@@ -410,7 +410,7 @@ const GroupRoutineDetailScreen = ({
     const today = new Date();
     const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
 
-    // 그룹 루틴의 선택된 요일 확인
+    // 단체 루틴의 선택된 요일 확인
     const groupRoutineInfo = routineDetailData?.result?.groupRoutineInfo;
     const selectedDays = groupRoutineInfo?.dayOfWeek || [];
 
@@ -491,7 +491,7 @@ const GroupRoutineDetailScreen = ({
                     {
                       onSuccess: () => {
                         console.log('🔍 전체 기록 업데이트 성공');
-                        // 홈 화면과 그룹 게시판 화면의 데이터도 업데이트
+                        // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
                         queryClient.invalidateQueries({
                           queryKey: ['myGroupRoutines'],
                         });

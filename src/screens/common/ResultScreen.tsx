@@ -93,7 +93,7 @@ const ResultScreen = ({ navigation, route }: any) => {
       navigation.navigate(nextScreen);
       return;
     } else if (nextScreen === 'GroupRoutineDetail') {
-      // 그룹 루틴 상세로 이동하는 경우 캐시 무효화 후 이동
+      // 단체 루틴 상세로 이동하는 경우 캐시 무효화 후 이동
       console.log('🔍 GroupRoutineDetail로 이동 - 캐시 무효화 실행');
       queryClient.invalidateQueries({ queryKey: ['groupRoutineDetail'] });
       queryClient.invalidateQueries({ queryKey: ['infiniteGroupRoutines'] });

@@ -12,3 +12,4 @@ export { default as EmojiPickerModal } from './EmojiPickerModal';
 export { default as RoutineSuggestionModal } from './RoutineSuggestionModal';
 export { default as RoutineSuggestionItem } from './RoutineSuggestionItem';
 export { default as DeleteRoutineModal } from './DeleteRoutineModal';
+export { default as SearchInput } from './SearchInput';

@@ -1,15 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  View,
-  Keyboard,
-  Modal,
-  Dimensions,
-} from 'react-native';
+import { Modal, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Swipeable } from 'react-native-gesture-handler';
+import { Swipeable, ScrollView } from 'react-native-gesture-handler';
 
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';

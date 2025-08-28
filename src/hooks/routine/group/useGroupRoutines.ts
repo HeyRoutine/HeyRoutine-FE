@@ -7,6 +7,7 @@ import {
 import {
   getGroupRoutines,
   getMyGroupRoutines,
+  searchGroupRoutines,
   createGroupRoutine,
   updateGroupRoutine,
   deleteGroupRoutine,
@@ -28,6 +29,7 @@ import {
 } from '../../../api/routine/group/guestbooks';
 import {
   GroupRoutineListParams,
+  GroupRoutineSearchParams,
   CreateGroupRoutineRequest,
   UpdateGroupRoutineRequest,
   CreateGroupRoutineDetailRequest,
@@ -108,6 +110,20 @@ export const useInfiniteMyGroupRoutines = (
     initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+  });
+};
+
+// 단체루틴 검색 훅
+export const useSearchGroupRoutines = (
+  params: GroupRoutineSearchParams,
+  enabled: boolean = true,
+) => {
+  return useQuery({
+    queryKey: ['searchGroupRoutines', params],
+    queryFn: () => searchGroupRoutines(params),
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    enabled: enabled && !!params.keyword.trim(), // 키워드가 있을 때만 실행
   });
 };
 

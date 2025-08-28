@@ -48,7 +48,7 @@ const CreateGroupRoutineScreen = ({
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  // 그룹루틴 생성/수정 훅
+  // 단체루틴 생성/수정 훅
   const { mutate: createGroupRoutine, isPending: isCreating } =
     useCreateGroupRoutine();
   const { mutate: updateGroupRoutine, isPending: isUpdating } =
@@ -92,13 +92,13 @@ const CreateGroupRoutineScreen = ({
 
             navigation.navigate('Result', {
               type: 'success',
-              title: '그룹 루틴 수정 완료',
-              description: '그룹 루틴이 성공적으로 수정되었습니다.',
+              title: '단체 루틴 수정 완료',
+              description: '단체 루틴이 성공적으로 수정되었습니다.',
               nextScreen: 'HomeMain',
             });
           },
           onError: (error) => {
-            console.error('🔍 그룹 루틴 수정 실패:', error);
+            console.error('🔍 단체 루틴 수정 실패:', error);
             // 에러 처리 (나중에 토스트나 알림 추가)
           },
         },
@@ -157,7 +157,7 @@ const CreateGroupRoutineScreen = ({
 
   // 시간을 HH:mm 형식으로 변환하는 함수 (API 요청용)
   const formatTimeForAPI = (time: string): string => {
-    // HH:mm 형식을 그대로 반환 (그룹 루틴은 HH:mm 형식 사용)
+    // HH:mm 형식을 그대로 반환 (단체 루틴은 HH:mm 형식 사용)
     return time;
   };
 
@@ -187,7 +187,7 @@ const CreateGroupRoutineScreen = ({
             color={theme.colors.gray800}
           />
         </BackButton>
-        <Title>{mode === 'edit' ? '그룹 루틴 수정' : '그룹 루틴 생성'}</Title>
+        <Title>{mode === 'edit' ? '단체 루틴 수정' : '단체 루틴 생성'}</Title>
         <Spacer />
       </Header>
 
@@ -247,7 +247,7 @@ const CreateGroupRoutineScreen = ({
       {/* 하단 버튼 */}
       <ButtonWrapper>
         <CustomButton
-          text={mode === 'edit' ? '그룹 루틴 수정' : '그룹 루틴 생성'}
+          text={mode === 'edit' ? '단체 루틴 수정' : '단체 루틴 생성'}
           onPress={handleSubmitRoutine}
           disabled={!isFormValid}
           backgroundColor={

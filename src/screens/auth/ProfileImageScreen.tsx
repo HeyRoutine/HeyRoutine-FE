@@ -97,7 +97,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
         <SubTitle>
           {imageUri
             ? '사람들에게 나를 보여줄 수 있어요.'
-            : '그룹 구성원들에게 알려줄 수도 있어요!'}
+            : '단체 구성원들에게 알려줄 수도 있어요!'}
         </SubTitle>
 
         <ProfileImageContainer onPress={handlePickImage}>

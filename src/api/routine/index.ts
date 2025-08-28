@@ -3,5 +3,5 @@
 export * from './common';
 
 // 개별 API
-export * from './group'; // 그룹 루틴 전용
+export * from './group'; // 단체 루틴 전용
 export * from './personal'; // 개인 루틴 전용

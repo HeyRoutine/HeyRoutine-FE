@@ -349,7 +349,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </WeekContainer>
         </DateSelector>
 
-        {/* 그룹 루틴 카드 */}
+        {/* 단체 루틴 카드 */}
         <GroupRoutineCard
           onPress={handleGroupBannerPress}
           iconSource={require('../../assets/images/group.png')}
@@ -359,7 +359,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         <TabNavigation
           selectedIndex={selectedTab}
           onTabChange={setSelectedTab}
-          tabs={['개인 루틴', '그룹 루틴']}
+          tabs={['개인 루틴', '단체 루틴']}
         />
 
         {/* 루틴 목록 */}

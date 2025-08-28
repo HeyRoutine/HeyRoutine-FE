@@ -1,8 +1,10 @@
 import apiClient from '../../client';
+import errorHandler from '../../../utils/errorHandler';
 import {
   ApiResponse,
   GroupRoutineListResponse,
   GroupRoutineListParams,
+  GroupRoutineSearchParams,
   CreateGroupRoutineRequest,
   CreateGroupRoutineResponse,
   UpdateGroupRoutineRequest,
@@ -143,4 +145,45 @@ export const leaveGroupRoutine = async (
   });
 
   return response.data;
+};
+
+// 단체루틴 검색 API
+export const searchGroupRoutines = async (
+  params: GroupRoutineSearchParams,
+): Promise<ApiResponse<GroupRoutineListResponse>> => {
+  try {
+    const { keyword } = params;
+
+    const requestParams: any = {
+      keyword,
+    };
+
+    const response = await apiClient.get<ApiResponse<GroupRoutineListResponse>>(
+      '/api/v1/routines/groups/search',
+      {
+        params: requestParams,
+      },
+    );
+
+    console.log('🔍 searchGroupRoutines 응답:', {
+      status: response.status,
+      data: response.data,
+      isSuccess: response.data?.isSuccess,
+      result: response.data?.result,
+      items: response.data?.result?.items,
+      itemsCount: response.data?.result?.items?.length || 0,
+      keyword,
+    });
+
+    return response.data;
+  } catch (error) {
+    // 에러 처리
+    const errorMessage = errorHandler.handleApiError(error);
+    console.error('🔍 searchGroupRoutines 에러:', {
+      error,
+      errorMessage,
+      keyword: params.keyword,
+    });
+    throw error; // 에러를 다시 던져서 React Query에서 처리할 수 있도록
+  }
 };
