@@ -15,6 +15,7 @@ interface RoutineCardProps {
   onPress: () => void;
   onMorePress?: () => void;
   activeOpacity?: number;
+  routineNums?: number;
 }
 
 const RoutineCard = ({
@@ -30,6 +31,7 @@ const RoutineCard = ({
   onPress,
   onMorePress,
   activeOpacity = 0.7,
+  routineNums,
 }: RoutineCardProps) => {
   // 시간을 "오후 h:mm - 오후 h:mm" 형식으로 변환하는 함수
   const formatTimeRange = (timeRange: string) => {
@@ -98,16 +100,21 @@ const RoutineCard = ({
         </Description>
       )}
       <TimeText>{formatTimeRange(timeRange)}</TimeText>
-      <DayContainer>
-        {sortDaysByOrder(selectedDays).map((day) => {
-          const done = isDayCompleted(day);
-          return (
-            <DayBadge key={day} isSelected={done}>
-              <DayText isSelected={done}>{day}</DayText>
-            </DayBadge>
-          );
-        })}
-      </DayContainer>
+      <BottomRow>
+        {routineNums !== undefined && (
+          <RoutineCountText>{routineNums}개 항목</RoutineCountText>
+        )}
+        <DayContainer>
+          {sortDaysByOrder(selectedDays).map((day) => {
+            const done = isDayCompleted(day);
+            return (
+              <DayBadge key={day} isSelected={done}>
+                <DayText isSelected={done}>{day}</DayText>
+              </DayBadge>
+            );
+          })}
+        </DayContainer>
+      </BottomRow>
     </Container>
   );
 };
@@ -192,11 +199,17 @@ const TimeText = styled.Text`
   margin-bottom: 24px;
 `;
 
+const BottomRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
 const DayContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-end;
-  width: 100%;
   gap: 4px;
 `;
 
@@ -216,4 +229,10 @@ const DayText = styled.Text<{ isSelected: boolean }>`
   font-size: 10px;
   color: ${({ isSelected }) =>
     isSelected ? theme.colors.white : theme.colors.gray600};
+`;
+
+const RoutineCountText = styled.Text`
+  color: #b5b6bd;
+  font-size: 12px;
+  font-weight: 600;
 `;

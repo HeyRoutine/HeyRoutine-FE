@@ -617,15 +617,17 @@ const GroupRoutineDetailScreen = ({
                   <TaskTitle>{task.title}</TaskTitle>
                 </TaskContent>
                 <TaskDuration>{task.duration}</TaskDuration>
-                <TaskStatus onPress={() => handleTaskToggle(index)}>
-                  {task.isCompleted ? (
-                    <CompletedCheckbox>
-                      <CompletedCheckmark>✓</CompletedCheckmark>
-                    </CompletedCheckbox>
-                  ) : (
-                    <UncompletedCheckbox />
-                  )}
-                </TaskStatus>
+                {isJoined && (
+                  <TaskStatus onPress={() => handleTaskToggle(index)}>
+                    {task.isCompleted ? (
+                      <CompletedCheckbox>
+                        <CompletedCheckmark>✓</CompletedCheckmark>
+                      </CompletedCheckbox>
+                    ) : (
+                      <UncompletedCheckbox />
+                    )}
+                  </TaskStatus>
+                )}
               </RoutineItemRow>
             ))}
             {isEditMode && (
@@ -650,7 +652,9 @@ const GroupRoutineDetailScreen = ({
                     <CompletedHeader>
                       <CompletedTitle>완료</CompletedTitle>
                       <CompletedCountContainer>
-                        <CompletedIcon>👥</CompletedIcon>
+                        <CompletedIcon
+                          source={require('../../assets/images/person.png')}
+                        />
                         <CompletedCountText>
                           {routine.completedCount}
                         </CompletedCountText>
@@ -685,7 +689,9 @@ const GroupRoutineDetailScreen = ({
                     <UnachievedHeader>
                       <UnachievedTitle>미달성</UnachievedTitle>
                       <UnachievedCountContainer>
-                        <UnachievedIcon>👥</UnachievedIcon>
+                        <UnachievedIcon
+                          source={require('../../assets/images/person.png')}
+                        />
                         <UnachievedCountText>
                           {routine.unachievedCount}
                         </UnachievedCountText>
@@ -721,7 +727,9 @@ const GroupRoutineDetailScreen = ({
                   <AllParticipantsHeader>
                     <AllParticipantsTitle>참여자</AllParticipantsTitle>
                     <AllParticipantsCountContainer>
-                      <AllParticipantsIcon>👥</AllParticipantsIcon>
+                      <AllParticipantsIcon
+                        source={require('../../assets/images/person.png')}
+                      />
                       <AllParticipantsCountText>
                         {routine.allParticipants.length}
                       </AllParticipantsCountText>
@@ -1089,9 +1097,11 @@ const UncompletedCheckbox = styled.View`
   background-color: ${theme.colors.white};
 `;
 
-const CompletedIcon = styled.Text`
-  font-size: 16px;
-  color: ${theme.colors.primary};
+const CompletedIcon = styled(Image)`
+  width: 20px;
+  height: 20px;
+  tint-color: ${theme.colors.primary};
+  resize-mode: contain;
 `;
 
 const UncompletedIcon = styled.Text`
@@ -1184,13 +1194,14 @@ const CompletedTitle = styled.Text`
 const CompletedCountContainer = styled.View`
   flex-direction: row;
   align-items: center;
+  padding: 2px;
 `;
 
 const CompletedCountText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray600};
-  margin-left: 4px;
+  margin-left: 6px;
 `;
 
 const CompletedAvatarRow = styled.ScrollView``;
@@ -1216,11 +1227,14 @@ const UnachievedTitle = styled.Text`
 const UnachievedCountContainer = styled.View`
   flex-direction: row;
   align-items: center;
+  padding: 2px;
 `;
 
-const UnachievedIcon = styled.Text`
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+const UnachievedIcon = styled(Image)`
+  width: 20px;
+  height: 20px;
+  tint-color: ${theme.colors.gray600};
+  resize-mode: contain;
 `;
 
 const UnachievedCountText = styled.Text`
@@ -1261,18 +1275,21 @@ const AllParticipantsTitle = styled.Text`
 const AllParticipantsCountContainer = styled.View`
   flex-direction: row;
   align-items: center;
+  padding: 2px;
 `;
 
-const AllParticipantsIcon = styled.Text`
-  font-size: 16px;
-  color: ${theme.colors.gray600};
+const AllParticipantsIcon = styled(Image)`
+  width: 20px;
+  height: 20px;
+  tint-color: ${theme.colors.gray600};
+  resize-mode: contain;
 `;
 
 const AllParticipantsCountText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray600};
-  margin-left: 4px;
+  margin-left: 6px;
 `;
 
 const AllParticipantsAvatarRow = styled.ScrollView``;

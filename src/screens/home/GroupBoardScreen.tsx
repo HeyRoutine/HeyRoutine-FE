@@ -83,6 +83,7 @@ const GroupBoardScreen = ({ navigation }: any) => {
         timeRange={item.timeRange}
         selectedDays={item.selectedDays}
         completedDays={item.completedDays}
+        routineNums={item.itemCount}
         onPress={() =>
           navigation.navigate('GroupRoutineDetail', {
             routineId: item.id,

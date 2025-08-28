@@ -102,6 +102,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     timeRange: string;
     selectedDays: string[];
     completedDays: string[];
+    routineNums?: number;
   };
 
   const selectedDateString = selectedDate.toISOString().split('T')[0];
@@ -197,6 +198,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
             selectedDays: item.dayOfWeek,
             completedDays,
+            routineNums: item.routineNums || 0,
           };
         }) || [],
     ) || [];
@@ -378,6 +380,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 timeRange={item.timeRange}
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}
+                routineNums={selectedTab === 1 ? item.routineNums : undefined}
                 onPress={() => handleRoutinePress(item.id)}
               />
             )}
