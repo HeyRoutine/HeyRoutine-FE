@@ -204,6 +204,9 @@ const GroupRoutineDetailScreen = ({
   // 단체루틴 기록 업데이트 훅
   const updateGroupRoutineRecord = useUpdateGroupRoutineRecord();
 
+  // 이모지 데이터 조회
+  const { data: emojisData, isLoading: isLoadingEmojis } = useRoutineEmojis();
+
   // 전체 기록 업데이트는 별도의 조건이나 사용자 액션에 의해서만 호출
   // useEffect로 자동 호출하지 않음
 
@@ -988,6 +991,8 @@ const GroupRoutineDetailScreen = ({
         onRoutineSelect={(template) => {
           setIsTemplateModalVisible(false);
         }}
+        emojis={emojisData?.result?.items || []}
+        isLoading={isLoadingEmojis}
       />
     </Container>
   );

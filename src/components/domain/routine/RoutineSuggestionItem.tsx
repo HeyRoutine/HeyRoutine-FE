@@ -18,17 +18,20 @@ const RoutineSuggestionItem: React.FC<RoutineSuggestionItemProps> = ({
   description,
   onPress,
 }) => {
-  // 이모지가 URL인지 텍스트 이모지인지 판단
-  const isEmojiUrl = icon.startsWith('http');
-  const isTextEmoji = icon.length <= 4 && !isEmojiUrl; // 이모지 텍스트는 보통 1-4자
+  // 이모지가 URL인지 텍스트 이모지인지 판단 (성능 최적화)
+  const isEmojiUrl = icon && icon.startsWith('http');
+  const isTextEmoji = icon && icon.length <= 4 && !isEmojiUrl; // 이모지 텍스트는 보통 1-4자
+
+  // 유효하지 않은 아이콘인 경우 기본 아이콘 사용
+  const displayIcon = icon && icon.trim() !== '' ? icon : '📝';
 
   return (
     <Container onPress={onPress}>
       <IconContainer>
         {isEmojiUrl ? (
-          <SvgImage uri={icon} width={24} height={24} />
+          <SvgImage uri={displayIcon} width={24} height={24} />
         ) : (
-          <IconText>{icon}</IconText>
+          <IconText>{displayIcon}</IconText>
         )}
       </IconContainer>
 

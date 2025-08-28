@@ -51,8 +51,8 @@ const RoutineItemAdder = ({
       <PlusSection onPress={onPlusPress}>
         {isCompleted ? (
           <Ionicons name="checkmark" size={24} color={theme.colors.primary} />
-        ) : selectedEmoji ? (
-          // 이모지가 URL인지 텍스트 이모지인지 판단
+        ) : selectedEmoji && selectedEmoji.trim() !== '' ? (
+          // 이모지가 URL인지 텍스트 이모지인지 판단 (성능 최적화)
           selectedEmoji.startsWith('http') ? (
             <SvgImage uri={selectedEmoji} width={24} height={24} />
           ) : (

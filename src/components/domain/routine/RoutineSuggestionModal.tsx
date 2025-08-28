@@ -146,23 +146,57 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   ];
   const selectedCategory = categoryIds[selectedCategoryIndex];
 
-  // 이모지 ID를 URL로 매핑하는 함수
+  // 이모지 ID를 URL로 매핑하는 함수 (성능 최적화)
   const getEmojiUrl = (emojiId: number) => {
+    if (!emojiId || !emojis || emojis.length === 0) {
+      console.log(
+        '🔍 이모지 매핑 실패 - emojiId:',
+        emojiId,
+        'emojis 길이:',
+        emojis?.length,
+      );
+      return '📝'; // 기본 아이콘
+    }
+
     const emoji = emojis.find((e) => e.emojiId === emojiId);
-    return emoji?.emojiUrl || '📝'; // 이모지가 없으면 기본 아이콘 사용
+    if (!emoji || !emoji.emojiUrl) {
+      console.log(
+        '🔍 이모지 찾기 실패 - emojiId:',
+        emojiId,
+        '찾은 emoji:',
+        emoji,
+      );
+      return '📝'; // 기본 아이콘
+    }
+
+    console.log(
+      '🔍 이모지 매핑 성공 - emojiId:',
+      emojiId,
+      'emojiUrl:',
+      emoji.emojiUrl,
+    );
+    return emoji.emojiUrl;
   };
 
   // 템플릿 데이터가 있으면 템플릿을 사용하고, 없으면 기본 추천 루틴을 사용
-  const availableRoutines =
-    templates && templates.length > 0
-      ? templates.map((template) => ({
-          id: template.templateId.toString(),
-          title: template.name?.trim() || '', // 타이틀 앞뒤 공백 제거
-          description: template.content,
-          icon: getEmojiUrl(template.emojiId), // 템플릿의 emojiId에 해당하는 이모지 URL 사용
-          category: template.category || 'template', // 템플릿에 카테고리 정보가 있으면 사용
-        }))
-      : routineSuggestions;
+  const availableRoutines = React.useMemo(() => {
+    console.log('🔍 RoutineSuggestionModal - 템플릿 데이터:', {
+      templatesLength: templates?.length,
+      emojisLength: emojis?.length,
+      isLoading,
+    });
+
+    if (templates && templates.length > 0) {
+      return templates.map((template) => ({
+        id: template.templateId?.toString() || `template-${Date.now()}`,
+        title: template.name?.trim() || '', // 타이틀 앞뒤 공백 제거
+        description: template.content || '',
+        icon: getEmojiUrl(template.emojiId), // 템플릿의 emojiId에 해당하는 이모지 URL 사용
+        category: template.category || 'template', // 템플릿에 카테고리 정보가 있으면 사용
+      }));
+    }
+    return routineSuggestions;
+  }, [templates, emojis, isLoading]);
 
   // 카테고리별 필터링 로직 수정 - 모든 템플릿 표시
   const filteredRoutines = availableRoutines.filter((routine) => {

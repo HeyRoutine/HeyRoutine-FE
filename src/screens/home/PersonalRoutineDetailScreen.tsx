@@ -99,6 +99,16 @@ const PersonalRoutineDetailScreen = ({
 
   const { data: emojisData, isLoading: isLoadingEmojis } = useRoutineEmojis();
 
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log('🔍 PersonalRoutineDetailScreen - 데이터 로딩 상태:', {
+      templatesData: templatesData?.result?.items?.length || 0,
+      emojisData: emojisData?.result?.items?.length || 0,
+      isLoadingTemplates,
+      isLoadingEmojis,
+    });
+  }, [templatesData, emojisData, isLoadingTemplates, isLoadingEmojis]);
+
   const handleDeleteRoutine = () => {
     closeMoreSheet();
     setDeleteModalVisible(true);
@@ -522,7 +532,7 @@ const PersonalRoutineDetailScreen = ({
                 onTextChange={handleTextChange}
                 onTextPress={handleTextPress}
                 selectedTime={selectedTime}
-                selectedEmoji={selectedEmoji}
+                selectedEmoji={selectedEmoji || ''}
                 currentText={currentText}
                 placeholder="루틴을 추가해주세요"
                 editable={isEditMode}
@@ -603,6 +613,8 @@ const PersonalRoutineDetailScreen = ({
         onRequestClose={handleRoutineSuggestionClose}
         onRoutineSelect={handleRoutineSuggestionSelect}
         templates={templatesData?.result?.items || []}
+        emojis={emojisData?.result?.items || []}
+        isLoading={isLoadingTemplates || isLoadingEmojis}
       />
 
       {/* 더보기 시트 */}
