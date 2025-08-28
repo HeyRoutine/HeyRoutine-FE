@@ -14,6 +14,7 @@ interface RoutineCardProps {
   showProgress?: boolean;
   onPress: () => void;
   onMorePress?: () => void;
+  activeOpacity?: number;
 }
 
 const RoutineCard = ({
@@ -28,6 +29,7 @@ const RoutineCard = ({
   showProgress = true,
   onPress,
   onMorePress,
+  activeOpacity = 0.7,
 }: RoutineCardProps) => {
   // 시간을 "오후 h:mm - 오후 h:mm" 형식으로 변환하는 함수
   const formatTimeRange = (timeRange: string) => {
@@ -72,7 +74,11 @@ const RoutineCard = ({
   };
 
   return (
-    <Container onPress={onPress} isSelected={isSelected}>
+    <Container
+      onPress={onPress}
+      isSelected={isSelected}
+      activeOpacity={activeOpacity}
+    >
       <Header>
         <Title>{title}</Title>
         <HeaderRight>
