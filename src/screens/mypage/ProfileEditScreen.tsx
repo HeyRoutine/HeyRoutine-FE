@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import {
   SafeAreaView,
@@ -17,7 +17,10 @@ import { useAuthStore, useUserStore } from '../../store';
 import {
   useUpdateProfileImage,
   useUpdateIsMarketing,
+  useMyInfo,
+  useDeleteUser,
 } from '../../hooks/user/useUser';
+import { useErrorHandler } from '../../hooks/common/useErrorHandler';
 import { uploadImage } from '../../utils/s3';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -43,6 +46,9 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const { userInfo, updateUserInfo } = useUserStore();
   const { logout } = useAuthStore();
 
+  // 서버에서 사용자 정보 가져오기
+  const { data: myInfoData, isLoading: isMyInfoLoading } = useMyInfo();
+
   // 프로필 이미지 업데이트 훅
   const { mutate: updateProfileImage, isPending: isUpdatingProfile } =
     useUpdateProfileImage();
@@ -51,9 +57,49 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   const { mutate: updateIsMarketing, isPending: isUpdatingMarketing } =
     useUpdateIsMarketing();
 
-  // 사용자 설정 상태 (userStore에서 관리)
-  const marketingConsent = userInfo?.isMarketing ?? true;
+  // 회원탈퇴 훅
+  const {
+    mutate: deleteUser,
+    isPending: isDeletingUser,
+    isSuccess: isDeleteSuccess,
+    isError: isDeleteError,
+    error: deleteError,
+  } = useDeleteUser();
+
+  // 에러 핸들러
+  const { handleError } = useErrorHandler();
+
+  // 회원탈퇴 성공/실패 처리
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      console.log('🔍 회원탈퇴 성공 처리');
+      // 회원탈퇴 완료 화면 표시
+      setShowWithdrawModal(false);
+      setShowWithdrawComplete(true);
+    }
+  }, [isDeleteSuccess]);
+
+  useEffect(() => {
+    if (isDeleteError && deleteError) {
+      console.error('🔍 회원탈퇴 실패 처리:', deleteError);
+      // 에러 처리
+      handleError(deleteError);
+      // 에러 발생 시 모달 닫기
+      setShowWithdrawModal(false);
+    }
+  }, [isDeleteError, deleteError, handleError]);
+
+  // 사용자 설정 상태 (서버 데이터 우선, 로컬 데이터 fallback)
+  const marketingConsent =
+    myInfoData?.result?.isMarketing ?? userInfo?.isMarketing ?? false;
   const notificationConsent = userInfo?.notificationConsent ?? true;
+
+  // 로딩 중이면 기본값 사용
+  if (isMyInfoLoading) {
+    console.log('🔍 사용자 정보 로딩 중...');
+  } else if (myInfoData?.result) {
+    console.log('🔍 서버에서 받은 사용자 정보:', myInfoData.result);
+  }
   const profileImageUri = userInfo?.profileImage;
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -61,21 +107,22 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
 
   // 설정 변경 핸들러들
   const handleMarketingConsentChange = (value: boolean) => {
-    console.log('🔍 마케팅 수신동의 변경:', value ? 'ON' : 'OFF');
+    // 현재 마케팅 상태의 정반대 값을 API로 전송
+    const newMarketingValue = !marketingConsent;
+
+    // 낙관적 업데이트: 즉시 로컬 상태 변경
+    updateUserInfo({ isMarketing: newMarketingValue });
 
     // API 호출하여 마케팅 수신동의 업데이트
     updateIsMarketing(
-      { isMarketing: value },
+      { status: newMarketingValue },
       {
         onSuccess: (data) => {
-          console.log('🔍 마케팅 수신동의 업데이트 성공:', data);
-          // 로컬 상태도 즉시 업데이트 (낙관적 업데이트)
-          updateUserInfo({ isMarketing: value });
+          // 성공 시 추가 처리 없음 (낙관적 업데이트로 이미 UI 반영됨)
         },
         onError: (error) => {
-          console.error('🔍 마케팅 수신동의 업데이트 실패:', error);
           // 실패 시 원래 상태로 되돌리기
-          updateUserInfo({ isMarketing: !value });
+          updateUserInfo({ isMarketing: !newMarketingValue });
         },
       },
     );
@@ -151,9 +198,11 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   };
 
   const handleAccountAction = () => {
-    // 테스트용: 인증 상태와 관계없이 항상 인증 화면으로 이동
-    console.log('계좌 인증 화면으로 이동');
-    navigation.navigate('AccountRegistration');
+    // 인증이 완료되지 않은 경우에만 인증 화면으로 이동
+    if (!userInfo?.accountCertificationStatus) {
+      console.log('계좌 인증 화면으로 이동');
+      navigation.navigate('AccountRegistration');
+    }
   };
 
   // 리스트 데이터
@@ -167,7 +216,8 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       rightTextColor: userInfo?.accountCertificationStatus
         ? theme.colors.gray400
         : theme.colors.primary,
-      onPress: handleAccountAction, // 테스트용: 항상 클릭 가능
+      onPress: handleAccountAction,
+      disabled: userInfo?.accountCertificationStatus, // 인증완료 시 비활성화
     },
     {
       id: 'password',
@@ -200,7 +250,6 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       title: '마케팅 수신동의',
       toggleValue: marketingConsent,
       onToggleChange: handleMarketingConsentChange,
-      disabled: isUpdatingMarketing,
     },
   ];
 
@@ -230,9 +279,8 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   };
 
   const handleWithdrawConfirm = () => {
-    // 회원탈퇴 완료 화면 표시
-    setShowWithdrawModal(false);
-    setShowWithdrawComplete(true);
+    // 회원탈퇴 API 호출
+    deleteUser();
   };
 
   const handleWithdrawCancel = () => {
@@ -240,7 +288,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   };
 
   const handleWithdrawComplete = () => {
-    // 회원탈퇴 완료 후 내 정보 관리 화면으로 돌아가기
+    // 회원탈퇴 완료 후 모달 닫기 (logout()은 이미 useDeleteUser에서 호출됨)
     setShowWithdrawComplete(false);
   };
 
@@ -332,8 +380,13 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
             </CancelButton>
           </ButtonWrapper>
           <ButtonWrapper>
-            <WithdrawButton onPress={handleWithdrawConfirm}>
-              <WithdrawText>회원 탈퇴</WithdrawText>
+            <WithdrawButton
+              onPress={handleWithdrawConfirm}
+              disabled={isDeletingUser}
+            >
+              <WithdrawText>
+                {isDeletingUser ? '탈퇴 중...' : '회원 탈퇴'}
+              </WithdrawText>
             </WithdrawButton>
           </ButtonWrapper>
         </ButtonRow>

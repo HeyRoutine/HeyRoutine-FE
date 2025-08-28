@@ -83,13 +83,14 @@ const MyPageListItem = ({
 export default MyPageListItem;
 
 // 스타일 컴포넌트 정의
-const Container = styled.TouchableOpacity`
+const Container = styled.TouchableOpacity<{ disabled?: boolean }>`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
   border-bottom-width: 1px;
   border-bottom-color: ${theme.colors.gray100};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 `;
 
 const LeftContent = styled.View`

@@ -45,7 +45,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       const userInfo = {
         nickname: myInfoData.result.nickname,
         profileImage: myInfoData.result.profileImage,
-        points: myInfoData.result.point,
+        points: myInfoData.result.point ?? 0,
         bankAccount: myInfoData.result.bankAccount,
         isMarketing: myInfoData.result.isMarketing,
         accountCertificationStatus:
@@ -53,7 +53,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         // 기존 정보는 유지
         email: '', // API에서 제공하지 않으므로 빈 문자열
         accountInfo: undefined, // 기존 accountInfo는 별도로 관리
-        marketingConsent: myInfoData.result.isMarketing, // 기존 필드와 매핑
         notificationConsent: true, // 기본값
       };
       setUserInfo(userInfo);
@@ -208,23 +207,22 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     selectedDate.getDay()
   ];
 
-  // 선택된 요일의 루틴만 필터링
-  console.log('🔍 필터링 디버깅:', {
+  // API에서 반환된 루틴들을 그대로 사용 (클라이언트 필터링 제거)
+  console.log('🔍 API 반환 루틴:', {
+    selectedDate: selectedDateString,
+    selectedDay: selectedDay,
     selectedDayLabel,
+    personalRoutinesCount: personalRoutines.length,
+    groupRoutinesCount: groupRoutines.length,
     personalRoutines: personalRoutines.map((r) => ({
       id: r.id,
       title: r.title,
       selectedDays: r.selectedDays,
-      includesSelectedDay: r.selectedDays.includes(selectedDayLabel),
     })),
   });
 
-  const selectedDayPersonalRoutines = personalRoutines.filter((routine) =>
-    routine.selectedDays.includes(selectedDayLabel),
-  );
-  const selectedDayGroupRoutines = groupRoutines.filter((routine) =>
-    routine.selectedDays.includes(selectedDayLabel),
-  );
+  const selectedDayPersonalRoutines = personalRoutines;
+  const selectedDayGroupRoutines = groupRoutines;
 
   const dayCompletionStatus = weekData.map((item) => {
     const dayLabel = item.day;
@@ -300,6 +298,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const handleDateSelect = (date: Date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
+    console.log('🔍 날짜 선택됨:', {
+      oldDate: selectedDate.toISOString().split('T')[0],
+      newDate: newDate.toISOString().split('T')[0],
+      oldDay: selectedDay,
+      newDay: ['일', '월', '화', '수', '목', '금', '토'][newDate.getDay()],
+    });
     setSelectedDate(newDate);
   };
 

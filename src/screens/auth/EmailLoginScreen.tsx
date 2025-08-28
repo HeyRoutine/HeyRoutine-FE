@@ -77,6 +77,8 @@ const EmailLoginScreen = ({ navigation }: any) => {
               email: email,
               profileImage: undefined,
               points: 0,
+              isMarketing: false, // 기본값
+              accountCertificationStatus: false, // 기본값
             });
 
             // 로그인 상태 변경

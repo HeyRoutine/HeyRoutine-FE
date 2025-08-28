@@ -28,6 +28,7 @@ import {
   SendAccountCodeResponse,
   VerifyAccountCodeRequest,
   VerifyAccountCodeResponse,
+  DeleteUserResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -111,28 +112,10 @@ export const reissue = async (
 export const mypageResetPassword = async (
   data: MyPageResetPasswordRequest,
 ): Promise<ApiResponse<MyPageResetPasswordResponse>> => {
-  const response = await apiClient.patch<
+  const response = await apiClient.post<
     ApiResponse<MyPageResetPasswordResponse>
-  >(
-    `/api/v1/user/mypage-password?password=${encodeURIComponent(data.password)}`,
-  );
-
-  // 일부 서버가 200/204에서 본문을 비우는 경우 대비
-  if (
-    response?.data &&
-    typeof response.data === 'object' &&
-    'isSuccess' in response.data
-  ) {
-    return response.data;
-  }
-
-  const isOk = response?.status >= 200 && response?.status < 300;
-  return {
-    isSuccess: isOk,
-    code: isOk ? 'COMMON200' : 'COMMON500',
-    message: isOk ? '성공입니다.' : '실패했습니다.',
-    result: isOk ? '비밀번호가 변경되었습니다' : '비밀번호 변경 실패',
-  };
+  >('/api/v1/user/mypage-password', data);
+  return response.data;
 };
 
 // 비밀번호 찾기 후 재설정
@@ -250,6 +233,16 @@ export const verifyAccountCode = async (
   const response = await apiClient.post<ApiResponse<VerifyAccountCodeResponse>>(
     '/api/v1/user/accountCode/verify',
     data,
+  );
+  return response.data;
+};
+
+// 회원탈퇴
+export const deleteUser = async (): Promise<
+  ApiResponse<DeleteUserResponse>
+> => {
+  const response = await apiClient.delete<ApiResponse<DeleteUserResponse>>(
+    '/api/v1/user/delete',
   );
   return response.data;
 };

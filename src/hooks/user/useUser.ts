@@ -17,6 +17,7 @@ import {
   updateProfileImage,
   sendAccountCode,
   verifyAccountCode,
+  deleteUser,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -131,9 +132,11 @@ export const useMyPageResetPassword = () => {
     onSuccess: (data) => {
       // 비밀번호 재설정 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['user'] });
-
-      // TODO: 비밀번호 재설정 성공 후 처리 로직 추가
-      // 예: 성공 메시지 표시, 마이페이지로 이동 등
+      console.log('🔍 비밀번호 변경 성공:', data);
+    },
+    onError: (error: any) => {
+      console.error('🔍 비밀번호 변경 실패:', error);
+      // 에러는 컴포넌트에서 handleApiError로 처리
     },
   });
 };
@@ -228,6 +231,7 @@ export const useMyInfo = () => {
     enabled: !!(accessToken && refreshToken), // 두 토큰이 모두 있을 때만 실행
     staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
     gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    retry: false, // 재시도 안함 (회원탈퇴 후 에러 방지)
   });
 };
 
@@ -241,9 +245,6 @@ export const useUpdateIsMarketing = () => {
       // 마케팅 수신동의 업데이트 성공 시 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['myInfo'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
-
-      // TODO: 마케팅 수신동의 업데이트 성공 후 처리 로직 추가
-      // 예: 성공 메시지 표시 등
     },
   });
 };
@@ -294,6 +295,27 @@ export const useVerifyAccountCode = () => {
 
       // TODO: 계좌 인증번호 확인 성공 후 처리 로직 추가
       // 예: 성공 메시지 표시, 계좌 등록 완료 등
+    },
+  });
+};
+
+// 회원탈퇴 훅
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteUser(),
+    onSuccess: (data) => {
+      console.log('🔍 회원탈퇴 성공:', data);
+      // 회원탈퇴 성공 시 모든 캐시 초기화
+      queryClient.clear();
+
+      // 토큰 제거하여 myInfo API 호출 방지
+      const { logout } = useAuthStore.getState();
+      logout();
+    },
+    onError: (error) => {
+      console.error('🔍 회원탈퇴 실패:', error);
     },
   });
 };

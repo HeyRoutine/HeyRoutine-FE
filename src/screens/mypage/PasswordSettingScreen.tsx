@@ -81,7 +81,11 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
     setApiErrorMessage(''); // API 에러 메시지 초기화
 
     try {
-      const response = await resetPasswordMutate({ password: newPassword });
+      const response = await resetPasswordMutate({
+        exsPassword: currentPassword,
+        newPassword: newPassword,
+      });
+
       if (response.isSuccess) {
         navigation.replace('Result', {
           type: 'success',
@@ -90,17 +94,16 @@ const PasswordSettingScreen = ({ navigation }: IPasswordSettingScreenProps) => {
           nextScreen: 'ProfileEdit',
           onSuccess: () => {},
         });
-      } else {
-        // API에서 실패 응답을 받은 경우 - Result 화면으로 이동하지 않고 에러메시지만 표시
-        setApiErrorMessage('현재 비밀번호가 기존과 일치하지 않습니다.');
       }
     } catch (error: any) {
-      // 공통 에러 핸들러를 사용하여 400번대와 500번대 에러 구분 처리
+      // 공통 에러 핸들러를 사용하여 에러 처리
       const errorMessage = handleApiError(error, false); // Alert 표시하지 않음
 
-      // 400번 에러만 현재 비밀번호 불일치로 처리
-      if (error?.response?.status === 400) {
-        setApiErrorMessage('현재 비밀번호가 기존과 일치하지 않습니다.');
+      // 에러 코드에 따른 메시지 처리
+      if (error?.response?.data?.code === 'PASSWORD4000') {
+        setApiErrorMessage('현재 비밀번호가 맞지 않습니다.');
+      } else if (error?.response?.data?.code === 'PASSWORD4090') {
+        setApiErrorMessage('기존 비밀번호와 동일합니다.');
       } else {
         // 그 외 모든 에러는 서버 오류 메시지 표시
         setApiErrorMessage(errorMessage);

@@ -208,16 +208,17 @@ export interface SignUpResponse {
 // 사용자 정보 응답 타입
 export interface MyInfoResponse {
   nickname: string;
-  profileImage: string;
-  bankAccount: string;
-  point: number;
+  profileImage?: string;
+  userImage?: string | null;
+  bankAccount?: string;
+  point?: number;
   isMarketing: boolean;
   accountCertificationStatus: boolean;
 }
 
 // 마케팅 수신동의 업데이트 요청 타입
 export interface UpdateIsMarketingRequest {
-  isMarketing: boolean;
+  status: boolean;
 }
 
 // 마케팅 수신동의 업데이트 응답 타입
@@ -240,13 +241,14 @@ export interface ReissueRequest {
 // 토큰 재발급 응답 타입 (로그인 응답과 동일)
 export type ReissueResponse = SignInResponse;
 
-// 마이페이지 비밀번호 재설정 요청 타입 (Query String 사용)
+// 마이페이지 비밀번호 재설정 요청 타입
 export interface MyPageResetPasswordRequest {
-  password: string; // 새로운 비밀번호
+  exsPassword: string; // 기존 비밀번호
+  newPassword: string; // 새로운 비밀번호
 }
 
 // 마이페이지 비밀번호 재설정 응답 타입
-export type MyPageResetPasswordResponse = string; // "비밀번호가 변경되었습니다"
+export type MyPageResetPasswordResponse = string; // "비밀번호 변경 완료"
 
 // 비밀번호 찾기 후 재설정 요청 타입
 export interface ResetPasswordRequest {
@@ -291,12 +293,6 @@ export interface AuthCheckRequest {
 // 인증번호 확인 응답 타입
 export type AuthCheckResponse = string; // UUID 형식의 문자열
 
-// 내 정보 조회 응답 타입
-export interface MyInfoResponse {
-  nickname: string;
-  userImage: string | null;
-}
-
 // 계좌 인증번호 전송 요청 타입
 export interface SendAccountCodeRequest {
   account: string;
@@ -312,6 +308,9 @@ export interface VerifyAccountCodeRequest {
 
 // 계좌 인증번호 인증 응답 타입
 export type VerifyAccountCodeResponse = string; // "인증 성공"
+
+// 회원탈퇴 응답 타입
+export type DeleteUserResponse = string; // "회원탈퇴 성공"
 
 // FCM 토큰 저장 요청 타입
 export interface SaveFcmTokenRequest {
