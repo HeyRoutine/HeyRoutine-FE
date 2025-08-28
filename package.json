@@ -12,6 +12,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
+    "@lottiefiles/dotlottie-react": "^0.6.5",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@quidone/react-native-wheel-picker": "^1.5.2",
     "@react-native-async-storage/async-storage": "2.1.2",
