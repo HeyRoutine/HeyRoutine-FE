@@ -189,6 +189,7 @@ const Description = styled.Text`
   font-weight: 400;
   color: #98989e;
   margin-bottom: 4px;
+  flex: 1;
 `;
 
 const TimeText = styled.Text`

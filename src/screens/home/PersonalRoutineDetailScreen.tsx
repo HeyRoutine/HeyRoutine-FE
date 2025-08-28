@@ -13,6 +13,7 @@ import {
   DayOfWeekSelector,
   EmojiPickerModal,
   RoutineSuggestionModal,
+  DeleteRoutineModal,
 } from '../../components/domain/routine';
 import {
   useRoutineTemplates,
@@ -61,8 +62,7 @@ const PersonalRoutineDetailScreen = ({
   const [currentText, setCurrentText] = useState<string>('');
   const [moreSheetVisible, setMoreSheetVisible] = useState(false);
 
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
-  const [deleteSuccessVisible, setDeleteSuccessVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -101,7 +101,7 @@ const PersonalRoutineDetailScreen = ({
 
   const handleDeleteRoutine = () => {
     closeMoreSheet();
-    setDeleteConfirmVisible(true);
+    setDeleteModalVisible(true);
   };
 
   const handleConfirmDelete = () => {
@@ -111,21 +111,17 @@ const PersonalRoutineDetailScreen = ({
 
     deleteRoutine(routineData.id.toString(), {
       onSuccess: () => {
-        setDeleteConfirmVisible(false);
-        setDeleteSuccessVisible(true);
+        setDeleteModalVisible(false);
+        navigation.goBack();
       },
       onError: (error) => {
-        // Alert 제거 - 토스트나 다른 UI 컴포넌트로 대체 예정
         console.log('삭제 실패: 루틴 삭제에 실패했습니다.');
       },
     });
   };
 
-  const closeDeleteConfirm = () => setDeleteConfirmVisible(false);
-
-  const closeDeleteSuccess = () => {
-    setDeleteSuccessVisible(false);
-    navigation.goBack();
+  const handleCancelDelete = () => {
+    setDeleteModalVisible(false);
   };
 
   useEffect(() => {
@@ -627,36 +623,13 @@ const PersonalRoutineDetailScreen = ({
         </MoreSheetContainer>
       </BottomSheetDialog>
 
-      {/* 루틴 삭제 확인 모달 */}
-      <BottomSheetDialog
-        visible={deleteConfirmVisible}
-        onRequestClose={closeDeleteConfirm}
-      >
-        <SheetTitle>루틴을 삭제하시겠습니까?</SheetTitle>
-        <ButtonRow>
-          <ButtonWrapper>
-            <CancelButton onPress={closeDeleteConfirm}>
-              <CancelText>취소</CancelText>
-            </CancelButton>
-          </ButtonWrapper>
-          <ButtonWrapper>
-            <ConfirmButton onPress={handleConfirmDelete}>
-              <ConfirmText>삭제</ConfirmText>
-            </ConfirmButton>
-          </ButtonWrapper>
-        </ButtonRow>
-      </BottomSheetDialog>
-
-      {/* 루틴 삭제 성공 모달 */}
-      <BottomSheetDialog
-        visible={deleteSuccessVisible}
-        onRequestClose={closeDeleteSuccess}
-      >
-        <SheetTitle>루틴이 삭제되었습니다.</SheetTitle>
-        <SheetActions>
-          <CustomButton text="확인" onPress={closeDeleteSuccess} />
-        </SheetActions>
-      </BottomSheetDialog>
+      <DeleteRoutineModal
+        visible={deleteModalVisible}
+        onRequestClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        routineName={routineData?.name || routineData?.title}
+        isDeleting={false}
+      />
     </Container>
   );
 };
@@ -722,78 +695,6 @@ const TitleContainer = styled.View`
 
 const MoreIconButton = styled.TouchableOpacity`
   padding: 4px;
-`;
-
-const SheetTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
-  font-size: 20px;
-  color: ${theme.colors.gray900};
-  text-align: center;
-  margin-bottom: 8px;
-`;
-
-const SheetSubtitle = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  margin-bottom: 24px;
-`;
-
-const SheetActions = styled.View`
-  gap: 12px;
-`;
-
-const ModalTitle = styled.Text`
-  font-family: ${theme.fonts.Bold};
-  font-size: 18px;
-  color: ${theme.colors.gray900};
-  text-align: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
-`;
-
-const ModalSubtitle = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  text-align: center;
-  margin-bottom: 36px;
-`;
-
-const ButtonRow = styled.View`
-  flex-direction: row;
-  gap: 12px;
-`;
-
-const ButtonWrapper = styled.View`
-  flex: 1;
-`;
-
-const CancelButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.gray200};
-  border-radius: 12px;
-  padding: 18px;
-  align-items: center;
-`;
-
-const CancelText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.gray700};
-`;
-
-const ConfirmButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
-  border-radius: 12px;
-  padding: 14px;
-  align-items: center;
-`;
-
-const ConfirmText = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 16px;
-  color: ${theme.colors.white};
 `;
 
 const MoreSheetContainer = styled.View`
