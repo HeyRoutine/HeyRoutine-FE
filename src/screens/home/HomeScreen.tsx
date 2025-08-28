@@ -287,7 +287,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleAICreateRoutine = () => {
     setShowAddRoutineModal(false);
-    navigation.navigate('CreateRoutine');
+    navigation.navigate('AIRecommendation');
   };
 
   const handleManualCreateRoutine = () => {

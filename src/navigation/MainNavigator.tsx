@@ -28,6 +28,7 @@ const MainNavigator = () => {
     'CreateRoutineDetail',
     'CreateGroupRoutine',
     'CreateGroupRoutineDetail',
+    'AIRecommendation',
   ];
 
   return (
