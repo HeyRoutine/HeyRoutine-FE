@@ -550,15 +550,17 @@ export type UpdatePersonalRoutineListResponse = EmptyResponse;
 // 개인루틴 리스트 삭제 응답 타입
 export type DeletePersonalRoutineListResponse = EmptyResponse;
 
-// 개인루틴 리스트 아이템 타입
+// 개인루틴 리스트 아이템 타입 (새로운 API 스펙)
 export interface PersonalRoutineListItem {
   id: number;
-  title: string;
-  startTime: string; // HH:mm:ss 형식
-  endTime: string; // HH:mm:ss 형식
   routineType: RoutineType;
-  dayTypes: DayType[]; // ['월', '화', '수'] 형식
-  percent?: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
+  title: string;
+  startTime: string; // HH:mm 형식
+  endTime: string; // HH:mm 형식
+  routineNums: number;
+  percent: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
+  dayOfWeek: DayType[]; // ['월', '화', '수'] 형식
+  successDay: DayType[]; // 이번 주 성공한 요일들
 }
 
 // 개인루틴 리스트 조회 응답 타입
@@ -725,9 +727,4 @@ export interface CategoryAnalysisResponse
   extends ApiResponse<CategoryAnalysisResult> {}
 
 // 이번 주 소비패턴 분석 API 타입
-export interface WeeklySpendingAnalysisResult {
-  result: string[];
-}
-
-export interface WeeklySpendingAnalysisResponse
-  extends ApiResponse<WeeklySpendingAnalysisResult> {}
+export type WeeklySpendingAnalysisResponse = ApiResponse<string[]>;

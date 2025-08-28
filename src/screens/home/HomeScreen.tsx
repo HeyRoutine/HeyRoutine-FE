@@ -169,8 +169,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         progress: item.percent || 0,
         title: item.title,
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-        selectedDays: item.dayTypes,
-        completedDays: [],
+        selectedDays: item.dayOfWeek,
+        completedDays: item.successDay || [],
       })),
     ) || [];
 
@@ -228,11 +228,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     const dayLabel = item.day;
 
     const dayPersonalRoutines = personalRoutines.filter((routine) =>
-      routine.selectedDays.includes(dayLabel),
+      routine.selectedDays?.includes(dayLabel),
     );
 
     const dayGroupRoutines = groupRoutines.filter((routine) =>
-      routine.selectedDays.includes(dayLabel),
+      routine.selectedDays?.includes(dayLabel),
     );
 
     const hasRoutines =
