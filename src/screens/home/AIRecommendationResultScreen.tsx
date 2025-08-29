@@ -1,95 +1,93 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { ScrollView, Text } from 'react-native';
 import { theme } from '../../styles/theme';
-import Header from '../../components/common/Header';
+
 import CustomButton from '../../components/common/CustomButton';
 
 interface AIRecommendationResultScreenProps {
   navigation: any;
+  route: any;
 }
 
 const AIRecommendationResultScreen = ({
   navigation,
+  route,
 }: AIRecommendationResultScreenProps) => {
-  // 임시 결과 데이터 (나중에 API 응답으로 교체)
-  const resultData = {
-    title: 'AI 추천 루틴',
-    description: '설문 결과를 바탕으로 생성된 맞춤 루틴입니다.',
+  // 라우트 파라미터에서 결과 데이터 받기
+  const resultData = route.params?.resultData || {
     routines: [
       {
-        id: 1,
-        title: '아침 루틴',
-        description: '효율적인 출근 준비를 위한 루틴',
-        time: '07:00 - 08:00',
-        category: '생활',
-      },
-      {
-        id: 2,
-        title: '운동 루틴',
-        description: '규칙적인 운동 습관을 위한 루틴',
-        time: '18:00 - 19:00',
+        id: '1',
+        title: '아침 운동 루틴',
         category: '운동',
+        timeRange: '07:00 - 08:00',
+        days: ['월', '화', '수', '목', '금'],
+        description: '하루를 시작하는 아침 운동 루틴입니다.',
       },
       {
-        id: 3,
-        title: '저녁 루틴',
-        description: '규칙적인 수면을 위한 루틴',
-        time: '22:00 - 23:00',
+        id: '2',
+        title: '저녁 정리 루틴',
         category: '생활',
+        timeRange: '21:00 - 22:00',
+        days: ['월', '화', '수', '목', '금'],
+        description: '하루를 마무리하는 정리 루틴입니다.',
       },
     ],
   };
 
-  const handleGoHome = () => {
-    navigation.navigate('HomeMain');
-  };
+  console.log('AI 추천 결과 데이터:', resultData);
 
-  const handleCreateRoutine = () => {
-    // 추천받은 루틴을 개인 루틴으로 추가하는 로직
-    console.log('루틴 생성 요청');
+  const handleComplete = () => {
+    // 홈 화면으로 이동
     navigation.navigate('HomeMain');
   };
 
   return (
     <Container>
-      <Header title="AI 추천 결과" onBackPress={() => navigation.goBack()} />
+      <Content>
+        <Title>AI가 추천한 루틴</Title>
+        <Subtitle>설문 결과를 바탕으로 맞춤 루틴을 생성했어요</Subtitle>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <TitleContainer>
-          <Title>{resultData.title}</Title>
-          <Description>{resultData.description}</Description>
-        </TitleContainer>
-
-        <RoutineList>
-          {resultData.routines.map((routine) => (
-            <RoutineCard key={routine.id}>
-              <RoutineHeader>
+        <ResultList>
+          {resultData.routines.map((routine: any, index: number) => (
+            <ResultCard key={routine.id}>
+              <CardHeader>
                 <RoutineTitle>{routine.title}</RoutineTitle>
-                <RoutineCategory>{routine.category}</RoutineCategory>
-              </RoutineHeader>
-              <RoutineDescription>{routine.description}</RoutineDescription>
-              <RoutineTime>{routine.time}</RoutineTime>
-            </RoutineCard>
-          ))}
-        </RoutineList>
+                <CategoryTag>
+                  <CategoryTagText>{routine.category}</CategoryTagText>
+                </CategoryTag>
+              </CardHeader>
 
-        <ButtonContainer>
-          <CustomButton
-            text="홈으로 돌아가기"
-            onPress={handleGoHome}
-            backgroundColor={theme.colors.gray300}
-            textColor={theme.colors.gray700}
-          />
-          <CustomButton
-            text="루틴 생성하기"
-            onPress={handleCreateRoutine}
-            backgroundColor={theme.colors.primary}
-            textColor={theme.colors.white}
-          />
-        </ButtonContainer>
-      </ScrollView>
+              <RoutineInfo>
+                <InfoRow>
+                  <InfoLabel>시간:</InfoLabel>
+                  <InfoValue>{routine.timeRange}</InfoValue>
+                </InfoRow>
+
+                <InfoRow>
+                  <InfoLabel>요일:</InfoLabel>
+                  <InfoValue>{routine.days.join(', ')}</InfoValue>
+                </InfoRow>
+
+                <InfoRow>
+                  <InfoLabel>설명:</InfoLabel>
+                  <InfoValue>{routine.description}</InfoValue>
+                </InfoRow>
+              </RoutineInfo>
+            </ResultCard>
+          ))}
+        </ResultList>
+      </Content>
+
+      <ButtonWrapper>
+        <CustomButton
+          text="완료"
+          onPress={handleComplete}
+          backgroundColor={theme.colors.primary}
+          textColor={theme.colors.white}
+        />
+      </ButtonWrapper>
     </Container>
   );
 };
@@ -101,69 +99,87 @@ const Container = styled(SafeAreaView)`
   background-color: ${theme.colors.white};
 `;
 
-const TitleContainer = styled.View`
-  margin-bottom: 30px;
+const Content = styled.View`
+  flex: 1;
+  padding: 24px;
 `;
 
 const Title = styled.Text`
-  font-family: ${theme.fonts.Bold};
   font-size: 24px;
+  font-family: ${theme.fonts.Bold};
   color: ${theme.colors.gray900};
   margin-bottom: 8px;
 `;
 
-const Description = styled.Text`
-  font-family: ${theme.fonts.Regular};
+const Subtitle = styled.Text`
   font-size: 16px;
+  font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
+  margin-bottom: 32px;
 `;
 
-const RoutineList = styled.View`
-  margin-bottom: 30px;
+const ResultList = styled.View`
+  flex: 1;
 `;
 
-const RoutineCard = styled.View`
+const ResultCard = styled.View`
   background-color: ${theme.colors.gray50};
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  border: 1px solid ${theme.colors.gray200};
 `;
 
-const RoutineHeader = styled.View`
+const CardHeader = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `;
 
 const RoutineTitle = styled.Text`
-  font-family: ${theme.fonts.SemiBold};
   font-size: 18px;
+  font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
+  flex: 1;
 `;
 
-const RoutineCategory = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${theme.colors.primary};
-  background-color: ${theme.colors.primary}20;
+const CategoryTag = styled.View`
+  background-color: ${theme.colors.primary};
   padding: 4px 8px;
   border-radius: 6px;
 `;
 
-const RoutineDescription = styled.Text`
-  font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray600};
-  margin-bottom: 8px;
-`;
-
-const RoutineTime = styled.Text`
+const CategoryTagText = styled.Text`
+  font-size: 12px;
   font-family: ${theme.fonts.Medium};
-  font-size: 14px;
-  color: ${theme.colors.gray700};
+  color: ${theme.colors.white};
 `;
 
-const ButtonContainer = styled.View`
-  gap: 12px;
+const RoutineInfo = styled.View`
+  gap: 8px;
+`;
+
+const InfoRow = styled.View`
+  flex-direction: row;
+  align-items: flex-start;
+`;
+
+const InfoLabel = styled.Text`
+  font-size: 14px;
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.gray700};
+  width: 40px;
+  margin-right: 8px;
+`;
+
+const InfoValue = styled.Text`
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray800};
+  flex: 1;
+`;
+
+const ButtonWrapper = styled.View`
+  padding: 24px;
 `;

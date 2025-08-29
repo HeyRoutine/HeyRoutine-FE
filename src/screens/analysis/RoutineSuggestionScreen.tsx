@@ -14,13 +14,7 @@ import { theme } from '../../styles/theme';
 import { useRecommendDaily } from '../../hooks/analysis';
 
 const robotIcon = require('../../assets/images/robot.png');
-// const characterImg = require('../../assets/images/cute_image.png');
 const characterImg = require('../../assets/images/character_mori.png');
-// 추천 루틴 아이콘 (임시 이미지, 실제 아이콘으로 교체해서 사용하세요)
-// const routineTumblerIcon = require('../../assets/images/tumblr.png');
-const routineTumblerIcon = require('../../assets/images/robot.png');
-// const routineNoSpendIcon = require('../../assets/images/zero_spend.png');
-const routineNoSpendIcon = require('../../assets/images/robot.png');
 
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
@@ -97,7 +91,7 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
           {recommendData?.result?.items?.map((routine, index) => (
             <RoutineItem key={index}>
               <IconSquare color={index % 2 === 0 ? '#FFE4B5' : '#D3F0E2'}>
-                <RoutineIcon source={routineTumblerIcon} resizeMode="contain" />
+                <RoutineIcon source={RoutineIcon} resizeMode="contain" />
               </IconSquare>
               <RoutineText>{routine}</RoutineText>
             </RoutineItem>

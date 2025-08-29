@@ -42,3 +42,14 @@ export const getMaxStreak = async (): Promise<
   );
   return response.data;
 };
+
+/**
+ * 일일 분석 조회
+ * GET /api/v1/analysis/daily
+ */
+export const getDailyAnalysis = async (): Promise<ApiResponse<any>> => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    '/api/v1/analysis/daily',
+  );
+  return response.data;
+};

@@ -1,5 +1,5 @@
 import apiClient from '../client';
-import { SurveyRequest, SurveyResponse } from '../../types/api';
+import { SurveyRequest, SurveyResponse, ApiResponse } from '../../types/api';
 
 export const postSurvey = async (
   data: SurveyRequest,
@@ -8,5 +8,10 @@ export const postSurvey = async (
     '/api/v1/user/survey',
     data,
   );
+  return response.data;
+};
+
+export const getSurvey = async (): Promise<ApiResponse<any>> => {
+  const response = await apiClient.get<ApiResponse<any>>('/api/v1/user/survey');
   return response.data;
 };

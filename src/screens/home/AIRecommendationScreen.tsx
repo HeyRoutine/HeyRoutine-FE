@@ -7,6 +7,8 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { useSurvey } from '../../hooks/user';
+import { getSurvey } from '../../api/user/survey';
+import { getDailyAnalysis } from '../../api/analysis';
 
 interface InterestItem {
   id: string;
@@ -128,7 +130,7 @@ const AIRecommendationScreen = ({
   };
 
   // 완료 처리
-  const handleComplete = () => {
+  const handleComplete = async () => {
     // 모든 페이지의 선택된 항목들을 수집
     const allSelectedItems = Object.values(selectedItemsByPage).flat();
     console.log('선택된 항목들:', allSelectedItems);
@@ -149,33 +151,40 @@ const AIRecommendationScreen = ({
 
     console.log('설문 데이터:', surveyList);
 
-    // 설문 API 요청
-    submitSurvey(
-      { surveyList },
-      {
-        onSuccess: (data) => {
-          console.log('설문 제출 성공:', data);
-          // AI 분석 로딩 화면으로 이동
-          navigation.navigate('Loading', {
-            title: 'AI 분석 중',
-            description: '설문 결과를 바탕으로 맞춤 루틴을 생성하고 있어요',
-            statusItems: [
-              { text: '설문 데이터 분석 중...' },
-              { text: '사용자 패턴 분석 중...' },
-              { text: 'AI 추천 알고리즘 실행 중...' },
-              { text: '맞춤 루틴 생성 중...' },
-              { text: '완료!' },
-            ],
-            nextScreen: 'AIRecommendationResult',
-            duration: 5000,
-          });
-        },
-        onError: (error) => {
-          console.error('설문 제출 실패:', error);
-          // 에러 처리 (나중에 토스트 메시지 등 추가)
-        },
-      },
-    );
+    try {
+      // 설문 제출
+      const surveyResult = await submitSurvey({ surveyList });
+      console.log('설문 제출 성공:', surveyResult);
+
+      // 1초 대기 후 survey GET 요청
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await getSurvey();
+      console.log('Survey GET 성공');
+
+      // 1초 대기 후 daily analysis GET 요청
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const analysisResult = await getDailyAnalysis();
+      console.log('Daily Analysis GET 성공:', analysisResult);
+
+      // AI 분석 로딩 화면으로 이동 (결과 데이터 포함)
+      navigation.navigate('Loading', {
+        title: 'AI 분석 중',
+        description: '설문 결과를 바탕으로 맞춤 루틴을 생성하고 있어요',
+        statusItems: [
+          { text: '설문 데이터 분석 중...' },
+          { text: '사용자 패턴 분석 중...' },
+          { text: 'AI 추천 알고리즘 실행 중...' },
+          { text: '맞춤 루틴 생성 중...' },
+          { text: '완료!' },
+        ],
+        nextScreen: 'AIRecommendationResult',
+        duration: 3000,
+        resultData: analysisResult?.result || null,
+      });
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+      // 에러 처리 (나중에 토스트 메시지 등 추가)
+    }
   };
 
   // 뒤로가기

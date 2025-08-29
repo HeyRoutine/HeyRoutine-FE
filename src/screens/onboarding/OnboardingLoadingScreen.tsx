@@ -87,7 +87,7 @@ const OnboardingLoadingScreen = ({
         // nextScreen이 없으면 로그인 상태로 변경하여 메인 화면으로 이동
         setLoggedIn(true);
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
       clearInterval(progressInterval);

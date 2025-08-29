@@ -370,7 +370,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           <CardCol>
             <RankBoardCard
               onPress={handleRankBannerPress}
-              iconSource={require('../../assets/images/speaker.png')}
+              iconSource={require('../../assets/images/medal.png')}
             />
           </CardCol>
         </CardsRow>

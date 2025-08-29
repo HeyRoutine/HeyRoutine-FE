@@ -12,6 +12,7 @@ import GroupRoutineDetailScreen from '../../screens/home/GroupRoutineDetailScree
 import CreateGroupRoutineScreen from '../../screens/home/CreateGroupRoutineScreen';
 import CreateGroupRoutineDetailScreen from '../../screens/home/CreateGroupRoutineDetailScreen';
 import AIRecommendationScreen from '../../screens/home/AIRecommendationScreen';
+import AIRecommendationResultScreen from '../../screens/home/AIRecommendationResultScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
 import ActiveRoutineScreen from '../../screens/home/ActiveRoutineScreen';
 import ResultScreen from '../../screens/common/ResultScreen';
@@ -52,6 +53,10 @@ const HomeStack = () => {
       <Stack.Screen
         name="AIRecommendation"
         component={AIRecommendationScreen}
+      />
+      <Stack.Screen
+        name="AIRecommendationResult"
+        component={AIRecommendationResultScreen}
       />
       <Stack.Screen name="ActiveRoutine" component={ActiveRoutineScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />

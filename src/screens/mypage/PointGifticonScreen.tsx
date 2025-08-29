@@ -93,12 +93,12 @@ const CATEGORY_MAP: Record<
 };
 
 // 현재는 예시 이미지로 party_popper.png를 넣어두었습니다. 실제 아이콘 이미지를 교체하여 사용하세요.
-const iconAll = require('../../assets/images/total_food.png');
-const iconCafe = require('../../assets/images/cafe.png');
-const iconConvenience = require('../../assets/images/convenience_store.png');
-const iconFastfood = require('../../assets/images/fast_food.png');
-const iconDining = require('../../assets/images/restaurant.png');
-const iconBakery = require('../../assets/images/bakery.png');
+const iconAll = require('../../assets/images/gifticon/total_food.png');
+const iconCafe = require('../../assets/images/gifticon/cafe.png');
+const iconConvenience = require('../../assets/images/gifticon/convenience_store.png');
+const iconFastfood = require('../../assets/images/gifticon/fast_food.png');
+const iconDining = require('../../assets/images/gifticon/restaurant.png');
+const iconBakery = require('../../assets/images/gifticon/bakery.png');
 
 const CATEGORIES: CategoryMeta[] = [
   { key: 'all', label: '전체', icon: iconAll },
