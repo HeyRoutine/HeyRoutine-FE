@@ -18,15 +18,14 @@ import {
 } from '../../hooks/analysis';
 import { CategorySpendingItem } from '../../types/api';
 
-// 카테고리 아이콘 이미지 (임시로 동일 이미지 사용, 실제 아이콘으로 교체하세요)
-const iconShopping = require('../../assets/images/robot.png');
-// const iconShopping = require('../../assets/images/shopping.png');
-const iconFood = require('../../assets/images/robot.png');
-// const iconFood = require('../../assets/images/food_cost.png');
-const iconTransport = require('../../assets/images/robot.png');
-// const iconTransport = require('../../assets/images/transportation.png');
-const iconOthers = require('../../assets/images/robot.png');
-// const iconOthers = require('../../assets/images/others.png');
+// 카테고리별 아이콘 이미지
+const iconService = require('../../assets/images/category/service.png');
+const iconEducation = require('../../assets/images/category/education.png');
+const iconRestaurant = require('../../assets/images/category/restaurant.png');
+const iconShopping = require('../../assets/images/category/shopping.png');
+const iconBeauty = require('../../assets/images/category/beauty.png');
+const iconTransportation = require('../../assets/images/category/transportation.png');
+const iconOthers = require('../../assets/images/category/others.png');
 const aiIcon = require('../../assets/images/robot.png');
 
 type CategoryItem = {
@@ -85,6 +84,26 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
 
     const { categorySpendings } = categoryData.result;
 
+    // 카테고리별 아이콘 매칭 함수
+    const getCategoryIcon = (categoryName: string) => {
+      switch (categoryName) {
+        case '서비스':
+          return iconService;
+        case '교육':
+          return iconEducation;
+        case '외식':
+          return iconRestaurant;
+        case '쇼핑':
+          return iconShopping;
+        case '미용':
+          return iconBeauty;
+        case '교통':
+          return iconTransportation;
+        default:
+          return iconOthers;
+      }
+    };
+
     // 상위 3개 카테고리
     const top3Categories = categorySpendings.slice(0, 3).map((item, index) => ({
       id: `category-${index}`,
@@ -92,7 +111,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
       ratio: item.percentage,
       amount: item.amount,
       color: ['#F7D3D3', '#FFE4B5', '#D3D8FF'][index] || '#E6E6E8',
-      icon: [iconShopping, iconFood, iconTransport][index] || iconOthers,
+      icon: getCategoryIcon(item.categoryName),
     }));
 
     // 그 외 4개 카테고리 계산
@@ -107,7 +126,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
 
     top3Categories.push({
       id: 'others',
-      label: '그 외 4개 항목',
+      label: '그 외 3개 항목',
       ratio: Math.max(0, remainingPercentage),
       amount: Math.max(0, remainingAmount),
       color: '#E6E6E8',
@@ -210,9 +229,9 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
               </ProgressWrap>
               <Hint>
                 {categoryData?.result?.comparisonPercentage > 0
-                  ? `평균보다 ${categoryData.result.comparisonPercentage}% 높음`
+                  ? `평균보다 ${categoryData.result.comparisonPercentage.toFixed(1)}% 높음`
                   : categoryData?.result?.comparisonPercentage < 0
-                    ? `평균보다 ${Math.abs(categoryData.result.comparisonPercentage)}% 낮음`
+                    ? `평균보다 ${Math.abs(categoryData.result.comparisonPercentage).toFixed(1)}% 낮음`
                     : '평균과 동일'}
               </Hint>
             </Card>
@@ -226,7 +245,7 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
                   </IconBox>
                   <ColLeft>
                     <Label>{c.label}</Label>
-                    <SubLabel>{c.ratio}%</SubLabel>
+                    <SubLabel>{c.ratio.toFixed(1)}%</SubLabel>
                   </ColLeft>
                   <Amount>{formatWon(c.amount)}</Amount>
                 </CategoryRow>

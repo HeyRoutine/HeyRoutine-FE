@@ -198,7 +198,7 @@ const AIRecommendationScreen = ({
           { text: '완료!' },
         ],
         nextScreen: 'AIRecommendationResult',
-        duration: 3000,
+        duration: 5000,
         resultData: analysisResult?.result || null,
       });
     } catch (error) {

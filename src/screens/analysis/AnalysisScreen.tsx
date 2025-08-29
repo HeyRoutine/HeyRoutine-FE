@@ -255,7 +255,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
           { text: '분석 결과 생성...', status: 'pending' },
         ],
         nextScreen: 'ConsumptionAnalysis',
-        duration: 3000,
+        duration: 5000,
       });
     }
   };
