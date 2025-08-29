@@ -187,12 +187,17 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
     }
   };
 
-  // 계좌번호 표시 로직 (항상 등록됨이 보장됨)
+  // 계좌번호 표시 로직
   const getAccountDisplayText = () => {
     const accountNumber = userInfo?.bankAccount;
-    if (accountNumber) {
-      // 계좌번호가 있으면 전체 표시하고 "신한" 텍스트 추가
+    const isAccountCertified = userInfo?.accountCertificationStatus;
+
+    if (isAccountCertified && accountNumber) {
+      // 계좌 인증이 완료되고 계좌번호가 있으면 전체 표시하고 "신한" 텍스트 추가
       return `${accountNumber} 신한`;
+    } else if (!isAccountCertified) {
+      // 계좌 인증이 완료되지 않았으면 등록 필요 메시지 표시
+      return '계좌 등록이 필요합니다.';
     }
     return '계좌번호를 불러오는 중...';
   };
@@ -212,7 +217,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       type: 'item',
       title: '내 계좌 정보',
       subtitle: getAccountDisplayText(),
-      rightText: userInfo?.accountCertificationStatus ? '인증완료' : '인증하기',
+      rightText: userInfo?.accountCertificationStatus ? '인증완료' : '등록하기',
       rightTextColor: userInfo?.accountCertificationStatus
         ? theme.colors.gray400
         : theme.colors.primary,
