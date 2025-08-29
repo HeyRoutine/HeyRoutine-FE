@@ -36,15 +36,15 @@ LocaleConfig.locales['ko'] = {
     '12월',
   ],
   dayNames: [
-    '일요일',
     '월요일',
     '화요일',
     '수요일',
     '목요일',
     '금요일',
     '토요일',
+    '일요일',
   ],
-  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+  dayNamesShort: ['월', '화', '수', '목', '금', '토', '일'],
   today: '오늘',
 };
 LocaleConfig.defaultLocale = 'ko';
@@ -60,11 +60,13 @@ const DatePickerModal = ({
   onRequestClose,
   onDateSelect,
 }: DatePickerModalProps) => {
-  // 한국 시간대로 현재 날짜 가져오기
+  // 현재 날짜 가져오기
   const getKoreanDate = () => {
     const now = new Date();
-    const koreanTime = new Date(now.getTime() + 9 * 60 * 60 * 1000); // UTC+9
-    return koreanTime.toISOString().split('T')[0];
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const [selectedDate, setSelectedDate] = useState(getKoreanDate());
@@ -72,12 +74,10 @@ const DatePickerModal = ({
   const handleDateSelect = (date: string) => {
     const selectedDate = new Date(date);
     const today = new Date();
-    // 한국 시간대로 오늘 날짜 설정
-    const koreanToday = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-    koreanToday.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
 
-    // 오늘 날짜 이전은 선택 불가
-    if (selectedDate >= koreanToday) {
+    // 오늘 날짜 포함해서 선택 가능
+    if (selectedDate >= today) {
       setSelectedDate(date);
     }
   };

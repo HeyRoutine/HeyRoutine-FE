@@ -46,8 +46,11 @@ const GroupBoardScreen = ({ navigation }: any) => {
     groupRoutinesData?.result?.items?.map((item) => {
       // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
       const today = new Date();
-      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-      const todayDay = dayNames[today.getDay()];
+      const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+      const dayIndex = today.getDay();
+      // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+      const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+      const todayDay = dayNames[mappedIndex];
 
       const completedDays =
         (item.percent || 0) >= 100 && (item.dayOfWeek || []).includes(todayDay)
@@ -145,6 +148,15 @@ const GroupBoardScreen = ({ navigation }: any) => {
               <Divider />
             </>
           )}
+          ListEmptyComponent={() => (
+            <EmptyContainer>
+              <EmptyImage
+                source={require('../../assets/images/character_sol.png')}
+                resizeMode="contain"
+              />
+              <EmptyText>등록된 루틴이 없습니다.</EmptyText>
+            </EmptyContainer>
+          )}
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: 100,
@@ -240,15 +252,22 @@ const ParticipantCount = styled.Text`
 
 const EmptyContainer = styled.View`
   flex: 1;
-  justify-content: center;
   align-items: center;
-  padding: 40px 0;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const EmptyImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+  opacity: 0.3;
 `;
 
 const EmptyText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray500};
+  font-size: 16px;
+  color: ${theme.colors.gray400};
   text-align: center;
 `;
 

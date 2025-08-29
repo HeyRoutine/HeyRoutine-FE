@@ -487,8 +487,11 @@ const PersonalRoutineDetailScreen = ({
 
   const isTodayInSelectedDays = () => {
     const today = new Date();
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayName = dayNames[today.getDay()];
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    const dayIndex = today.getDay();
+    // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+    const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+    const todayName = dayNames[mappedIndex];
     return selectedDays.includes(todayName);
   };
 
@@ -507,6 +510,12 @@ const PersonalRoutineDetailScreen = ({
               <RoutineTime>
                 {formatTimeWithPeriod(routineData?.startTime || '00:00')} -{' '}
                 {formatTimeWithPeriod(routineData?.endTime || '00:00')}
+                {routineData?.routineNums && (
+                  <RoutineCountText>
+                    {' '}
+                    • {routineData.routineNums}개 항목
+                  </RoutineCountText>
+                )}
               </RoutineTime>
             </HeaderLeft>
             {!isEditMode && (
@@ -913,4 +922,11 @@ const AddTemplateText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray600};
+`;
+
+const RoutineCountText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray500};
+  margin-left: 4px;
 `;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { BackHandler } from 'react-native';
+import { BackHandler, Animated } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../styles/theme';
 import ProgressCircle from '../../components/common/ProgressCircle';
@@ -18,10 +18,15 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
     description = '잠시만 기다려주세요',
     statusItems = [],
     nextScreen,
-    duration = 5000,
+    duration = 3000,
+    resultData = null,
+    fromHome = false,
   } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+  const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  const fadeAnimations = statusItems.map(() => new Animated.Value(1));
+  const slideAnimations = statusItems.map(() => new Animated.Value(0));
 
   // 하드웨어 백 버튼 비활성화
   useFocusEffect(
@@ -40,6 +45,23 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
   );
 
   useEffect(() => {
+    // 초기 2개 아이템 표시
+    setVisibleItems([0, 1]);
+
+    // 초기 아이템들을 페이드 인
+    Animated.parallel([
+      Animated.timing(fadeAnimations[0], {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnimations[1], {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     // 실시간 프로그레스 업데이트 (100ms마다)
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -47,7 +69,7 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 2; // 2%씩 증가 (5초에 100% 완료)
+        return prev + 2; // 2%씩 증가 (3초에 100% 완료)
       });
     }, 100);
 
@@ -62,17 +84,21 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
       });
     }, 1000);
 
-    // 5초 후 완료 처리 (100% 완료 후에만)
+    // 3초 후 완료 처리 (100% 완료 후에만)
     const completionTimer = setTimeout(() => {
       setProgress(100);
       setCurrentStep(statusItems.length - 1);
+
       // 100% 완료 후 1초 더 기다린 후 완료
       setTimeout(() => {
         if (nextScreen && navigation && navigation.replace) {
-          navigation.replace(nextScreen);
+          navigation.replace(nextScreen, {
+            resultData: resultData,
+            fromHome: fromHome,
+          });
         }
       }, 1000);
-    }, 5000);
+    }, 3000);
 
     return () => {
       clearInterval(progressInterval);
@@ -81,9 +107,52 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
     };
   }, [statusItems.length, nextScreen, navigation]);
 
+  // 아이템 완료 시 애니메이션 처리
+  useEffect(() => {
+    if (currentStep >= 0 && currentStep < statusItems.length) {
+      // 1초 후 슬라이드 아웃 애니메이션
+      setTimeout(() => {
+        // 현재 아이템을 위로 슬라이드 아웃
+        Animated.timing(slideAnimations[currentStep], {
+          toValue: -50,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          // 슬라이드 완료 후 페이드 아웃
+          Animated.timing(fadeAnimations[currentStep], {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            // 애니메이션 완료 후 완료된 아이템을 visibleItems에서 제거하고 다음 아이템 추가
+            setVisibleItems((prev) => {
+              const newVisible = prev.filter((item) => item !== currentStep);
+              const nextItem = currentStep + 2;
+              if (nextItem < statusItems.length) {
+                // 다음 아이템을 visibleItems에 추가하고 페이드 인 애니메이션 시작
+                setTimeout(() => {
+                  Animated.timing(fadeAnimations[nextItem], {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                  }).start();
+                }, 100);
+                return [...newVisible, nextItem];
+              }
+              return newVisible;
+            });
+          });
+        });
+      }, 1000);
+    }
+  }, [currentStep, statusItems.length]);
+
   const getStatusForItem = (index: number) => {
-    if (index <= currentStep) return 'completed';
-    return 'pending';
+    if (visibleItems.includes(index)) {
+      // 현재 진행 중인 아이템은 pending, 이전 아이템은 completed
+      return index <= currentStep ? 'completed' : 'pending';
+    }
+    return 'hidden';
   };
 
   return (
@@ -99,13 +168,26 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
         </TextSection>
 
         <StatusSection>
-          {statusItems.map((item, index) => (
-            <StatusCard
-              key={index}
-              text={item.text}
-              status={getStatusForItem(index)}
-            />
-          ))}
+          {statusItems.map((item, index) => {
+            const status = getStatusForItem(index);
+            if (status === 'hidden') return null;
+
+            return (
+              <Animated.View
+                key={index}
+                style={{
+                  opacity: fadeAnimations[index],
+                  transform: [
+                    {
+                      translateY: slideAnimations[index],
+                    },
+                  ],
+                }}
+              >
+                <StatusCard text={item.text} status={status} />
+              </Animated.View>
+            );
+          })}
         </StatusSection>
       </Content>
 

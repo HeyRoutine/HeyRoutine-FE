@@ -106,9 +106,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   };
 
   const selectedDateString = selectedDate.toISOString().split('T')[0];
-  const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
-    selectedDate.getDay()
-  ];
+  const dayIndex = selectedDate.getDay();
+  // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+  const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+  const selectedDay = ['월', '화', '수', '목', '금', '토', '일'][mappedIndex];
 
   const {
     data: personalRoutinesData,
@@ -170,8 +171,9 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         progress: item.percent || 0,
         title: item.title,
         timeRange: `${formatTimeForDisplay(item.startTime)} ~ ${formatTimeForDisplay(item.endTime)}`,
-        selectedDays: item.dayTypes,
-        completedDays: [],
+        selectedDays: item.dayOfWeek,
+        completedDays: item.successDay || [],
+        routineNums: item.routineNums || 0,
       })),
     ) || [];
 
@@ -181,8 +183,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         page.result?.items?.map((item) => {
           // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
           const today = new Date();
-          const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-          const todayDay = dayNames[today.getDay()];
+          const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+          const dayIndex = today.getDay();
+          // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+          const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+          const todayDay = dayNames[mappedIndex];
 
           const completedDays =
             (item.percent || 0) >= 100 && item.dayOfWeek.includes(todayDay)
@@ -204,8 +209,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     ) || [];
 
   // 선택된 날짜의 요일
-  const selectedDayLabel = ['일', '월', '화', '수', '목', '금', '토'][
-    selectedDate.getDay()
+  const dayIndex2 = selectedDate.getDay();
+  // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+  const mappedIndex2 = dayIndex2 === 0 ? 6 : dayIndex2 - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+  const selectedDayLabel = ['월', '화', '수', '목', '금', '토', '일'][
+    mappedIndex2
   ];
 
   // API에서 반환된 루틴들을 그대로 사용 (클라이언트 필터링 제거)
@@ -292,7 +300,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleAICreateRoutine = () => {
     setShowAddRoutineModal(false);
-    navigation.navigate('AIRecommendation');
+    navigation.navigate('AIRecommendation', { fromHome: true });
   };
 
   const handleManualCreateRoutine = () => {
@@ -307,7 +315,12 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       oldDate: selectedDate.toISOString().split('T')[0],
       newDate: newDate.toISOString().split('T')[0],
       oldDay: selectedDay,
-      newDay: ['일', '월', '화', '수', '목', '금', '토'][newDate.getDay()],
+      newDay: (() => {
+        const dayIndex = newDate.getDay();
+        // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+        const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+        return ['월', '화', '수', '목', '금', '토', '일'][mappedIndex];
+      })(),
     });
     setSelectedDate(newDate);
   };
@@ -369,7 +382,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           <CardCol>
             <RankBoardCard
               onPress={handleRankBannerPress}
-              iconSource={require('../../assets/images/speaker.png')}
+              iconSource={require('../../assets/images/medal.png')}
             />
           </CardCol>
         </CardsRow>
@@ -399,7 +412,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 timeRange={item.timeRange}
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}
-                routineNums={selectedTab === 1 ? item.routineNums : undefined}
+                routineNums={item.routineNums}
                 onPress={() => handleRoutinePress(item.id)}
               />
             )}

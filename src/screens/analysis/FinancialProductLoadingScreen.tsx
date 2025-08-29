@@ -12,7 +12,7 @@ const FinancialProductLoadingScreen = ({ navigation }: Props) => {
   useEffect(() => {
     const t = setTimeout(() => {
       navigation.replace('FinancialProduct');
-    }, 1500);
+    }, 5000);
     return () => clearTimeout(t);
   }, [navigation]);
 

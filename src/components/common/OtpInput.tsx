@@ -34,7 +34,11 @@ const OtpInput = ({
         setFocusedIndex(index + 1);
       }
     } else {
-      // 삭제 시 이전 입력창으로 포커스 이동
+      // 삭제 시 현재 위치의 값을 지우고 이전 입력창으로 포커스 이동
+      const newCode = code.split('');
+      newCode[index] = '';
+      onChangeText(newCode.join(''));
+
       if (index > 0) {
         inputRefs.current[index - 1]?.focus();
         setFocusedIndex(index - 1);
@@ -43,11 +47,21 @@ const OtpInput = ({
   };
 
   const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && code[index] === '') {
-      // 빈 칸에서 백스페이스 시 이전 입력창으로 이동
-      if (index > 0) {
-        inputRefs.current[index - 1]?.focus();
-        setFocusedIndex(index - 1);
+    if (e.nativeEvent.key === 'Backspace') {
+      if (code[index] === '') {
+        // 빈 칸에서 백스페이스 시 이전 입력창으로 이동하고 값 삭제
+        if (index > 0) {
+          const newCode = code.split('');
+          newCode[index - 1] = '';
+          onChangeText(newCode.join(''));
+          inputRefs.current[index - 1]?.focus();
+          setFocusedIndex(index - 1);
+        }
+      } else {
+        // 값이 있는 칸에서 백스페이스 시 현재 값 삭제
+        const newCode = code.split('');
+        newCode[index] = '';
+        onChangeText(newCode.join(''));
       }
     }
   };

@@ -7,6 +7,7 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import BubbleCard from '../../components/domain/analysis/BubbleCard';
 import FinancialProductCard from '../../components/domain/analysis/FinancialProductCard';
+import { useCategoryAnalysis, useRecommendProduct } from '../../hooks/analysis';
 
 interface FinancialProductScreenProps {
   navigation: any;
@@ -15,6 +16,23 @@ interface FinancialProductScreenProps {
 const FinancialProductScreen = ({
   navigation,
 }: FinancialProductScreenProps) => {
+  // 소비패턴 분석 데이터 가져오기
+  const { data: categoryData } = useCategoryAnalysis();
+
+  // 금융 상품 추천 데이터 가져오기
+  const { data: productData, isLoading, error } = useRecommendProduct();
+
+  // 디버깅용 로그
+  console.log('productData:', JSON.stringify(productData, null, 2));
+
+  // 상위 2개 카테고리 추출
+  const top2Categories = React.useMemo(() => {
+    if (!categoryData?.result?.categorySpendings) {
+      return [];
+    }
+    return categoryData.result.categorySpendings.slice(0, 2);
+  }, [categoryData]);
+
   // 하드웨어 백 버튼 처리
   useFocusEffect(
     React.useCallback(() => {
@@ -49,8 +67,23 @@ const FinancialProductScreen = ({
             direction="top"
             content={
               <>
-                사용자에게는 <HighlightText>식비</HighlightText>와{' '}
-                <HighlightText>여행</HighlightText>의 소비가 많아요!
+                사용자에게는{' '}
+                {top2Categories.length > 0 && (
+                  <>
+                    <HighlightText>
+                      {top2Categories[0].categoryName}
+                    </HighlightText>
+                    {top2Categories.length > 1 && (
+                      <>
+                        와{' '}
+                        <HighlightText>
+                          {top2Categories[1].categoryName}
+                        </HighlightText>
+                      </>
+                    )}
+                  </>
+                )}
+                의 소비가 많아요!
                 {'\n'}그래서 아래 통장을 추천드려요.
               </>
             }
@@ -58,32 +91,19 @@ const FinancialProductScreen = ({
         </BotMessageSection>
 
         <ProductSection showsVerticalScrollIndicator={false}>
-          <FinancialProductCard
-            title="신한 땡겨요페이 통장"
-            features={['하루만 맡겨도 이자제공', '12,000원 쿠폰 제공']}
-            maxInterestRate="최고 2.5 %"
-            minInterestRate="최저 0.1 %"
-            hashtags={['#땡겨요 쿠폰', '#최고 연이율 2.5%']}
-          />
+          {isLoading && <LoadingText>금융 상품을 불러오는 중...</LoadingText>}
 
-          <FinancialProductCard
-            title="SOL글로벌 통장 저축예금"
-            features={[
-              '해외 송금 환율 및 수수료 할인 50%',
-              'ATM인출 수수료도 면제..!',
-            ]}
-            maxInterestRate="최고 2.5 %"
-            minInterestRate="최저 0.5 %"
-            hashtags={['#해외송금환율50%', '#해외송금수수료50%']}
-          />
-          {/* 카드를 더 추가해도 잘립니다. */}
-          <FinancialProductCard
-            title="추가 카드 예시"
-            features={['특징 1', '특징 2']}
-            maxInterestRate="최고 3.0 %"
-            minInterestRate="최저 1.0 %"
-            hashtags={['#예시태그1', '#예시태그2']}
-          />
+          {error && <ErrorText>금융 상품을 불러오는데 실패했습니다.</ErrorText>}
+
+          {productData?.result?.map((product, index) => (
+            <FinancialProductCard
+              key={index}
+              title={product.bankName}
+              features={[product.accountDescription]}
+              interestRate={`${product.interestRate}%`}
+              hashtags={[`#${product.accountTypeName}`]}
+            />
+          ))}
         </ProductSection>
       </Content>
     </Container>
@@ -116,4 +136,18 @@ const HighlightText = styled.Text`
 const ProductSection = styled.ScrollView`
   gap: 16px;
   /* margin-top: 24px; */
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.gray600};
+  text-align: center;
+  padding: 20px;
+`;
+
+const ErrorText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.error};
+  text-align: center;
+  padding: 20px;
 `;

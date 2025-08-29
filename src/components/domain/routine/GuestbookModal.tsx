@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Dimensions, FlatList } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Swipeable } from 'react-native-gesture-handler';
 
 import styled from 'styled-components/native';
 import { theme } from '../../../styles/theme';
 import {
   useGroupGuestbooks,
   useCreateGroupGuestbook,
-  useDeleteGroupGuestbook,
 } from '../../../hooks/routine/group/useGroupRoutines';
 
 interface GuestbookModalProps {
@@ -25,7 +23,6 @@ const GuestbookModal = ({
   groupRoutineListId,
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
-  const swipeableRefs = useRef<{ [key: number]: Swipeable | null }>({});
   const flatListRef = useRef<FlatList>(null);
 
   const { data: guestbookData, isLoading } = useGroupGuestbooks(
@@ -35,7 +32,6 @@ const GuestbookModal = ({
   );
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
-  const { mutate: deleteGuestbook } = useDeleteGroupGuestbook();
 
   // 초기 로딩 시 맨 아래로 스크롤
   useEffect(() => {
@@ -101,37 +97,6 @@ const GuestbookModal = ({
     return `${diffInDays}일 전`;
   };
 
-  const handleDelete = (guestbookId: number) => {
-    // 스와이프 상태 초기화
-    swipeableRefs.current[guestbookId]?.close();
-
-    console.log('방명록 삭제: 정말로 이 방명록을 삭제하시겠습니까?');
-    deleteGuestbook(
-      {
-        groupRoutineListId,
-        guestbookId: guestbookId.toString(),
-      },
-      {
-        onSuccess: () => {
-          console.log('🔍 방명록 삭제 성공');
-        },
-        onError: (error) => {
-          console.error('🔍 방명록 삭제 실패:', error);
-        },
-      },
-    );
-  };
-
-  const renderRightActions = (guestbookId: number) => {
-    return (
-      <DeleteActionContainer>
-        <DeleteActionButton onPress={() => handleDelete(guestbookId)}>
-          <MaterialIcons name="delete" size={24} color={theme.colors.white} />
-        </DeleteActionButton>
-      </DeleteActionContainer>
-    );
-  };
-
   return (
     <Modal
       visible={isVisible}
@@ -165,49 +130,30 @@ const GuestbookModal = ({
                 ref={flatListRef}
                 data={guestbookData.result.items}
                 keyExtractor={(item) => item.id.toString()}
+                scrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
                 renderItem={({ item }) => {
-                  console.log('🔍 방명록 아이템:', {
-                    id: item.id,
-                    nickname: item.nickname,
-                    isWriter: item.isWriter,
-                    content: item.content,
-                  });
                   return (
-                    <Swipeable
-                      ref={(ref) => {
-                        swipeableRefs.current[item.id] = ref;
-                      }}
-                      renderRightActions={
-                        item.isWriter
-                          ? () => renderRightActions(item.id)
-                          : undefined
-                      }
-                      rightThreshold={60}
-                      enabled={item.isWriter}
-                      friction={2}
-                      overshootRight={false}
-                      overshootLeft={false}
-                    >
-                      <GuestbookItemContainer>
-                        <ProfileImage
-                          source={
-                            item.profileImageUrl
-                              ? { uri: item.profileImageUrl }
-                              : require('../../../assets/images/default_profile.png')
-                          }
-                          defaultSource={require('../../../assets/images/default_profile.png')}
-                        />
-                        <UserInfoContainer>
-                          <UserNameTimeContainer>
-                            <UserNameText>{item.nickname}</UserNameText>
-                            <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
-                          </UserNameTimeContainer>
-                          <MessageText numberOfLines={1} ellipsizeMode="tail">
-                            {item.content}
-                          </MessageText>
-                        </UserInfoContainer>
-                      </GuestbookItemContainer>
-                    </Swipeable>
+                    <GuestbookItemContainer>
+                      <ProfileImage
+                        source={
+                          item.profileImageUrl
+                            ? { uri: item.profileImageUrl }
+                            : require('../../../assets/images/default_profile.png')
+                        }
+                        defaultSource={require('../../../assets/images/default_profile.png')}
+                      />
+                      <UserInfoContainer>
+                        <UserNameTimeContainer>
+                          <UserNameText>{item.nickname}</UserNameText>
+                          <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
+                        </UserNameTimeContainer>
+                        <MessageText numberOfLines={1} ellipsizeMode="tail">
+                          {item.content}
+                        </MessageText>
+                      </UserInfoContainer>
+                    </GuestbookItemContainer>
                   );
                 }}
                 contentContainerStyle={{ padding: 16 }}
@@ -420,22 +366,4 @@ const SendButton = styled.TouchableOpacity`
   justify-content: center;
   align-items: center;
   margin-left: 8px;
-`;
-
-const DeleteActionContainer = styled.View`
-  width: 60px;
-  height: 60px;
-  justify-content: center;
-  align-items: center;
-  background-color: ${theme.colors.error};
-  border-radius: 8px;
-  margin-left: 0;
-  align-self: center;
-`;
-
-const DeleteActionButton = styled.TouchableOpacity`
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
 `;

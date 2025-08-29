@@ -6,6 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import { useSurvey } from '../../hooks/user';
+import { getDailyAnalysis } from '../../api/analysis';
+import { useOnboardingStore } from '../../store';
 
 interface InterestItem {
   id: string;
@@ -15,12 +18,18 @@ interface InterestItem {
 
 interface AIRecommendationScreenProps {
   navigation: any;
+  route: any;
 }
 
 const AIRecommendationScreen = ({
   navigation,
+  route,
 }: AIRecommendationScreenProps) => {
+  const { completeOnboarding } = useOnboardingStore();
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 홈 화면에서 온 경우인지 확인
+  const isFromHome = route.params?.fromHome;
   const [selectedItemsByPage, setSelectedItemsByPage] = useState<{
     [key: number]: string[];
   }>({
@@ -29,6 +38,9 @@ const AIRecommendationScreen = ({
     3: [],
     4: [],
   });
+
+  // 설문 API 훅
+  const { mutate: submitSurvey, isPending } = useSurvey();
 
   // 현재 페이지의 선택된 항목들
   const currentSelectedItems = selectedItemsByPage[currentPage] || [];
@@ -124,12 +136,83 @@ const AIRecommendationScreen = ({
   };
 
   // 완료 처리
-  const handleComplete = () => {
+  const handleComplete = async () => {
     // 모든 페이지의 선택된 항목들을 수집
     const allSelectedItems = Object.values(selectedItemsByPage).flat();
     console.log('선택된 항목들:', allSelectedItems);
-    // TODO: AI 추천 루틴 생성 API 호출
-    navigation.navigate('HomeMain');
+
+    // 설문 데이터를 boolean 배열로 변환
+    const surveyList: boolean[] = [];
+
+    // 각 페이지의 모든 항목을 순서대로 체크
+    Object.keys(pageData).forEach((pageKey) => {
+      const pageNum = parseInt(pageKey);
+      const pageItems = pageData[pageNum as keyof typeof pageData];
+      const selectedItems = selectedItemsByPage[pageNum] || [];
+
+      pageItems.forEach((item) => {
+        surveyList.push(selectedItems.includes(item.id));
+      });
+    });
+
+    console.log('설문 데이터:', surveyList);
+
+    try {
+      // 설문 제출
+      const surveyResult = await submitSurvey({ surveyList });
+      console.log('설문 제출 성공:', surveyResult);
+
+      // 1초 대기 후 daily analysis GET 요청
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const analysisResult = await getDailyAnalysis();
+      console.log(
+        '🔍 Daily Analysis API 응답:',
+        JSON.stringify(analysisResult, null, 2),
+      );
+
+      if (analysisResult) {
+        console.log('🔍 API 응답 구조 분석:');
+        console.log('- isSuccess:', analysisResult.isSuccess);
+        console.log('- message:', analysisResult.message);
+        console.log('- result 타입:', typeof analysisResult.result);
+        console.log(
+          '- result 키들:',
+          analysisResult.result ? Object.keys(analysisResult.result) : 'null',
+        );
+
+        if (analysisResult.result && analysisResult.result.routines) {
+          console.log(
+            '- 루틴 배열 길이:',
+            analysisResult.result.routines.length,
+          );
+          analysisResult.result.routines.forEach(
+            (routine: any, index: number) => {
+              console.log(`- 루틴 ${index + 1} 상세:`, routine);
+            },
+          );
+        }
+      }
+
+      // AI 분석 로딩 화면으로 이동 (결과 데이터 포함)
+      navigation.navigate('Loading', {
+        title: 'AI 분석 중',
+        description: '설문 결과를 바탕으로 맞춤 루틴을 생성하고 있어요',
+        statusItems: [
+          { text: '설문 데이터 분석 중...' },
+          { text: '사용자 패턴 분석 중...' },
+          { text: 'AI 추천 알고리즘 실행 중...' },
+          { text: '맞춤 루틴 생성 중...' },
+          { text: '완료!' },
+        ],
+        nextScreen: 'AIRecommendationResult',
+        duration: 5000,
+        resultData: analysisResult?.result || null,
+        fromHome: isFromHome,
+      });
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+      // 에러 처리 (나중에 토스트 메시지 등 추가)
+    }
   };
 
   // 뒤로가기
@@ -145,7 +228,7 @@ const AIRecommendationScreen = ({
     <Container>
       <Header
         title=""
-        onBackPress={handleBack}
+        onBackPress={currentPage > 1 ? handleBack : undefined}
         rightComponent={<ProgressText>{currentPage} / 4</ProgressText>}
       />
 
@@ -174,17 +257,47 @@ const AIRecommendationScreen = ({
 
       {/* 하단 버튼 */}
       <ButtonContainer>
-        <CustomButton
-          text={currentPage === 4 ? '완료' : '다음'}
-          onPress={handleNext}
-          backgroundColor={
-            currentSelectedItems.length === 0
-              ? theme.colors.gray300
-              : theme.colors.primary
-          }
-          textColor={theme.colors.white}
-          disabled={currentSelectedItems.length === 0}
-        />
+        {currentPage === 1 ? (
+          <ButtonColumn>
+            <CustomButton
+              text={isFromHome ? '돌아가기' : '건너뛰기'}
+              onPress={
+                isFromHome
+                  ? () => navigation.navigate('Home')
+                  : completeOnboarding
+              }
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.gray600}
+              borderColor={theme.colors.gray300}
+              borderWidth={1}
+            />
+            <CustomButton
+              text="다음"
+              onPress={handleNext}
+              backgroundColor={
+                currentSelectedItems.length === 0
+                  ? theme.colors.gray300
+                  : theme.colors.primary
+              }
+              textColor={theme.colors.white}
+              disabled={currentSelectedItems.length === 0 || isPending}
+            />
+          </ButtonColumn>
+        ) : (
+          <CustomButton
+            text={
+              currentPage === 4 ? (isPending ? '처리 중...' : '완료') : '다음'
+            }
+            onPress={handleNext}
+            backgroundColor={
+              currentSelectedItems.length === 0
+                ? theme.colors.gray300
+                : theme.colors.primary
+            }
+            textColor={theme.colors.white}
+            disabled={currentSelectedItems.length === 0 || isPending}
+          />
+        )}
       </ButtonContainer>
     </Container>
   );
@@ -199,7 +312,7 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   flex: 1;
-  padding: 24px 24px 0 24px;
+  padding: 0 24px 0 24px;
 `;
 
 const ProgressText = styled.Text`
@@ -209,22 +322,24 @@ const ProgressText = styled.Text`
 `;
 
 const TitleContainer = styled.View`
+  margin-top: 16px;
   margin-bottom: 48px;
 `;
 
 const Title = styled.Text`
+  font-size: ${theme.fonts.title}px;
   font-family: ${theme.fonts.SemiBold};
-  font-size: 32px;
-  color: ${theme.colors.gray800};
-  text-align: left;
-  margin-bottom: 8px;
+  color: ${theme.colors.gray900};
+  line-height: 34px;
+  margin-top: 16px;
 `;
 
 const Subtitle = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 24px;
-  color: ${theme.colors.gray400};
-  text-align: left;
+  font-size: ${theme.fonts.body}px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
+  line-height: 24px;
+  margin-top: 8px;
 `;
 
 const CardGrid = styled.View`
@@ -257,4 +372,14 @@ const CardText = styled.Text<{ isSelected: boolean }>`
 const ButtonContainer = styled.View`
   padding: 16px;
   background-color: ${theme.colors.white};
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ButtonColumn = styled.View`
+  flex-direction: column;
+  gap: 12px;
 `;

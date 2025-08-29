@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -12,16 +12,20 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import { theme } from '../../styles/theme';
+import {
+  useCategoryAnalysis,
+  useWeeklySpendingAnalysis,
+} from '../../hooks/analysis';
+import { CategorySpendingItem } from '../../types/api';
 
-// 카테고리 아이콘 이미지 (임시로 동일 이미지 사용, 실제 아이콘으로 교체하세요)
-const iconShopping = require('../../assets/images/robot.png');
-// const iconShopping = require('../../assets/images/shopping.png');
-const iconFood = require('../../assets/images/robot.png');
-// const iconFood = require('../../assets/images/food_cost.png');
-const iconTransport = require('../../assets/images/robot.png');
-// const iconTransport = require('../../assets/images/transportation.png');
-const iconOthers = require('../../assets/images/robot.png');
-// const iconOthers = require('../../assets/images/others.png');
+// 카테고리별 아이콘 이미지
+const iconService = require('../../assets/images/category/service.png');
+const iconEducation = require('../../assets/images/category/education.png');
+const iconRestaurant = require('../../assets/images/category/restaurant.png');
+const iconShopping = require('../../assets/images/category/shopping.png');
+const iconBeauty = require('../../assets/images/category/beauty.png');
+const iconTransportation = require('../../assets/images/category/transportation.png');
+const iconOthers = require('../../assets/images/category/others.png');
 const aiIcon = require('../../assets/images/robot.png');
 
 type CategoryItem = {
@@ -33,44 +37,27 @@ type CategoryItem = {
   icon: ImageSourcePropType;
 };
 
-const categories: CategoryItem[] = [
-  {
-    id: 'shopping',
-    label: '쇼핑',
-    ratio: 50.0,
-    amount: 97000,
-    color: '#F7D3D3',
-    icon: iconShopping,
-  },
-  {
-    id: 'food',
-    label: '식비',
-    ratio: 25.8,
-    amount: 47472,
-    color: '#FFE4B5',
-    icon: iconFood,
-  },
-  {
-    id: 'transport',
-    label: '교통 및 자동차',
-    ratio: 13.6,
-    amount: 25024,
-    color: '#D3D8FF',
-    icon: iconTransport,
-  },
-  {
-    id: 'others',
-    label: '그 외 8개',
-    ratio: 10.6,
-    amount: 19504,
-    color: '#E6E6E8',
-    icon: iconOthers,
-  },
-];
-
 const formatWon = (n: number) => `${n.toLocaleString()}원`;
 
 const ConsumptionAnalysisScreen = ({ navigation }: any) => {
+  // API 데이터 가져오기
+  const { data: categoryData, isLoading, error } = useCategoryAnalysis();
+  const {
+    data: weeklyData,
+    isLoading: isLoadingWeekly,
+    error: weeklyError,
+  } = useWeeklySpendingAnalysis();
+
+  // 디버깅을 위한 로그 추가
+  console.log('🔍 ConsumptionAnalysisScreen API 상태:', {
+    isLoading,
+    isLoadingWeekly,
+    error: error?.message,
+    weeklyError: weeklyError?.message,
+    categoryData: categoryData?.result ? '있음' : '없음',
+    weeklyData: weeklyData?.result ? '있음' : '없음',
+  });
+
   // 하드웨어 백 버튼 처리
   useFocusEffect(
     React.useCallback(() => {
@@ -89,6 +76,66 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
     }, [navigation]),
   );
 
+  // API 데이터로 카테고리 데이터 생성
+  const categories: CategoryItem[] = React.useMemo(() => {
+    if (!categoryData?.result) {
+      return [];
+    }
+
+    const { categorySpendings } = categoryData.result;
+
+    // 카테고리별 아이콘 매칭 함수
+    const getCategoryIcon = (categoryName: string) => {
+      switch (categoryName) {
+        case '서비스':
+          return iconService;
+        case '교육':
+          return iconEducation;
+        case '외식':
+          return iconRestaurant;
+        case '쇼핑':
+          return iconShopping;
+        case '미용':
+          return iconBeauty;
+        case '교통':
+          return iconTransportation;
+        default:
+          return iconOthers;
+      }
+    };
+
+    // 상위 3개 카테고리
+    const top3Categories = categorySpendings.slice(0, 3).map((item, index) => ({
+      id: `category-${index}`,
+      label: item.categoryName,
+      ratio: item.percentage,
+      amount: item.amount,
+      color: ['#F7D3D3', '#FFE4B5', '#D3D8FF'][index] || '#E6E6E8',
+      icon: getCategoryIcon(item.categoryName),
+    }));
+
+    // 그 외 4개 카테고리 계산
+    const top3TotalAmount = top3Categories.reduce(
+      (sum, item) => sum + item.amount,
+      0,
+    );
+    const remainingAmount =
+      categoryData.result.myTotalSpending - top3TotalAmount;
+    const remainingPercentage =
+      (remainingAmount / categoryData.result.myTotalSpending) * 100;
+
+    top3Categories.push({
+      id: 'others',
+      label: '그 외 3개 항목',
+      ratio: Math.max(0, remainingPercentage),
+      amount: Math.max(0, remainingAmount),
+      color: '#E6E6E8',
+      icon: iconOthers,
+    });
+
+    return top3Categories;
+  }, [categoryData]);
+
   const goFinancial = () => {
     navigation.replace('Loading', {
       title: '맞춤 금융 상품 찾는중...',
@@ -104,6 +151,12 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
   };
 
   const goRoutine = () => {
+    console.log('🔍 소비패턴 분석 화면에서 루틴 추천 버튼 클릭');
+    console.log('🔍 백엔드 데이터 전체:', {
+      categoryData: JSON.stringify(categoryData, null, 2),
+      weeklyData: JSON.stringify(weeklyData, null, 2),
+    });
+
     navigation.replace('Loading', {
       title: 'AI 루틴 추천 중...',
       description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
@@ -127,106 +180,134 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 지표 카드 */}
-        <Card>
-          <Row>
-            <Muted>20대 평균</Muted>
-            <Strong>{formatWon(122000)}</Strong>
-          </Row>
-          <RowSpaced>
-            <MutedSmall>내 지출</MutedSmall>
-            <StrongMutedSmall>{formatWon(184000)}</StrongMutedSmall>
-          </RowSpaced>
+        {/* 로딩 상태 */}
+        {isLoading && (
+          <Card>
+            <LoadingText>소비패턴 분석 중...</LoadingText>
+          </Card>
+        )}
 
-          <ProgressWrap>
-            <ProgressBg />
-            <ProgressFill style={{ width: '70%' }} />
-          </ProgressWrap>
-          <Hint>평균보다 34% 높음</Hint>
-        </Card>
+        {/* 에러 상태 */}
+        {error && (
+          <Card>
+            <ErrorText>소비패턴 분석을 불러오는데 실패했습니다.</ErrorText>
+          </Card>
+        )}
 
-        {/* 카테고리 리스트 */}
-        <Card>
-          {categories.map((c, idx) => (
-            <CategoryRow key={c.id} isLast={idx === categories.length - 1}>
-              <IconBox>
-                <CategoryImg source={c.icon} resizeMode="contain" />
-              </IconBox>
-              <ColLeft>
-                <Label>{c.label}</Label>
-                <SubLabel>{c.ratio}%</SubLabel>
-              </ColLeft>
-              <Amount>{formatWon(c.amount)}</Amount>
-            </CategoryRow>
-          ))}
-        </Card>
+        {/* 주간 분석 에러 상태 */}
+        {weeklyError && (
+          <Card>
+            <ErrorText>AI 소비패턴 분석을 불러오는데 실패했습니다.</ErrorText>
+          </Card>
+        )}
 
-        {/* AI 분석 카드 */}
-        <AICard>
-          <AIHeader>
-            <AIIcon>
-              <AIImg source={aiIcon} resizeMode="contain" />
-            </AIIcon>
-            <AITitle>AI 소비패턴 분석</AITitle>
-          </AIHeader>
+        {/* 데이터가 있을 때만 렌더링 */}
+        {!isLoading && !error && categoryData?.result && (
+          <>
+            {/* 지표 카드 */}
+            <Card>
+              <Row>
+                <Muted>20대 평균</Muted>
+                <Strong>
+                  {formatWon(categoryData?.result?.averageSpendingFor20s || 0)}
+                </Strong>
+              </Row>
+              <RowSpaced>
+                <MutedSmall>내 지출</MutedSmall>
+                <StrongMutedSmall>
+                  {formatWon(categoryData?.result?.myTotalSpending || 0)}
+                </StrongMutedSmall>
+              </RowSpaced>
 
-          <AIItem>
-            <Check>
-              <CheckSquare>
-                <Ionicons
-                  name="checkmark"
-                  size={12}
-                  color={theme.colors.white}
+              <ProgressWrap>
+                <ProgressBg />
+                <ProgressFill
+                  style={{
+                    width: `${Math.min(((categoryData?.result?.myTotalSpending || 0) / (categoryData?.result?.averageSpendingFor20s || 1)) * 100, 100)}%`,
+                  }}
                 />
-              </CheckSquare>
-            </Check>
-            <AIText>사용자께서는 저축을 전혀 하지 않아요..!</AIText>
-          </AIItem>
-          <AIItem>
-            <Check>
-              <CheckSquare>
-                <Ionicons
-                  name="checkmark"
-                  size={12}
-                  color={theme.colors.white}
-                />
-              </CheckSquare>
-            </Check>
-            <AIText>
-              지난 주에 비해 식비 카테고리의 소비가 20% 감소했어요.
-            </AIText>
-          </AIItem>
-          <AIItem>
-            <Check>
-              <CheckSquare>
-                <Ionicons
-                  name="checkmark"
-                  size={12}
-                  color={theme.colors.white}
-                />
-              </CheckSquare>
-            </Check>
-            <AIText>
-              이번 주 소비패턴에 기반한 다음 주 지출 예정 금액은
-              130,000원이에요.
-            </AIText>
-          </AIItem>
+              </ProgressWrap>
+              <Hint>
+                {categoryData?.result?.comparisonPercentage > 0
+                  ? `평균보다 ${categoryData.result.comparisonPercentage.toFixed(1)}% 높음`
+                  : categoryData?.result?.comparisonPercentage < 0
+                    ? `평균보다 ${Math.abs(categoryData.result.comparisonPercentage).toFixed(1)}% 낮음`
+                    : '평균과 동일'}
+              </Hint>
+            </Card>
 
-          <ButtonRow>
-            <GhostButton onPress={goFinancial}>
-              <GhostContent>
-                <GhostIcon name="card-outline" size={16} />
-                <GhostText>맞춤 금융 상품 추천</GhostText>
-              </GhostContent>
-            </GhostButton>
-            <GhostButton onPress={goRoutine}>
-              <GhostContent>
-                <GhostIcon name="sparkles-outline" size={16} />
-                <GhostText>루틴 추천</GhostText>
-              </GhostContent>
-            </GhostButton>
-          </ButtonRow>
-        </AICard>
+            {/* 카테고리 리스트 */}
+            <Card>
+              {categories.map((c, idx) => (
+                <CategoryRow key={c.id} isLast={idx === categories.length - 1}>
+                  <IconBox>
+                    <CategoryImg source={c.icon} resizeMode="contain" />
+                  </IconBox>
+                  <ColLeft>
+                    <Label>{c.label}</Label>
+                    <SubLabel>{c.ratio.toFixed(1)}%</SubLabel>
+                  </ColLeft>
+                  <Amount>{formatWon(c.amount)}</Amount>
+                </CategoryRow>
+              ))}
+            </Card>
+
+            {/* AI 분석 카드 */}
+            <AICard>
+              <AIHeader>
+                <AIIcon>
+                  <AIImg source={aiIcon} resizeMode="contain" />
+                </AIIcon>
+                <AITitle>AI 소비패턴 분석</AITitle>
+              </AIHeader>
+
+              {!isLoadingWeekly &&
+              !weeklyError &&
+              weeklyData?.result &&
+              weeklyData.result.length > 0 ? (
+                weeklyData.result.map((text, index) => (
+                  <AIItem key={index}>
+                    <Check>
+                      <CheckSquare>
+                        <Ionicons
+                          name="checkmark"
+                          size={12}
+                          color={theme.colors.white}
+                        />
+                      </CheckSquare>
+                    </Check>
+                    <AIText>{text}</AIText>
+                  </AIItem>
+                ))
+              ) : (
+                <AIItem>
+                  <AIText style={{ color: theme.colors.gray500 }}>
+                    {isLoadingWeekly
+                      ? 'AI 분석 중...'
+                      : weeklyError
+                        ? 'AI 분석을 불러오는데 실패했습니다.'
+                        : 'AI 분석 결과를 불러올 수 없습니다.'}
+                  </AIText>
+                </AIItem>
+              )}
+
+              <ButtonRow>
+                <GhostButton onPress={goFinancial}>
+                  <GhostContent>
+                    <GhostIcon name="card-outline" size={16} />
+                    <GhostText>맞춤 금융 상품 추천</GhostText>
+                  </GhostContent>
+                </GhostButton>
+                <GhostButton onPress={goRoutine}>
+                  <GhostContent>
+                    <GhostIcon name="sparkles-outline" size={16} />
+                    <GhostText>루틴 추천</GhostText>
+                  </GhostContent>
+                </GhostButton>
+              </ButtonRow>
+            </AICard>
+          </>
+        )}
       </ScrollView>
     </Container>
   );
@@ -404,6 +485,7 @@ const AIText = styled.Text`
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray700};
   flex: 1;
+  font-size: 12px;
 `;
 
 const ButtonRow = styled.View`
@@ -426,6 +508,20 @@ const GhostContent = styled.View`
   flex-direction: row;
   align-items: center;
   gap: 6px;
+`;
+
+const LoadingText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.gray600};
+  text-align: center;
+  padding: 20px;
+`;
+
+const ErrorText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  color: ${theme.colors.error};
+  text-align: center;
+  padding: 20px;
 `;
 
 const GhostIcon = styled(Ionicons)`

@@ -18,6 +18,8 @@ import {
   sendAccountCode,
   verifyAccountCode,
   deleteUser,
+  getMajors,
+  getUniversities,
 } from '../../api/user/user';
 import {
   SignInRequest,
@@ -317,5 +319,29 @@ export const useDeleteUser = () => {
     onError: (error) => {
       console.error('🔍 회원탈퇴 실패:', error);
     },
+  });
+};
+
+// 학과 검색 훅
+export const useGetMajors = (keyword: string) => {
+  return useQuery({
+    queryKey: ['getMajors', keyword],
+    queryFn: () => getMajors(keyword),
+    enabled: keyword.length > 0, // 키워드가 있을 때만 실행
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    retry: false, // 재시도 안함
+  });
+};
+
+// 대학교 검색 훅
+export const useGetUniversities = (keyword: string) => {
+  return useQuery({
+    queryKey: ['getUniversities', keyword],
+    queryFn: () => getUniversities(keyword),
+    enabled: keyword.length > 0, // 키워드가 있을 때만 실행
+    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
+    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    retry: false, // 재시도 안함
   });
 };

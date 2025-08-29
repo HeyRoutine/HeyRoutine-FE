@@ -5,16 +5,14 @@ import { theme } from '../../../styles/theme';
 interface FinancialProductCardProps {
   title: string;
   features: string[];
-  maxInterestRate: string;
-  minInterestRate: string;
+  interestRate: string;
   hashtags: string[];
 }
 
 const FinancialProductCard = ({
   title,
   features,
-  maxInterestRate,
-  minInterestRate,
+  interestRate,
   hashtags,
 }: FinancialProductCardProps) => {
   return (
@@ -27,8 +25,7 @@ const FinancialProductCard = ({
           ))}
         </FeaturesContainer>
         <InterestContainer>
-          <MaxInterestRate>{maxInterestRate}</MaxInterestRate>
-          <MinInterestRate>{minInterestRate}</MinInterestRate>
+          <InterestRate>{interestRate}</InterestRate>
         </InterestContainer>
       </ProductContent>
       <HashtagContainer>
@@ -72,7 +69,7 @@ const FeatureText = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
-  line-height: 20px;
+  line-height: 18px;
 `;
 
 const InterestContainer = styled.View`
@@ -80,17 +77,10 @@ const InterestContainer = styled.View`
   margin-left: 16px;
 `;
 
-const MaxInterestRate = styled.Text`
+const InterestRate = styled.Text`
   font-size: 18px;
   font-family: ${theme.fonts.Bold};
   color: ${theme.colors.primary};
-  margin-bottom: 4px;
-`;
-
-const MinInterestRate = styled.Text`
-  font-size: 12px;
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray500};
 `;
 
 const HashtagContainer = styled.View`
