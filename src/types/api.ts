@@ -6,6 +6,18 @@ export interface ApiResponse<T> {
   result: T;
 }
 
+// 학과 검색 결과 타입
+export interface MajorSearchInfo {
+  id: number;
+  name: string;
+}
+
+// 대학교 검색 결과 타입
+export interface UniversitySearchInfo {
+  id: number;
+  name: string;
+}
+
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 

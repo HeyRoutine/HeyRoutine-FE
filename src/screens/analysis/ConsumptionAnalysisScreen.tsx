@@ -49,6 +49,16 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
     error: weeklyError,
   } = useWeeklySpendingAnalysis();
 
+  // 디버깅을 위한 로그 추가
+  console.log('🔍 ConsumptionAnalysisScreen API 상태:', {
+    isLoading,
+    isLoadingWeekly,
+    error: error?.message,
+    weeklyError: weeklyError?.message,
+    categoryData: categoryData?.result ? '있음' : '없음',
+    weeklyData: weeklyData?.result ? '있음' : '없음',
+  });
+
   // 하드웨어 백 버튼 처리
   useFocusEffect(
     React.useCallback(() => {
@@ -122,6 +132,12 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
   };
 
   const goRoutine = () => {
+    console.log('🔍 소비패턴 분석 화면에서 루틴 추천 버튼 클릭');
+    console.log('🔍 백엔드 데이터 전체:', {
+      categoryData: JSON.stringify(categoryData, null, 2),
+      weeklyData: JSON.stringify(weeklyData, null, 2),
+    });
+
     navigation.replace('Loading', {
       title: 'AI 루틴 추천 중...',
       description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
@@ -167,115 +183,112 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
         )}
 
         {/* 데이터가 있을 때만 렌더링 */}
-        {!isLoading &&
-          !error &&
-          categoryData?.result &&
-          !isLoadingWeekly &&
-          !weeklyError &&
-          weeklyData?.result && (
-            <>
-              {/* 지표 카드 */}
-              <Card>
-                <Row>
-                  <Muted>20대 평균</Muted>
-                  <Strong>
-                    {formatWon(
-                      categoryData?.result?.averageSpendingFor20s || 0,
-                    )}
-                  </Strong>
-                </Row>
-                <RowSpaced>
-                  <MutedSmall>내 지출</MutedSmall>
-                  <StrongMutedSmall>
-                    {formatWon(categoryData?.result?.myTotalSpending || 0)}
-                  </StrongMutedSmall>
-                </RowSpaced>
+        {!isLoading && !error && categoryData?.result && (
+          <>
+            {/* 지표 카드 */}
+            <Card>
+              <Row>
+                <Muted>20대 평균</Muted>
+                <Strong>
+                  {formatWon(categoryData?.result?.averageSpendingFor20s || 0)}
+                </Strong>
+              </Row>
+              <RowSpaced>
+                <MutedSmall>내 지출</MutedSmall>
+                <StrongMutedSmall>
+                  {formatWon(categoryData?.result?.myTotalSpending || 0)}
+                </StrongMutedSmall>
+              </RowSpaced>
 
-                <ProgressWrap>
-                  <ProgressBg />
-                  <ProgressFill
-                    style={{
-                      width: `${Math.min(((categoryData?.result?.myTotalSpending || 0) / (categoryData?.result?.averageSpendingFor20s || 1)) * 100, 100)}%`,
-                    }}
-                  />
-                </ProgressWrap>
-                <Hint>
-                  {categoryData?.result?.comparisonPercentage > 0
-                    ? `평균보다 ${categoryData.result.comparisonPercentage}% 높음`
-                    : categoryData?.result?.comparisonPercentage < 0
-                      ? `평균보다 ${Math.abs(categoryData.result.comparisonPercentage)}% 낮음`
-                      : '평균과 동일'}
-                </Hint>
-              </Card>
+              <ProgressWrap>
+                <ProgressBg />
+                <ProgressFill
+                  style={{
+                    width: `${Math.min(((categoryData?.result?.myTotalSpending || 0) / (categoryData?.result?.averageSpendingFor20s || 1)) * 100, 100)}%`,
+                  }}
+                />
+              </ProgressWrap>
+              <Hint>
+                {categoryData?.result?.comparisonPercentage > 0
+                  ? `평균보다 ${categoryData.result.comparisonPercentage}% 높음`
+                  : categoryData?.result?.comparisonPercentage < 0
+                    ? `평균보다 ${Math.abs(categoryData.result.comparisonPercentage)}% 낮음`
+                    : '평균과 동일'}
+              </Hint>
+            </Card>
 
-              {/* 카테고리 리스트 */}
-              <Card>
-                {categories.map((c, idx) => (
-                  <CategoryRow
-                    key={c.id}
-                    isLast={idx === categories.length - 1}
-                  >
-                    <IconBox>
-                      <CategoryImg source={c.icon} resizeMode="contain" />
-                    </IconBox>
-                    <ColLeft>
-                      <Label>{c.label}</Label>
-                      <SubLabel>{c.ratio}%</SubLabel>
-                    </ColLeft>
-                    <Amount>{formatWon(c.amount)}</Amount>
-                  </CategoryRow>
-                ))}
-              </Card>
+            {/* 카테고리 리스트 */}
+            <Card>
+              {categories.map((c, idx) => (
+                <CategoryRow key={c.id} isLast={idx === categories.length - 1}>
+                  <IconBox>
+                    <CategoryImg source={c.icon} resizeMode="contain" />
+                  </IconBox>
+                  <ColLeft>
+                    <Label>{c.label}</Label>
+                    <SubLabel>{c.ratio}%</SubLabel>
+                  </ColLeft>
+                  <Amount>{formatWon(c.amount)}</Amount>
+                </CategoryRow>
+              ))}
+            </Card>
 
-              {/* AI 분석 카드 */}
-              <AICard>
-                <AIHeader>
-                  <AIIcon>
-                    <AIImg source={aiIcon} resizeMode="contain" />
-                  </AIIcon>
-                  <AITitle>AI 소비패턴 분석</AITitle>
-                </AIHeader>
+            {/* AI 분석 카드 */}
+            <AICard>
+              <AIHeader>
+                <AIIcon>
+                  <AIImg source={aiIcon} resizeMode="contain" />
+                </AIIcon>
+                <AITitle>AI 소비패턴 분석</AITitle>
+              </AIHeader>
 
-                {weeklyData.result && weeklyData.result.length > 0 ? (
-                  weeklyData.result.map((text, index) => (
-                    <AIItem key={index}>
-                      <Check>
-                        <CheckSquare>
-                          <Ionicons
-                            name="checkmark"
-                            size={12}
-                            color={theme.colors.white}
-                          />
-                        </CheckSquare>
-                      </Check>
-                      <AIText>{text}</AIText>
-                    </AIItem>
-                  ))
-                ) : (
-                  <AIItem>
-                    <AIText style={{ color: theme.colors.gray500 }}>
-                      AI 분석 결과를 불러올 수 없습니다.
-                    </AIText>
+              {!isLoadingWeekly &&
+              !weeklyError &&
+              weeklyData?.result &&
+              weeklyData.result.length > 0 ? (
+                weeklyData.result.map((text, index) => (
+                  <AIItem key={index}>
+                    <Check>
+                      <CheckSquare>
+                        <Ionicons
+                          name="checkmark"
+                          size={12}
+                          color={theme.colors.white}
+                        />
+                      </CheckSquare>
+                    </Check>
+                    <AIText>{text}</AIText>
                   </AIItem>
-                )}
+                ))
+              ) : (
+                <AIItem>
+                  <AIText style={{ color: theme.colors.gray500 }}>
+                    {isLoadingWeekly
+                      ? 'AI 분석 중...'
+                      : weeklyError
+                        ? 'AI 분석을 불러오는데 실패했습니다.'
+                        : 'AI 분석 결과를 불러올 수 없습니다.'}
+                  </AIText>
+                </AIItem>
+              )}
 
-                <ButtonRow>
-                  <GhostButton onPress={goFinancial}>
-                    <GhostContent>
-                      <GhostIcon name="card-outline" size={16} />
-                      <GhostText>맞춤 금융 상품 추천</GhostText>
-                    </GhostContent>
-                  </GhostButton>
-                  <GhostButton onPress={goRoutine}>
-                    <GhostContent>
-                      <GhostIcon name="sparkles-outline" size={16} />
-                      <GhostText>루틴 추천</GhostText>
-                    </GhostContent>
-                  </GhostButton>
-                </ButtonRow>
-              </AICard>
-            </>
-          )}
+              <ButtonRow>
+                <GhostButton onPress={goFinancial}>
+                  <GhostContent>
+                    <GhostIcon name="card-outline" size={16} />
+                    <GhostText>맞춤 금융 상품 추천</GhostText>
+                  </GhostContent>
+                </GhostButton>
+                <GhostButton onPress={goRoutine}>
+                  <GhostContent>
+                    <GhostIcon name="sparkles-outline" size={16} />
+                    <GhostText>루틴 추천</GhostText>
+                  </GhostContent>
+                </GhostButton>
+              </ButtonRow>
+            </AICard>
+          </>
+        )}
       </ScrollView>
     </Container>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -15,8 +16,19 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   // Zustand 스토어에서 회원가입 데이터와 완료 함수 가져오기
-  const { signupData, completeSignup, setSignupMarketing } = useAuthStore();
+  const { signupData, completeSignup, setSignupMarketing, clearSignupData } =
+    useAuthStore();
   const { nickname } = signupData;
+
+  // 뒤로가기 시 상태 초기화
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // 화면을 벗어날 때 상태 초기화
+        clearSignupData();
+      };
+    }, [clearSignupData]),
+  );
 
   // '완료' 버튼 활성화 조건 (필수 약관 모두 동의)
   const isButtonEnabled = agreeTerms && agreePrivacy;
@@ -45,7 +57,7 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>5/5</ProgressText>}
+        rightComponent={<ProgressText>7/7</ProgressText>}
       />
 
       <Content>

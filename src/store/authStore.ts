@@ -22,6 +22,8 @@ interface SignupData {
   email: string;
   password: string;
   nickname: string;
+  university: string;
+  department: string;
   profileImage: string | null;
   isMarketing: boolean;
 }
@@ -45,6 +47,8 @@ interface AuthState {
   setSignupEmail: (email: string) => void;
   setSignupPassword: (password: string) => void;
   setSignupNickname: (nickname: string) => void;
+  setSignupUniversity: (university: string) => void;
+  setSignupDepartment: (department: string) => void;
   setSignupProfileImage: (profileImage: string | null) => void;
   setSignupMarketing: (isMarketing: boolean) => void;
   clearSignupData: () => void;
@@ -64,6 +68,8 @@ const createAuthStore = (set: any, get: any) => ({
     email: '',
     password: '',
     nickname: '',
+    university: '',
+    department: '',
     profileImage: null,
     isMarketing: false,
   },
@@ -136,6 +142,16 @@ const createAuthStore = (set: any, get: any) => ({
       signupData: { ...state.signupData, nickname },
     })),
 
+  setSignupUniversity: (university: string) =>
+    set((state: any) => ({
+      signupData: { ...state.signupData, university },
+    })),
+
+  setSignupDepartment: (department: string) =>
+    set((state: any) => ({
+      signupData: { ...state.signupData, department },
+    })),
+
   setSignupProfileImage: (profileImage: string | null) =>
     set((state: any) => ({
       signupData: { ...state.signupData, profileImage },
@@ -152,6 +168,8 @@ const createAuthStore = (set: any, get: any) => ({
         email: '',
         password: '',
         nickname: '',
+        university: '',
+        department: '',
         profileImage: null,
         isMarketing: false,
       },

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
@@ -17,7 +18,17 @@ const EmailInputScreen = ({ navigation }: any) => {
   const [shouldCheckDuplicate, setShouldCheckDuplicate] = useState(false);
 
   // Zustand 스토어에서 이메일 설정 함수 가져오기
-  const { setSignupEmail } = useAuthStore();
+  const { setSignupEmail, clearSignupData } = useAuthStore();
+
+  // 뒤로가기 시 상태 초기화
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // 화면을 벗어날 때 상태 초기화
+        clearSignupData();
+      };
+    }, [clearSignupData]),
+  );
 
   // 공통 에러 처리 훅
   const { handleApiError } = useErrorHandler();

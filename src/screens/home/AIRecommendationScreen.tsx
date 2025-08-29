@@ -7,7 +7,6 @@ import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { useSurvey } from '../../hooks/user';
-import { getSurvey } from '../../api/user/survey';
 import { getDailyAnalysis } from '../../api/analysis';
 
 interface InterestItem {
@@ -156,15 +155,36 @@ const AIRecommendationScreen = ({
       const surveyResult = await submitSurvey({ surveyList });
       console.log('설문 제출 성공:', surveyResult);
 
-      // 1초 대기 후 survey GET 요청
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await getSurvey();
-      console.log('Survey GET 성공');
-
       // 1초 대기 후 daily analysis GET 요청
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const analysisResult = await getDailyAnalysis();
-      console.log('Daily Analysis GET 성공:', analysisResult);
+      console.log(
+        '🔍 Daily Analysis API 응답:',
+        JSON.stringify(analysisResult, null, 2),
+      );
+
+      if (analysisResult) {
+        console.log('🔍 API 응답 구조 분석:');
+        console.log('- isSuccess:', analysisResult.isSuccess);
+        console.log('- message:', analysisResult.message);
+        console.log('- result 타입:', typeof analysisResult.result);
+        console.log(
+          '- result 키들:',
+          analysisResult.result ? Object.keys(analysisResult.result) : 'null',
+        );
+
+        if (analysisResult.result && analysisResult.result.routines) {
+          console.log(
+            '- 루틴 배열 길이:',
+            analysisResult.result.routines.length,
+          );
+          analysisResult.result.routines.forEach(
+            (routine: any, index: number) => {
+              console.log(`- 루틴 ${index + 1} 상세:`, routine);
+            },
+          );
+        }
+      }
 
       // AI 분석 로딩 화면으로 이동 (결과 데이터 포함)
       navigation.navigate('Loading', {
@@ -270,18 +290,19 @@ const TitleContainer = styled.View`
 `;
 
 const Title = styled.Text`
+  font-size: ${theme.fonts.title}px;
   font-family: ${theme.fonts.SemiBold};
-  font-size: 32px;
-  color: ${theme.colors.gray800};
-  text-align: left;
-  margin-bottom: 8px;
+  color: ${theme.colors.gray900};
+  line-height: 34px;
+  margin-top: 16px;
 `;
 
 const Subtitle = styled.Text`
-  font-family: ${theme.fonts.Medium};
-  font-size: 24px;
-  color: ${theme.colors.gray400};
-  text-align: left;
+  font-size: ${theme.fonts.body}px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
+  line-height: 24px;
+  margin-top: 8px;
 `;
 
 const CardGrid = styled.View`

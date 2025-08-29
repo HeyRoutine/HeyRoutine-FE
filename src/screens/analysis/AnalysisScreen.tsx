@@ -245,7 +245,18 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
       console.log('AI 분석 및 팁 화면으로 이동');
     } else {
       // 금융 루틴 - 소비패턴 분석
-      navigation.navigate('ConsumptionAnalysis');
+      navigation.navigate('Loading', {
+        title: '소비패턴 분석 중...',
+        description: 'AI가 당신의 소비 패턴을 분석하고 있어요',
+        statusItems: [
+          { text: '소비 내역 수집...', status: 'pending' },
+          { text: '카테고리별 분석...', status: 'pending' },
+          { text: 'AI 패턴 분석...', status: 'pending' },
+          { text: '분석 결과 생성...', status: 'pending' },
+        ],
+        nextScreen: 'ConsumptionAnalysis',
+        duration: 3000,
+      });
     }
   };
 

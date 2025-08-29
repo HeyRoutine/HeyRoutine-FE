@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
@@ -22,7 +23,17 @@ const PasswordScreen = ({ navigation, route }: any) => {
   const [doPasswordsMatch, setDoPasswordsMatch] = useState(false);
 
   // Zustand 스토어에서 비밀번호 설정 함수 가져오기
-  const { setSignupPassword } = useAuthStore();
+  const { setSignupPassword, clearSignupData } = useAuthStore();
+
+  // 뒤로가기 시 상태 초기화
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // 화면을 벗어날 때 상태 초기화
+        clearSignupData();
+      };
+    }, [clearSignupData]),
+  );
 
   // 비밀번호 유효성 검사를 위한 useEffect
   useEffect(() => {
@@ -159,9 +170,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 60px 24px 0 24px;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

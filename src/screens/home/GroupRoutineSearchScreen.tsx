@@ -179,7 +179,7 @@ const Container = styled(SafeAreaView)`
 `;
 
 const SearchContainer = styled.View`
-  padding: 16px;
+  padding: 12px 16px;
 `;
 
 const ListWrapper = styled.View`

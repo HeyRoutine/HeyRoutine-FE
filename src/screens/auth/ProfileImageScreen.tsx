@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -15,8 +16,18 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
   const [isUploading, setIsUploading] = useState(false);
 
   // Zustand 스토어에서 프로필 이미지 설정 함수와 회원가입 데이터 가져오기
-  const { setSignupProfileImage } = useAuthStore();
+  const { setSignupProfileImage, clearSignupData } = useAuthStore();
   const { nickname, email: userEmail } = route.params || {};
+
+  // 뒤로가기 시 상태 초기화
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // 화면을 벗어날 때 상태 초기화
+        clearSignupData();
+      };
+    }, [clearSignupData]),
+  );
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -86,7 +97,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>4/5</ProgressText>}
+        rightComponent={<ProgressText>6/7</ProgressText>}
       />
 
       <Content>
