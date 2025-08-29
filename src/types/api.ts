@@ -317,6 +317,31 @@ export interface SendAccountCodeRequest {
 // 계좌 인증번호 전송 응답 타입
 export type SendAccountCodeResponse = string; // 4자리 인증번호 (예: "1234")
 
+// 랭킹 조회 관련 타입
+export type RankingType = 'university' | 'major';
+
+export interface MyRankInfo {
+  rank: number;
+  universityName: string;
+  majorName: string;
+  score: number;
+}
+
+export interface RankInfo {
+  rank: number;
+  name: string;
+  score: number;
+}
+
+export interface RankingResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  myItem: MyRankInfo;
+  items: RankInfo[];
+}
+
 // 계좌 인증번호 인증 요청 타입
 export interface VerifyAccountCodeRequest {
   code: string;
