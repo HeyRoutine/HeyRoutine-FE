@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -69,11 +70,14 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
 
       // route.params로 모든 데이터 전달
       const { email: routeEmail, password, nickname } = route.params || {};
+      const { universityId, majorId } = useAuthStore.getState().signupData;
       navigation.navigate('TermsAgreeMent', {
         email: routeEmail,
         password,
         nickname,
         profileImage: imageUrl,
+        universityId,
+        majorId,
       });
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
@@ -86,7 +90,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>4/5</ProgressText>}
+        rightComponent={<ProgressText>6/7</ProgressText>}
       />
 
       <Content>

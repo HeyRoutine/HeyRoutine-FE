@@ -79,7 +79,9 @@ const WeeklySummary = ({
           <HeaderCellEmpty />
           {weekDays.map((day, index) => (
             <HeaderCell key={index} isSelected={index === selectedDayIndex}>
-              <DayText isSelected={index === selectedDayIndex}>{day}</DayText>
+              <DayText isSelected={index === selectedDayIndex} day={day}>
+                {day}
+              </DayText>
             </HeaderCell>
           ))}
         </WeekHeaderRow>
@@ -165,11 +167,13 @@ const HeaderCellEmpty = styled.View`
   padding: 8px 4px;
 `;
 
-const DayText = styled.Text<{ isSelected: boolean }>`
+const DayText = styled.Text<{ isSelected: boolean; day: string }>`
   font-size: 12px;
   font-family: ${theme.fonts.Regular};
-  color: ${(props) =>
-    props.isSelected ? theme.colors.primary : theme.colors.gray600};
+  color: ${(props) => {
+    if (props.day === '일') return theme.colors.error;
+    return props.isSelected ? theme.colors.primary : theme.colors.gray600;
+  }};
 `;
 
 const EmptyStateContainer = styled.View`

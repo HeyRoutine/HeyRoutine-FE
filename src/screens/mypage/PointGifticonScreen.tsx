@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -10,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 
 import Header from '../../components/common/Header';
+import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
 import { useUserStore } from '../../store';
 import { shopCategoryList, shopList, myPoint } from '../../api/shop/shop';
@@ -113,12 +114,15 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   const [selectedCategory, setSelectedCategory] =
     React.useState<CategoryKey>('all');
   const [page] = React.useState<number>(0);
+  const [showAccountRequiredModal, setShowAccountRequiredModal] =
+    useState(false);
   const pageSize = 10;
 
   // Legacy: 로컬 스토어에서 포인트 조회
   // const points = useUserStore((s) => s.userInfo?.points ?? 0);
 
   // 서버에서 포인트 조회 (/api/v1/shop/my-point), result가 문자열("10000") 형태
+  const { userInfo } = useUserStore();
   const storePoints = useUserStore((s) => s.userInfo?.points ?? 0);
   const { data: myPointData, isError: isMyPointError } = useQuery({
     queryKey: ['myPoint'],
@@ -230,7 +234,12 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   };
 
   const handleGoCashout = () => {
-    navigation.navigate('PointCashout');
+    // 계좌 인증이 완료되지 않은 경우 계좌 등록 필요 모달 표시
+    if (!userInfo?.accountCertificationStatus) {
+      setShowAccountRequiredModal(true);
+    } else {
+      navigation.navigate('PointCashout');
+    }
   };
 
   const renderProduct = ({ item }: { item: any }) => (
@@ -306,6 +315,22 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
           }}
         />
       </ListContainer>
+
+      {/* 계좌 등록 필요 모달 */}
+      <BottomSheetDialog
+        visible={showAccountRequiredModal}
+        onRequestClose={() => setShowAccountRequiredModal(false)}
+      >
+        <ModalTitle>계좌 등록 필요</ModalTitle>
+        <ModalSubtitle>
+          포인트를 현금으로 전환하려면{'\n'}계좌 등록이 필요합니다.
+        </ModalSubtitle>
+        <ModalButtonsContainer>
+          <ModalButton onPress={() => setShowAccountRequiredModal(false)}>
+            <ModalButtonText>확인</ModalButtonText>
+          </ModalButton>
+        </ModalButtonsContainer>
+      </BottomSheetDialog>
     </Container>
   );
 };
@@ -428,4 +453,42 @@ const PriceText = styled.Text`
 const ListContainer = styled.View`
   flex: 1;
   padding: 0 16px 16px 16px;
+`;
+
+// 모달 관련 스타일
+const ModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 16px;
+`;
+
+const ModalSubtitle = styled.Text`
+  color: #6f7075;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 36px;
+`;
+
+const ModalButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ModalButton = styled.TouchableOpacity`
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${theme.colors.primary};
+`;
+
+const ModalButtonText = styled.Text`
+  font-family: ${theme.fonts.Medium};
+  font-size: 16px;
+  color: ${theme.colors.white};
 `;

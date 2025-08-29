@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -93,7 +94,7 @@ const NicknameScreen = ({ navigation, route }: any) => {
 
       // route.params로 이메일, 비밀번호, 닉네임 전달
       const { email, password } = route.params || {};
-      navigation.navigate('ProfileImage', { email, password, nickname });
+      navigation.navigate('University', { email, password, nickname });
     }
   };
 
@@ -105,7 +106,7 @@ const NicknameScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>3/5</ProgressText>}
+        rightComponent={<ProgressText>3/7</ProgressText>}
       />
 
       <Content>

@@ -1,0 +1,85 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.18.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/gyubin/Desktop/HeyRoutine-FE/.npmrc
+5 silly config load:file:/Users/gyubin/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm i react-native-size-matters
+8 verbose argv "i" "react-native-size-matters" "--save" "--cache" "/Users/gyubin/Desktop/HeyRoutine-FE/.npm-cache" "--no-fund" "--no-audit" "--loglevel" "error"
+9 verbose logfile logs-max:10 dir:/Users/gyubin/Desktop/HeyRoutine-FE/.npm-cache/_logs/2025-08-26T18_21_39_036Z-
+10 verbose logfile /Users/gyubin/Desktop/HeyRoutine-FE/.npm-cache/_logs/2025-08-26T18_21_39_036Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest react-native-size-matters@*
+15 silly packumentCache full:https://registry.npmjs.org/react-native-size-matters cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/react-native-size-matters 819ms (cache revalidated)
+17 silly packumentCache full:https://registry.npmjs.org/react-native-size-matters set size:92575 disposed:false
+18 silly fetch manifest react-native@0.79.5
+19 silly packumentCache full:https://registry.npmjs.org/react-native cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/react-native 97ms (cache revalidated)
+21 silly packumentCache full:https://registry.npmjs.org/react-native set size:13962341 disposed:false
+22 silly fetch manifest @types/react@~19.0.10
+23 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+24 http fetch GET 200 https://registry.npmjs.org/@types%2freact 72ms (cache revalidated)
+25 silly packumentCache full:https://registry.npmjs.org/@types%2freact set size:2444765 disposed:false
+26 silly fetch manifest react@^19.0.0
+27 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+28 http fetch GET 200 https://registry.npmjs.org/react 75ms (cache revalidated)
+29 silly packumentCache full:https://registry.npmjs.org/react set size:5977944 disposed:false
+30 silly placeDep ROOT react-native-size-matters@0.4.2 OK for: shinhan-heyroutine@1.0.0 want: *
+31 silly reify moves {}
+32 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-win32-x64-msvc
+33 silly reify mark deleted [
+33 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-win32-x64-msvc'
+33 silly reify ]
+34 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-win32-arm64-msvc
+35 silly reify mark deleted [
+35 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-win32-arm64-msvc'
+35 silly reify ]
+36 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-x64-musl
+37 silly reify mark deleted [
+37 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-x64-musl'
+37 silly reify ]
+38 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-x64-gnu
+39 silly reify mark deleted [
+39 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-x64-gnu'
+39 silly reify ]
+40 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm64-musl
+41 silly reify mark deleted [
+41 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm64-musl'
+41 silly reify ]
+42 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm64-gnu
+43 silly reify mark deleted [
+43 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm64-gnu'
+43 silly reify ]
+44 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm-gnueabihf
+45 silly reify mark deleted [
+45 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-linux-arm-gnueabihf'
+45 silly reify ]
+46 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-freebsd-x64
+47 silly reify mark deleted [
+47 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-freebsd-x64'
+47 silly reify ]
+48 verbose reify failed optional dependency /Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-darwin-x64
+49 silly reify mark deleted [
+49 silly reify   '/Users/gyubin/Desktop/HeyRoutine-FE/node_modules/lightningcss-darwin-x64'
+49 silly reify ]
+50 http cache react-native-size-matters@https://registry.npmjs.org/react-native-size-matters/-/react-native-size-matters-0.4.2.tgz 0ms (cache hit)
+51 silly ADD node_modules/react-native-size-matters
+52 silly ADD
+53 silly ADD
+54 silly ADD
+55 silly ADD
+56 silly ADD
+57 silly ADD
+58 silly ADD
+59 silly ADD
+60 silly ADD
+61 verbose cwd /Users/gyubin/Desktop/HeyRoutine-FE
+62 verbose os Darwin 24.6.0
+63 verbose node v22.18.0
+64 verbose npm  v10.9.3
+65 verbose exit 0
+66 info ok

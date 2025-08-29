@@ -58,8 +58,11 @@ const GroupRoutineSearchScreen = ({ navigation }: any) => {
     searchResultsData?.result?.items?.map((item) => {
       // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
       const today = new Date();
-      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-      const todayDay = dayNames[today.getDay()];
+      const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+      const dayIndex = today.getDay();
+      // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+      const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+      const todayDay = dayNames[mappedIndex];
 
       const completedDays =
         (item.percent || 0) >= 100 && (item.dayOfWeek || []).includes(todayDay)
@@ -179,7 +182,7 @@ const Container = styled(SafeAreaView)`
 `;
 
 const SearchContainer = styled.View`
-  padding: 16px;
+  padding: 12px 16px;
 `;
 
 const ListWrapper = styled.View`

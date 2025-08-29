@@ -29,6 +29,8 @@ import {
   VerifyAccountCodeRequest,
   VerifyAccountCodeResponse,
   DeleteUserResponse,
+  MajorSearchInfo,
+  UniversitySearchInfo,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -243,6 +245,28 @@ export const deleteUser = async (): Promise<
 > => {
   const response = await apiClient.delete<ApiResponse<DeleteUserResponse>>(
     '/api/v1/user/delete',
+  );
+  return response.data;
+};
+
+// 학과 검색
+export const getMajors = async (
+  keyword: string,
+): Promise<ApiResponse<MajorSearchInfo[]>> => {
+  const encodedKeyword = encodeURIComponent(keyword);
+  const response = await apiClient.get<ApiResponse<MajorSearchInfo[]>>(
+    `/api/v1/user/major?keyword=${encodedKeyword}`,
+  );
+  return response.data;
+};
+
+// 대학교 검색
+export const getUniversities = async (
+  keyword: string,
+): Promise<ApiResponse<UniversitySearchInfo[]>> => {
+  const encodedKeyword = encodeURIComponent(keyword);
+  const response = await apiClient.get<ApiResponse<UniversitySearchInfo[]>>(
+    `/api/v1/user/university?keyword=${encodedKeyword}`,
   );
   return response.data;
 };
