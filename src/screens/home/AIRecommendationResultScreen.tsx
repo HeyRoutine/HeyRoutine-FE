@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
-import { Image } from 'react-native';
+import { Image, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
+import { useGetDailyAnalysis } from '../../hooks/analysis';
 
 interface AIRecommendationResultScreenProps {
   navigation: any;
@@ -15,51 +16,26 @@ const AIRecommendationResultScreen = ({
   navigation,
   route,
 }: AIRecommendationResultScreenProps) => {
-  const [selectedRoutines, setSelectedRoutines] = useState<string[]>([
-    '1',
-    '2',
-    '4',
-    '7',
-  ]);
+  const [selectedRoutines, setSelectedRoutines] = useState<string[]>([]);
 
-  // 더미 루틴 데이터
-  const routines = [
-    {
-      id: '1',
-      title: 'OTT 구독 2개로 줄이기',
-      icon: '🎬',
-    },
-    {
-      id: '2',
-      title: '배달 음식 일주일에 1번으로 줄이기',
-      icon: '🍗',
-    },
-    {
-      id: '3',
-      title: '일주일에 커피 3잔만 마시기',
-      icon: '☕',
-    },
-    {
-      id: '4',
-      title: '밤 10시 이후 야식 금지',
-      icon: '🚫',
-    },
-    {
-      id: '5',
-      title: '텀블러 사용해서 커피값 할인받기',
-      icon: '💰',
-    },
-    {
-      id: '6',
-      title: '일주일에 3번 이상 학식 이용하기',
-      icon: '🍚',
-    },
-    {
-      id: '7',
-      title: '매일 밤 10시, 오늘 쓴 돈 확인하기',
-      icon: '✅',
-    },
-  ];
+  // API 데이터 조회
+  const { data: dailyAnalysisData, isLoading, error } = useGetDailyAnalysis();
+
+  // 실제 루틴 데이터 변환
+  const routines = React.useMemo(() => {
+    if (!dailyAnalysisData?.result?.items) {
+      return [];
+    }
+
+    // API에서 받은 10개 아이템을 루틴 형태로 변환
+    return dailyAnalysisData.result.items
+      .slice(0, 10)
+      .map((item: string, index: number) => ({
+        id: (index + 1).toString(),
+        title: item,
+        icon: '📝', // 기본 아이콘 (나중에 이미지로 교체 예정)
+      }));
+  }, [dailyAnalysisData]);
 
   const handleRoutineToggle = (routineId: string) => {
     setSelectedRoutines((prev) =>
@@ -72,6 +48,32 @@ const AIRecommendationResultScreen = ({
   const handleComplete = () => {
     navigation.navigate('HomeMain');
   };
+
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <Container>
+        <Content>
+          <LoadingContainer>
+            <LoadingText>AI 추천 루틴을 생성하고 있어요...</LoadingText>
+          </LoadingContainer>
+        </Content>
+      </Container>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <Container>
+        <Content>
+          <ErrorContainer>
+            <ErrorText>AI 추천 루틴을 불러오는데 실패했습니다.</ErrorText>
+          </ErrorContainer>
+        </Content>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -93,9 +95,17 @@ const AIRecommendationResultScreen = ({
         </HeaderSection>
 
         {/* 루틴 리스트 */}
-        <RoutineList>
+        <RoutineList
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
           {routines.map((routine) => (
             <RoutineCard key={routine.id}>
+              {/* 이미지 공간 (나중에 이미지 추가 예정) */}
+              <ImagePlaceholder>
+                <ImageText>{routine.icon}</ImageText>
+              </ImagePlaceholder>
+
               <RoutineText>{routine.title}</RoutineText>
               <CheckButton
                 onPress={() => handleRoutineToggle(routine.id)}
@@ -142,7 +152,7 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   flex: 1;
-  padding: 24px;
+  padding: 60px 24px 0 24px;
 `;
 
 const HeaderSection = styled.View`
@@ -157,10 +167,10 @@ const TitleContainer = styled.View`
 
 const Title = styled.Text`
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
   color: black;
   text-align: left;
-  line-height: 34px;
+  line-height: 30px;
   margin-bottom: 8px;
 `;
 
@@ -179,7 +189,7 @@ const CharacterImage = styled(Image)`
   opacity: 0.3;
 `;
 
-const RoutineList = styled.View`
+const RoutineList = styled.ScrollView`
   flex: 1;
 `;
 
@@ -188,7 +198,7 @@ const RoutineCard = styled.View`
   align-items: center;
   background-color: ${theme.colors.gray50};
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px 16px;
   margin-bottom: 12px;
   /* border: 1px solid ${theme.colors.gray200}; */
 `;
@@ -206,4 +216,42 @@ const CheckButton = styled.TouchableOpacity<{ isSelected: boolean }>`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const LoadingText = styled.Text`
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+`;
+
+const ErrorContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ErrorText = styled.Text`
+  font-size: 16px;
+  color: ${theme.colors.error};
+  text-align: center;
+`;
+
+const ImagePlaceholder = styled.View`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: ${theme.colors.gray100};
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+`;
+
+const ImageText = styled.Text`
+  font-size: 20px;
 `;
