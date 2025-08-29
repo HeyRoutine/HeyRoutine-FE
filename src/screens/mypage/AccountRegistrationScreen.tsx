@@ -30,22 +30,23 @@ const AccountRegistrationScreen = ({
   // 공통 에러 처리 훅
   const { handleApiError } = useErrorHandler();
 
-  // 계좌번호 유효성 검사
-  const isAccountValid = accountNumber.length >= 10;
-  const isAccountMatch = accountNumber === userInfo?.bankAccount;
-
-  useEffect(() => {
-    if (accountNumber.length > 0 && !isAccountValid) {
-      setErrorMessage('계좌번호는 10자리 이상 입력해주세요.');
-    } else if (accountNumber.length > 0 && !isAccountMatch) {
-      setErrorMessage('등록된 계좌번호와 일치하지 않습니다.');
-    } else {
-      setErrorMessage('');
+  // 실시간 검증 함수
+  const validateAccount = (text: string) => {
+    if (text.length > 0 && text.length < 10) {
+      return '계좌번호는 10자리 이상 입력해주세요.';
+    } else if (text.length >= 10 && text !== userInfo?.bankAccount) {
+      return '등록된 계좌번호와 일치하지 않습니다.';
     }
-  }, [accountNumber, isAccountValid, isAccountMatch]);
+    return '';
+  };
+
+  const handleAccountChange = (text: string) => {
+    setAccountNumber(text);
+    setErrorMessage(validateAccount(text));
+  };
 
   const handleRequestAuth = () => {
-    if (isAccountValid && isAccountMatch) {
+    if (accountNumber.length >= 10 && accountNumber === userInfo?.bankAccount) {
       // 1원 인증 요청 API 호출
       sendAccountCode(
         { account: accountNumber },
@@ -82,7 +83,7 @@ const AccountRegistrationScreen = ({
       <CenterContent>
         <CustomInput
           value={accountNumber}
-          onChangeText={setAccountNumber}
+          onChangeText={handleAccountChange}
           placeholder="계좌번호를 입력하세요"
           maxLength={20}
         />
@@ -92,14 +93,22 @@ const AccountRegistrationScreen = ({
         <CustomButton
           text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
           onPress={handleRequestAuth}
-          disabled={!isAccountValid || !isAccountMatch || isSendingCode}
+          disabled={
+            accountNumber.length < 10 ||
+            accountNumber !== userInfo?.bankAccount ||
+            isSendingCode
+          }
           backgroundColor={
-            isAccountValid && isAccountMatch && !isSendingCode
+            accountNumber.length >= 10 &&
+            accountNumber === userInfo?.bankAccount &&
+            !isSendingCode
               ? theme.colors.primary
               : theme.colors.gray200
           }
           textColor={
-            isAccountValid && isAccountMatch && !isSendingCode
+            accountNumber.length >= 10 &&
+            accountNumber === userInfo?.bankAccount &&
+            !isSendingCode
               ? theme.colors.white
               : theme.colors.gray500
           }

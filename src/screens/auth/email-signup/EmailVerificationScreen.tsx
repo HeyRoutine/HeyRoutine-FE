@@ -36,15 +36,29 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 
   const isButtonEnabled = code.length === 6;
 
-  // 타이머 로직 (UI 표시용)
+  // 타이머 로직 (UI 표시용) - useRef로 최적화
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    if (timeLeft === 0) return;
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
+    if (timeLeft === 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []); // 의존성 배열을 비워서 한 번만 실행
 
   // 재발송 쿨다운은 사용하지 않습니다 (항상 활성화 요구사항)
 
@@ -97,8 +111,16 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     const payload: MailSendRequest = { email } as any;
     try {
       setResendState('loading');
-      // 누른 순간 타이머 3분(180초)으로 리셋
+
+      // 기존 타이머 정리
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      // 타이머 3분(180초)으로 리셋
       setTimeLeft(180);
+
       // 입력값은 유지 (요구사항 없음). 필요하면 아래 주석 해제
       // setCode('');
       const res = await mailSend(payload);
@@ -116,13 +138,24 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     }
   };
 
-  useEffect(() => {
-    // 화면 진입 시 인증메일 발송
-    sendVerificationMail();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      // 화면 진입 시 인증메일 발송
+      sendVerificationMail();
+
+      // 화면을 벗어날 때 타이머 정리
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    }, []),
+  );
 
   const handleCodeChange = (text: string) => {
     setCode(text);
+    // 입력할 때마다 에러 메시지 초기화
     if (verifyError) setVerifyError(null);
   };
 
