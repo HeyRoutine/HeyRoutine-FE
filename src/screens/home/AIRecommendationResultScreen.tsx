@@ -46,7 +46,16 @@ const AIRecommendationResultScreen = ({
   };
 
   const handleComplete = () => {
-    navigation.navigate('HomeMain');
+    // 선택된 루틴들의 정보를 가져오기
+    const selectedRoutineData = routines.filter((routine) =>
+      selectedRoutines.includes(routine.id),
+    );
+
+    // 개인 루틴 생성 화면으로 이동하면서 선택된 루틴 데이터 전달
+    navigation.navigate('CreateRoutine', {
+      mode: 'create',
+      aiSelectedRoutines: selectedRoutineData,
+    });
   };
 
   // 로딩 상태 처리

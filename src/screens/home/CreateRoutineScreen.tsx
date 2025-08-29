@@ -19,7 +19,13 @@ import { RoutineType, DayType } from '../../types/api';
 
 interface CreateRoutineScreenProps {
   navigation: any;
-  route: { params?: { mode?: 'create' | 'edit'; routineData?: any } };
+  route: {
+    params?: {
+      mode?: 'create' | 'edit';
+      routineData?: any;
+      aiSelectedRoutines?: any[];
+    };
+  };
 }
 
 const CreateRoutineScreen = ({
@@ -28,6 +34,7 @@ const CreateRoutineScreen = ({
 }: CreateRoutineScreenProps) => {
   const mode = route?.params?.mode || 'create';
   const routineData = route?.params?.routineData;
+  const aiSelectedRoutines = route?.params?.aiSelectedRoutines || [];
 
   // 기존 데이터로 초기화 (수정 모드인 경우)
   const [routineName, setRoutineName] = useState(routineData?.title || '');
@@ -142,6 +149,7 @@ const CreateRoutineScreen = ({
               startDate: selectedStartDate,
               routineListId: data.result?.id, // 생성된 루틴 리스트 ID
             },
+            aiSelectedRoutines: aiSelectedRoutines, // AI 선택 루틴 데이터 전달
           });
         },
         onError: (error) => {
