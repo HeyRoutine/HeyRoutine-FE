@@ -36,7 +36,7 @@ const CreateGroupRoutineScreen = ({
     routineData?.description || '',
   );
   const [selectedCategory, setSelectedCategory] = useState(
-    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
+    routineData?.routineType === 'FINANCE' ? 'finance' : 'life',
   );
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.dayTypes || [],

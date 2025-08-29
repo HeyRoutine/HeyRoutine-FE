@@ -206,15 +206,17 @@ const TimeText = styled.Text`
 const BottomRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
 `;
 
 const DayContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 4px;
+  flex: 1;
+  margin-left: 8px;
 `;
 
 const DayBadge = styled.View<{ isSelected: boolean }>`
@@ -239,4 +241,5 @@ const RoutineCountText = styled.Text`
   color: #b5b6bd;
   font-size: 12px;
   font-weight: 600;
+  flex-shrink: 0;
 `;

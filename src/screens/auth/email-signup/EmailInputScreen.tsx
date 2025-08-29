@@ -104,7 +104,7 @@ const EmailInputScreen = ({ navigation }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>1/5</ProgressText>}
+        rightComponent={<ProgressText>1/7</ProgressText>}
       />
 
       <Content>

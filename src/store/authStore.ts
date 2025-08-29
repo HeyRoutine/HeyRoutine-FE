@@ -24,6 +24,8 @@ interface SignupData {
   nickname: string;
   university: string;
   department: string;
+  universityId: number | null;
+  majorId: number | null;
   profileImage: string | null;
   isMarketing: boolean;
 }
@@ -49,10 +51,11 @@ interface AuthState {
   setSignupNickname: (nickname: string) => void;
   setSignupUniversity: (university: string) => void;
   setSignupDepartment: (department: string) => void;
+  setSignupUniversityId: (universityId: number | null) => void;
+  setSignupMajorId: (majorId: number | null) => void;
   setSignupProfileImage: (profileImage: string | null) => void;
   setSignupMarketing: (isMarketing: boolean) => void;
   clearSignupData: () => void;
-  completeSignup: () => void;
 
   // 디버깅용: 현재 토큰 상태 확인
   debugTokenState: () => void;
@@ -70,6 +73,8 @@ const createAuthStore = (set: any, get: any) => ({
     nickname: '',
     university: '',
     department: '',
+    universityId: null,
+    majorId: null,
     profileImage: null,
     isMarketing: false,
   },
@@ -152,6 +157,16 @@ const createAuthStore = (set: any, get: any) => ({
       signupData: { ...state.signupData, department },
     })),
 
+  setSignupUniversityId: (universityId: number | null) =>
+    set((state: any) => ({
+      signupData: { ...state.signupData, universityId },
+    })),
+
+  setSignupMajorId: (majorId: number | null) =>
+    set((state: any) => ({
+      signupData: { ...state.signupData, majorId },
+    })),
+
   setSignupProfileImage: (profileImage: string | null) =>
     set((state: any) => ({
       signupData: { ...state.signupData, profileImage },
@@ -170,23 +185,12 @@ const createAuthStore = (set: any, get: any) => ({
         nickname: '',
         university: '',
         department: '',
+        universityId: null,
+        majorId: null,
         profileImage: null,
         isMarketing: false,
       },
     }),
-
-  completeSignup: () => {
-    const { signupData } = get();
-    const { useUserStore } = require('./userStore');
-    const { setUserInfo } = useUserStore.getState();
-
-    setUserInfo({
-      nickname: signupData.nickname,
-      email: signupData.email,
-      profileImage: signupData.profileImage || undefined,
-    });
-    get().clearSignupData();
-  },
 
   // 디버깅용: 현재 토큰 상태 확인
   debugTokenState: () => {

@@ -20,17 +20,7 @@ const NicknameScreen = ({ navigation, route }: any) => {
   const [shouldCheckDuplicate, setShouldCheckDuplicate] = useState(false);
 
   // Zustand 회원가입 스토어에서 닉네임 설정 함수 가져오기
-  const { setSignupNickname, clearSignupData } = useAuthStore();
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
+  const { setSignupNickname } = useAuthStore();
 
   // 공통 에러 처리 훅
   const { handleApiError } = useErrorHandler();

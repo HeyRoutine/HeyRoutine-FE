@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import CustomInput from '../../components/common/CustomInput';
 import { useAuthStore } from '../../store';
 import { useGetUniversities } from '../../hooks/user/useUser';
 import { UniversitySearchInfo } from '../../types/api';
@@ -19,17 +20,7 @@ const UniversityScreen = ({ navigation, route }: any) => {
   const { nickname } = route.params || {};
 
   // Zustand 스토어에서 대학교 설정 함수 가져오기
-  const { setSignupUniversity, clearSignupData } = useAuthStore();
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
+  const { setSignupUniversity, setSignupUniversityId } = useAuthStore();
 
   // 대학교 검색 API 호출
   const { data: searchResults, isLoading: isSearching } =
@@ -46,6 +37,7 @@ const UniversityScreen = ({ navigation, route }: any) => {
 
   const handleUniversitySelect = (selectedUniversity: UniversitySearchInfo) => {
     setUniversity(selectedUniversity.name);
+    setSignupUniversityId(selectedUniversity.id);
     setShowSearchResults(false);
   };
 
@@ -63,7 +55,8 @@ const UniversityScreen = ({ navigation, route }: any) => {
     });
   };
 
-  const isButtonEnabled = university.trim().length > 0;
+  const { signupData } = useAuthStore();
+  const isButtonEnabled = signupData.universityId !== null;
 
   return (
     <Container>
@@ -79,16 +72,17 @@ const UniversityScreen = ({ navigation, route }: any) => {
         </Title>
         <SubTitle>학교 랭킹에 도움을 줄 수 있어요!</SubTitle>
 
-        <InputContainer>
-          <InputField
-            placeholder="대학교 명을 입력해주세요."
+        <InputContainer isSelected={signupData.universityId !== null}>
+          <CustomInput
             value={university}
+            placeholder="대학교 명을 입력해주세요."
             onChangeText={(text) => {
               setUniversity(text);
+              setSignupUniversityId(null); // 텍스트 변경 시 ID 초기화
               setShowSearchResults(true);
             }}
-            onFocus={() => setShowSearchResults(true)}
-            placeholderTextColor={theme.colors.gray400}
+            showCharCounter={false}
+            isSelected={signupData.universityId !== null}
           />
           <SearchIcon>
             <MaterialIcons
@@ -179,19 +173,9 @@ const SubTitle = styled.Text`
   margin-bottom: 24px;
 `;
 
-const InputContainer = styled.View`
+const InputContainer = styled.View<{ isSelected: boolean }>`
   position: relative;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
   padding-bottom: 8px;
-`;
-
-const InputField = styled(TextInput)`
-  font-size: ${theme.fonts.body}px;
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray900};
-  padding-right: 40px;
-  padding-vertical: 8px;
 `;
 
 const SearchIcon = styled.View`

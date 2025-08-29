@@ -39,7 +39,7 @@ const CreateRoutineScreen = ({
   // 기존 데이터로 초기화 (수정 모드인 경우)
   const [routineName, setRoutineName] = useState(routineData?.title || '');
   const [selectedCategory, setSelectedCategory] = useState(
-    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
+    routineData?.routineType === 'FINANCE' ? 'finance' : 'life',
   );
   // 요일 순서 정의 (월화수목금토일)
   const dayOrder = ['월', '화', '수', '목', '금', '토', '일'];

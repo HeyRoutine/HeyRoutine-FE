@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
+import CustomInput from '../../components/common/CustomInput';
 import { useAuthStore } from '../../store';
 import { useGetMajors } from '../../hooks/user/useUser';
 import { MajorSearchInfo } from '../../types/api';
@@ -19,17 +20,7 @@ const DepartmentScreen = ({ navigation, route }: any) => {
   const { nickname } = route.params || {};
 
   // Zustand 스토어에서 학과 설정 함수 가져오기
-  const { setSignupDepartment, clearSignupData } = useAuthStore();
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
+  const { setSignupDepartment, setSignupMajorId } = useAuthStore();
 
   // 학과 검색 API 호출
   const { data: searchResults, isLoading: isSearching } =
@@ -46,6 +37,7 @@ const DepartmentScreen = ({ navigation, route }: any) => {
 
   const handleDepartmentSelect = (selectedDepartment: MajorSearchInfo) => {
     setDepartment(selectedDepartment.name);
+    setSignupMajorId(selectedDepartment.id);
     setShowSearchResults(false);
   };
 
@@ -64,7 +56,8 @@ const DepartmentScreen = ({ navigation, route }: any) => {
     });
   };
 
-  const isButtonEnabled = department.trim().length > 0;
+  const { signupData } = useAuthStore();
+  const isButtonEnabled = signupData.majorId !== null;
 
   return (
     <Container>
@@ -80,16 +73,17 @@ const DepartmentScreen = ({ navigation, route }: any) => {
         </Title>
         <SubTitle>학과 랭킹에 도움을 줄 수 있어요!</SubTitle>
 
-        <InputContainer>
-          <InputField
-            placeholder="학과 명을 입력해주세요."
+        <InputContainer isSelected={signupData.majorId !== null}>
+          <CustomInput
             value={department}
+            placeholder="학과 명을 입력해주세요."
             onChangeText={(text) => {
               setDepartment(text);
+              setSignupMajorId(null); // 텍스트 변경 시 ID 초기화
               setShowSearchResults(true);
             }}
-            onFocus={() => setShowSearchResults(true)}
-            placeholderTextColor={theme.colors.gray400}
+            showCharCounter={false}
+            isSelected={signupData.majorId !== null}
           />
           <SearchIcon>
             <MaterialIcons
@@ -180,19 +174,9 @@ const SubTitle = styled.Text`
   margin-bottom: 24px;
 `;
 
-const InputContainer = styled.View`
+const InputContainer = styled.View<{ isSelected: boolean }>`
   position: relative;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.gray200};
   padding-bottom: 8px;
-`;
-
-const InputField = styled(TextInput)`
-  font-size: ${theme.fonts.body}px;
-  font-family: ${theme.fonts.Regular};
-  color: ${theme.colors.gray900};
-  padding-right: 40px;
-  padding-vertical: 8px;
 `;
 
 const SearchIcon = styled.View`

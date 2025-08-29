@@ -34,19 +34,6 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   // route.params에서 이메일 가져오기
   const { email, isEmailChange, onSuccess } = route.params || {};
 
-  // Zustand 스토어에서 상태 초기화 함수 가져오기
-  const { clearSignupData } = useAuthStore();
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
-
   const isButtonEnabled = code.length === 6;
 
   // 타이머 로직 (UI 표시용)

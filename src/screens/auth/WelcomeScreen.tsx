@@ -9,8 +9,9 @@ import { useSignUp, useSignIn, useMyInfo } from '../../hooks/user/useUser';
 
 // 모든 회원가입 데이터를 route.params로 받기
 const WelcomeScreen = ({ navigation, route }: any) => {
-  const { nickname, email, password, profileImage } = route.params || {};
-  const { login, signupData } = useAuthStore();
+  const { nickname, email, password, profileImage, universityId, majorId } =
+    route.params || {};
+  const { login, signupData, setAccessToken, setRefreshToken } = useAuthStore();
   const { resetOnboarding } = useOnboardingStore();
   const { setUserInfo } = useUserStore();
 
@@ -25,6 +26,12 @@ const WelcomeScreen = ({ navigation, route }: any) => {
   const { data: myInfoData } = useMyInfo();
 
   const handleStart = () => {
+    // universityId와 majorId가 null이 아닌지 확인
+    if (!universityId || !majorId) {
+      console.error('대학교 또는 학과가 선택되지 않았습니다.');
+      return;
+    }
+
     // 회원가입 API 호출
     signUp(
       {
@@ -33,6 +40,8 @@ const WelcomeScreen = ({ navigation, route }: any) => {
         nickname: nickname,
         profileImage: profileImage || '', // 기본 프로필 이미지
         roles: ['USER'], // 기본 역할
+        universityId: universityId, // 대학교 ID
+        majorId: majorId, // 학과 ID
         isMarketing: signupData.isMarketing, // 마케팅 수신동의 상태
       },
       {
@@ -55,8 +64,6 @@ const WelcomeScreen = ({ navigation, route }: any) => {
                   loginData.result.accessToken &&
                   loginData.result.refreshToken
                 ) {
-                  const { setAccessToken, setRefreshToken } =
-                    useAuthStore.getState();
                   setAccessToken(loginData.result.accessToken);
                   setRefreshToken(loginData.result.refreshToken);
 

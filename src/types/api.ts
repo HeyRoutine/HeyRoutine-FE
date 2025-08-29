@@ -207,6 +207,8 @@ export interface SignUpRequest {
   nickname: string;
   profileImage: string;
   roles: string[];
+  universityId: number;
+  majorId: number;
   isMarketing: boolean;
 }
 

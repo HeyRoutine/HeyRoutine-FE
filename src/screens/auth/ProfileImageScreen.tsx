@@ -16,18 +16,8 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
   const [isUploading, setIsUploading] = useState(false);
 
   // Zustand 스토어에서 프로필 이미지 설정 함수와 회원가입 데이터 가져오기
-  const { setSignupProfileImage, clearSignupData } = useAuthStore();
+  const { setSignupProfileImage } = useAuthStore();
   const { nickname, email: userEmail } = route.params || {};
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -80,11 +70,14 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
 
       // route.params로 모든 데이터 전달
       const { email: routeEmail, password, nickname } = route.params || {};
+      const { universityId, majorId } = useAuthStore.getState().signupData;
       navigation.navigate('TermsAgreeMent', {
         email: routeEmail,
         password,
         nickname,
         profileImage: imageUrl,
+        universityId,
+        majorId,
       });
     } catch (error) {
       console.error('이미지 업로드 실패:', error);

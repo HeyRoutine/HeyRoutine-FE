@@ -76,7 +76,7 @@ const DatePickerModal = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 오늘 날짜 이전은 선택 불가
+    // 오늘 날짜 포함해서 선택 가능
     if (selectedDate >= today) {
       setSelectedDate(date);
     }

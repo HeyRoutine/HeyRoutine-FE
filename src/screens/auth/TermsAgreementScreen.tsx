@@ -16,19 +16,8 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   // Zustand 스토어에서 회원가입 데이터와 완료 함수 가져오기
-  const { signupData, completeSignup, setSignupMarketing, clearSignupData } =
-    useAuthStore();
+  const { signupData, setSignupMarketing } = useAuthStore();
   const { nickname } = signupData;
-
-  // 뒤로가기 시 상태 초기화
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        // 화면을 벗어날 때 상태 초기화
-        clearSignupData();
-      };
-    }, [clearSignupData]),
-  );
 
   // '완료' 버튼 활성화 조건 (필수 약관 모두 동의)
   const isButtonEnabled = agreeTerms && agreePrivacy;
@@ -39,11 +28,24 @@ const TermsAgreementScreen = ({ navigation, route }: any) => {
     // 마케팅 수신동의 상태를 스토어에 저장
     setSignupMarketing(agreeMarketing);
 
-    // 회원가입 완료 처리
-    completeSignup();
+    // 디버깅용 로그
+    console.log('🔍 TermsAgreementScreen signupData:', signupData);
+    console.log(
+      '🔍 TermsAgreementScreen universityId:',
+      signupData.universityId,
+    );
+    console.log('🔍 TermsAgreementScreen majorId:', signupData.majorId);
+
     // route.params로 모든 데이터 전달
     const { email, password, nickname, profileImage } = route.params || {};
-    navigation.navigate('Welcome', { email, password, nickname, profileImage });
+    navigation.navigate('Welcome', {
+      email,
+      password,
+      nickname,
+      profileImage,
+      universityId: signupData.universityId,
+      majorId: signupData.majorId,
+    });
   };
 
   const handleAgreeAll = () => {
