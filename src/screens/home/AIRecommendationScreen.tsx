@@ -8,6 +8,7 @@ import Header from '../../components/common/Header';
 import CustomButton from '../../components/common/CustomButton';
 import { useSurvey } from '../../hooks/user';
 import { getDailyAnalysis } from '../../api/analysis';
+import { useOnboardingStore } from '../../store';
 
 interface InterestItem {
   id: string;
@@ -17,12 +18,18 @@ interface InterestItem {
 
 interface AIRecommendationScreenProps {
   navigation: any;
+  route: any;
 }
 
 const AIRecommendationScreen = ({
   navigation,
+  route,
 }: AIRecommendationScreenProps) => {
+  const { completeOnboarding } = useOnboardingStore();
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 홈 화면에서 온 경우인지 확인
+  const isFromHome = route.params?.fromHome;
   const [selectedItemsByPage, setSelectedItemsByPage] = useState<{
     [key: number]: string[];
   }>({
@@ -200,6 +207,7 @@ const AIRecommendationScreen = ({
         nextScreen: 'AIRecommendationResult',
         duration: 5000,
         resultData: analysisResult?.result || null,
+        fromHome: isFromHome,
       });
     } catch (error) {
       console.error('API 호출 실패:', error);
@@ -220,7 +228,7 @@ const AIRecommendationScreen = ({
     <Container>
       <Header
         title=""
-        onBackPress={handleBack}
+        onBackPress={currentPage > 1 ? handleBack : undefined}
         rightComponent={<ProgressText>{currentPage} / 4</ProgressText>}
       />
 
@@ -249,19 +257,47 @@ const AIRecommendationScreen = ({
 
       {/* 하단 버튼 */}
       <ButtonContainer>
-        <CustomButton
-          text={
-            currentPage === 4 ? (isPending ? '처리 중...' : '완료') : '다음'
-          }
-          onPress={handleNext}
-          backgroundColor={
-            currentSelectedItems.length === 0
-              ? theme.colors.gray300
-              : theme.colors.primary
-          }
-          textColor={theme.colors.white}
-          disabled={currentSelectedItems.length === 0 || isPending}
-        />
+        {currentPage === 1 ? (
+          <ButtonColumn>
+            <CustomButton
+              text={isFromHome ? '돌아가기' : '건너뛰기'}
+              onPress={
+                isFromHome
+                  ? () => navigation.navigate('Home')
+                  : completeOnboarding
+              }
+              backgroundColor={theme.colors.white}
+              textColor={theme.colors.gray600}
+              borderColor={theme.colors.gray300}
+              borderWidth={1}
+            />
+            <CustomButton
+              text="다음"
+              onPress={handleNext}
+              backgroundColor={
+                currentSelectedItems.length === 0
+                  ? theme.colors.gray300
+                  : theme.colors.primary
+              }
+              textColor={theme.colors.white}
+              disabled={currentSelectedItems.length === 0 || isPending}
+            />
+          </ButtonColumn>
+        ) : (
+          <CustomButton
+            text={
+              currentPage === 4 ? (isPending ? '처리 중...' : '완료') : '다음'
+            }
+            onPress={handleNext}
+            backgroundColor={
+              currentSelectedItems.length === 0
+                ? theme.colors.gray300
+                : theme.colors.primary
+            }
+            textColor={theme.colors.white}
+            disabled={currentSelectedItems.length === 0 || isPending}
+          />
+        )}
       </ButtonContainer>
     </Container>
   );
@@ -276,7 +312,7 @@ const Container = styled(SafeAreaView)`
 
 const Content = styled.View`
   flex: 1;
-  padding: 24px 24px 0 24px;
+  padding: 0 24px 0 24px;
 `;
 
 const ProgressText = styled.Text`
@@ -286,6 +322,7 @@ const ProgressText = styled.Text`
 `;
 
 const TitleContainer = styled.View`
+  margin-top: 16px;
   margin-bottom: 48px;
 `;
 
@@ -335,4 +372,14 @@ const CardText = styled.Text<{ isSelected: boolean }>`
 const ButtonContainer = styled.View`
   padding: 16px;
   background-color: ${theme.colors.white};
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ButtonColumn = styled.View`
+  flex-direction: column;
+  gap: 12px;
 `;

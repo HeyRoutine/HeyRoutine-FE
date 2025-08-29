@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import { useGetDailyAnalysis } from '../../hooks/analysis';
+import { useOnboardingStore } from '../../store';
 
 interface AIRecommendationResultScreenProps {
   navigation: any;
@@ -16,7 +17,13 @@ const AIRecommendationResultScreen = ({
   navigation,
   route,
 }: AIRecommendationResultScreenProps) => {
+  const { completeOnboarding } = useOnboardingStore();
   const [selectedRoutines, setSelectedRoutines] = useState<string[]>([]);
+
+  // 홈 화면에서 온 경우인지 확인
+  const isFromHome = route.params?.fromHome;
+  console.log('🔍 AIRecommendationResultScreen route.params:', route.params);
+  console.log('🔍 isFromHome:', isFromHome);
 
   // API 데이터 조회
   const { data: dailyAnalysisData, isLoading, error } = useGetDailyAnalysis();
@@ -141,12 +148,32 @@ const AIRecommendationResultScreen = ({
 
       {/* 하단 버튼 */}
       <ButtonWrapper>
-        <CustomButton
-          text={`${selectedRoutines.length}개 선택 완료`}
-          onPress={handleComplete}
-          backgroundColor={theme.colors.primary}
-          textColor={theme.colors.white}
-        />
+        <ButtonColumn>
+          <CustomButton
+            text={isFromHome ? '돌아가기' : '건너뛰기'}
+            onPress={
+              isFromHome
+                ? () => {
+                    console.log('🔍 돌아가기 버튼 클릭됨');
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'Home' }],
+                    });
+                  }
+                : completeOnboarding
+            }
+            backgroundColor={theme.colors.white}
+            textColor={theme.colors.gray600}
+            borderColor={theme.colors.gray300}
+            borderWidth={1}
+          />
+          <CustomButton
+            text={`${selectedRoutines.length}개 선택 완료`}
+            onPress={handleComplete}
+            backgroundColor={theme.colors.primary}
+            textColor={theme.colors.white}
+          />
+        </ButtonColumn>
       </ButtonWrapper>
     </Container>
   );
@@ -225,6 +252,11 @@ const CheckButton = styled.TouchableOpacity<{ isSelected: boolean }>`
 
 const ButtonWrapper = styled.View`
   padding: 24px;
+`;
+
+const ButtonColumn = styled.View`
+  flex-direction: column;
+  gap: 12px;
 `;
 
 const LoadingContainer = styled.View`

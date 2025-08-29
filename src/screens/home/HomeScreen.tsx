@@ -300,7 +300,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleAICreateRoutine = () => {
     setShowAddRoutineModal(false);
-    navigation.navigate('AIRecommendation');
+    navigation.navigate('AIRecommendation', { fromHome: true });
   };
 
   const handleManualCreateRoutine = () => {

@@ -1,11 +1,12 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import TimetableUploadScreen from '../screens/onboarding/TimetableUploadScreen';
-import AiConsentScreen from '../screens/onboarding/AiConsentScreen';
-import AiRecommendationScreen from '../screens/onboarding/AiRecommendationScreen';
-import OnboardingLoadingScreen from '../screens/onboarding/OnboardingLoadingScreen';
-import ResultScreen from '../screens/common/ResultScreen';
+import AIRecommendationScreen from '../screens/home/AIRecommendationScreen';
+import LoadingScreen from '../screens/common/LoadingScreen';
+import AIRecommendationResultScreen from '../screens/home/AIRecommendationResultScreen';
+import RoutineSuggestionScreen from '../screens/analysis/RoutineSuggestionScreen';
+import CreateRoutineScreen from '../screens/home/CreateRoutineScreen';
+import CreateRoutineDetailScreen from '../screens/home/CreateRoutineDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,22 +22,29 @@ const OnboardingNavigator = ({
 }: OnboardingNavigatorProps) => {
   return (
     <Stack.Navigator
-      initialRouteName="OnboardingLoading"
+      initialRouteName="AIRecommendation"
       screenOptions={{
         headerShown: false,
       }}
     >
       <Stack.Screen
-        name="OnboardingLoading"
-        component={OnboardingLoadingScreen}
+        name="AIRecommendation"
+        component={AIRecommendationScreen}
         initialParams={initialParams}
       />
-      <Stack.Screen name="Result" component={ResultScreen} />
-      <Stack.Screen name="TimetableUpload" component={TimetableUploadScreen} />
-      <Stack.Screen name="AiConsent" component={AiConsentScreen} />
+      <Stack.Screen name="Loading" component={LoadingScreen} />
       <Stack.Screen
-        name="AiRecommendation"
-        component={AiRecommendationScreen}
+        name="AIRecommendationResult"
+        component={AIRecommendationResultScreen}
+      />
+      <Stack.Screen
+        name="RoutineSuggestion"
+        component={RoutineSuggestionScreen}
+      />
+      <Stack.Screen name="CreateRoutine" component={CreateRoutineScreen} />
+      <Stack.Screen
+        name="CreateRoutineDetail"
+        component={CreateRoutineDetailScreen}
       />
     </Stack.Navigator>
   );
