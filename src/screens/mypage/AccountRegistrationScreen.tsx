@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -73,47 +74,52 @@ const AccountRegistrationScreen = ({
     <Container>
       <Header title="계좌 등록" onBackPress={() => navigation.goBack()} />
 
-      <Content>
-        <Title>계좌번호를{'\n'}입력해주세요.</Title>
-        <Subtitle>신한 {userInfo?.bankAccount}</Subtitle>
-      </Content>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <Content>
+          <Title>계좌번호를{'\n'}입력해주세요.</Title>
+          <Subtitle>신한 {userInfo?.bankAccount}</Subtitle>
+          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        </Content>
 
-      {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        <CenterContent>
+          <CustomInput
+            value={accountNumber}
+            onChangeText={handleAccountChange}
+            placeholder="계좌번호를 입력하세요"
+            maxLength={20}
+          />
+        </CenterContent>
 
-      <CenterContent>
-        <CustomInput
-          value={accountNumber}
-          onChangeText={handleAccountChange}
-          placeholder="계좌번호를 입력하세요"
-          maxLength={20}
-        />
-      </CenterContent>
-
-      <ButtonWrapper>
-        <CustomButton
-          text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
-          onPress={handleRequestAuth}
-          disabled={
-            accountNumber.length < 10 ||
-            accountNumber !== userInfo?.bankAccount ||
-            isSendingCode
-          }
-          backgroundColor={
-            accountNumber.length >= 10 &&
-            accountNumber === userInfo?.bankAccount &&
-            !isSendingCode
-              ? theme.colors.primary
-              : theme.colors.gray200
-          }
-          textColor={
-            accountNumber.length >= 10 &&
-            accountNumber === userInfo?.bankAccount &&
-            !isSendingCode
-              ? theme.colors.white
-              : theme.colors.gray500
-          }
-        />
-      </ButtonWrapper>
+        <ButtonWrapper>
+          <CustomButton
+            text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
+            onPress={handleRequestAuth}
+            disabled={
+              accountNumber.length < 10 ||
+              accountNumber !== userInfo?.bankAccount ||
+              isSendingCode
+            }
+            backgroundColor={
+              accountNumber.length >= 10 &&
+              accountNumber === userInfo?.bankAccount &&
+              !isSendingCode
+                ? theme.colors.primary
+                : theme.colors.gray200
+            }
+            textColor={
+              accountNumber.length >= 10 &&
+              accountNumber === userInfo?.bankAccount &&
+              !isSendingCode
+                ? theme.colors.white
+                : theme.colors.gray500
+            }
+          />
+        </ButtonWrapper>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -147,20 +153,17 @@ const Subtitle = styled.Text`
 `;
 
 const ErrorMessage = styled.Text`
-  position: absolute;
-  top: 200px;
-  left: 24px;
-  right: 24px;
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
+  margin-top: 8px;
 `;
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 100px 24px 0 24px;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

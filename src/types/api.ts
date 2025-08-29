@@ -228,6 +228,8 @@ export interface MyInfoResponse {
   point?: number;
   isMarketing: boolean;
   accountCertificationStatus: boolean;
+  university?: string;
+  major?: string;
 }
 
 // 마케팅 수신동의 업데이트 요청 타입
@@ -313,7 +315,7 @@ export interface SendAccountCodeRequest {
 }
 
 // 계좌 인증번호 전송 응답 타입
-export type SendAccountCodeResponse = string; // "해당 계좌는 유효합니다."
+export type SendAccountCodeResponse = string; // 4자리 인증번호 (예: "1234")
 
 // 계좌 인증번호 인증 요청 타입
 export interface VerifyAccountCodeRequest {

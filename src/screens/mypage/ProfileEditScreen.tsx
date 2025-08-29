@@ -94,12 +94,24 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
     myInfoData?.result?.isMarketing ?? userInfo?.isMarketing ?? false;
   const notificationConsent = userInfo?.notificationConsent ?? true;
 
-  // 로딩 중이면 기본값 사용
-  if (isMyInfoLoading) {
-    console.log('🔍 사용자 정보 로딩 중...');
-  } else if (myInfoData?.result) {
-    console.log('🔍 서버에서 받은 사용자 정보:', myInfoData.result);
-  }
+  // 서버에서 받은 사용자 정보로 로컬 상태 업데이트
+  useEffect(() => {
+    if (!isMyInfoLoading && myInfoData?.result) {
+      console.log('🔍 서버에서 받은 사용자 정보:', myInfoData.result);
+
+      const serverData = myInfoData.result;
+      updateUserInfo({
+        nickname: serverData.nickname,
+        university: serverData.university,
+        major: serverData.major,
+        profileImage: serverData.profileImage,
+        bankAccount: serverData.bankAccount,
+        accountCertificationStatus: serverData.accountCertificationStatus,
+        isMarketing: serverData.isMarketing,
+        points: serverData.point || 0,
+      });
+    }
+  }, [myInfoData, isMyInfoLoading, updateUserInfo]);
   const profileImageUri = userInfo?.profileImage;
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);

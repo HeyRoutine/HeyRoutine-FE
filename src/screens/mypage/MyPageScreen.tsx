@@ -116,6 +116,13 @@ const MyPageScreen = ({ navigation }: IMyPageScreenProps) => {
             <UserName>
               {userInfo?.nickname || myInfo?.result?.nickname || '사용자'}
             </UserName>
+            <UserUniversity>
+              {myInfo?.result?.university && myInfo?.result?.major
+                ? `${myInfo.result.university} · ${myInfo.result.major}`
+                : userInfo?.university && userInfo?.major
+                  ? `${userInfo.university} · ${userInfo.major}`
+                  : ''}
+            </UserUniversity>
           </ProfileInfo>
         </ProfileSection>
 
@@ -161,6 +168,13 @@ const UserName = styled.Text`
   font-size: 18px;
   font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
+  margin-bottom: 4px;
+`;
+
+const UserUniversity = styled.Text`
+  font-size: 14px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
 `;
 
 const ListContainer = styled.View`
