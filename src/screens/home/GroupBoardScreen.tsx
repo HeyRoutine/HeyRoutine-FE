@@ -148,6 +148,15 @@ const GroupBoardScreen = ({ navigation }: any) => {
               <Divider />
             </>
           )}
+          ListEmptyComponent={() => (
+            <EmptyContainer>
+              <EmptyImage
+                source={require('../../assets/images/character_sol.png')}
+                resizeMode="contain"
+              />
+              <EmptyText>등록된 루틴이 없습니다.</EmptyText>
+            </EmptyContainer>
+          )}
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: 100,
@@ -243,15 +252,22 @@ const ParticipantCount = styled.Text`
 
 const EmptyContainer = styled.View`
   flex: 1;
-  justify-content: center;
   align-items: center;
-  padding: 40px 0;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+const EmptyImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+  opacity: 0.3;
 `;
 
 const EmptyText = styled.Text`
   font-family: ${theme.fonts.Regular};
-  font-size: 14px;
-  color: ${theme.colors.gray500};
+  font-size: 16px;
+  color: ${theme.colors.gray400};
   text-align: center;
 `;
 
