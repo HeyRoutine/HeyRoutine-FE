@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
@@ -6,31 +6,51 @@ import { FlatList } from 'react-native';
 import Header from '../../components/common/Header';
 import TabNavigation from '../../components/common/TabNavigation';
 import { theme } from '../../styles/theme';
+import { useRankList } from '../../hooks/ranking/useRankList';
 
-interface RankItem {
+// 화면 표시용 아이템 타입 (API 응답 매핑 후 사용)
+interface UiRankItem {
   id: string;
-  nickname: string;
-  points: number;
+  name: string;
+  score: number;
   rank: number;
 }
 
-// 탭 데이터: 학교 랭킹 / 학과 랭킹 (임시 데이터)
-const schoolRankData: RankItem[] = [
-  { id: '1', nickname: '신한 대학교', points: 3200, rank: 1 },
-  { id: '2', nickname: '헤이영 대학교', points: 2890, rank: 2 },
-  { id: '3', nickname: '헤이 대학교', points: 2750, rank: 3 },
-  { id: '4', nickname: '루틴 대학교', points: 2510, rank: 4 },
-];
-
-const departmentRankData: RankItem[] = [
-  { id: '1', nickname: '컴퓨터공학과', points: 820, rank: 1 },
-  { id: '2', nickname: '경영학과', points: 790, rank: 2 },
-  { id: '3', nickname: '전자공학과', points: 770, rank: 3 },
-  { id: '4', nickname: '화학공학과', points: 750, rank: 4 },
-];
-
 const RankBoardScreen = ({ navigation }: any) => {
   const [selectedTab, setSelectedTab] = useState(0);
+
+  const {
+    data: universityData,
+    isLoading: isUniversityLoading,
+    isFetching: isUniversityFetching,
+  } = useRankList({ type: 'university', page: 0, size: 20 }, selectedTab === 0);
+
+  const {
+    data: majorData,
+    isLoading: isMajorLoading,
+    isFetching: isMajorFetching,
+  } = useRankList({ type: 'major', page: 0, size: 20 }, selectedTab === 1);
+
+  const schoolRankData = useMemo<UiRankItem[]>(() => {
+    const items = universityData?.result?.items || [];
+    return items.map((it) => ({
+      id: `${it.rank}`,
+      name: it.name,
+      score: it.score,
+      rank: it.rank,
+    }));
+  }, [universityData]);
+
+  const departmentRankData = useMemo<UiRankItem[]>(() => {
+    const items = majorData?.result?.items || [];
+    return items.map((it) => ({
+      id: `${it.rank}`,
+      name: it.name,
+      score: it.score,
+      rank: it.rank,
+    }));
+  }, [majorData]);
+
   const listData = selectedTab === 0 ? schoolRankData : departmentRankData;
   const isSchool = selectedTab === 0;
   const top3TitleText = isSchool ? '🏆 TOP 3 대학교' : '🏆 TOP 3 학과';
@@ -59,9 +79,9 @@ const RankBoardScreen = ({ navigation }: any) => {
                       <RankBadgeText>2</RankBadgeText>
                     </RankBadge>
                   </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[1].nickname}</SchoolName>
+                  <SchoolName numberOfLines={1}>{listData[1].name}</SchoolName>
                   <ScoreBadge variant="silver">
-                    <ScoreText>{listData[1].points}점</ScoreText>
+                    <ScoreText>{listData[1].score}점</ScoreText>
                   </ScoreBadge>
                 </TopItem>
               )}
@@ -75,9 +95,9 @@ const RankBoardScreen = ({ navigation }: any) => {
                       <RankBadgeText>1</RankBadgeText>
                     </RankBadge>
                   </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[0].nickname}</SchoolName>
+                  <SchoolName numberOfLines={1}>{listData[0].name}</SchoolName>
                   <ScoreBadge variant="gold">
-                    <ScoreText>{listData[0].points}점</ScoreText>
+                    <ScoreText>{listData[0].score}점</ScoreText>
                   </ScoreBadge>
                 </TopItem>
               )}
@@ -91,9 +111,9 @@ const RankBoardScreen = ({ navigation }: any) => {
                       <RankBadgeText>3</RankBadgeText>
                     </RankBadge>
                   </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[2].nickname}</SchoolName>
+                  <SchoolName numberOfLines={1}>{listData[2].name}</SchoolName>
                   <ScoreBadge variant="bronze">
-                    <ScoreText>{listData[2].points}점</ScoreText>
+                    <ScoreText>{listData[2].score}점</ScoreText>
                   </ScoreBadge>
                 </TopItem>
               )}
@@ -105,8 +125,8 @@ const RankBoardScreen = ({ navigation }: any) => {
           renderItem={({ item }) => (
             <Row>
               <Rank>{item.rank}</Rank>
-              <Name>{item.nickname}</Name>
-              <Points>{item.points} P</Points>
+              <Name>{item.name}</Name>
+              <Points>{item.score} P</Points>
             </Row>
           )}
           ItemSeparatorComponent={() => <Separator />}
