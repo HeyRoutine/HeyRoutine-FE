@@ -6,6 +6,7 @@ import CreateRoutineScreen from '../../screens/home/CreateRoutineScreen';
 import CreateRoutineDetailScreen from '../../screens/home/CreateRoutineDetailScreen';
 import PersonalRoutineDetailScreen from '../../screens/home/PersonalRoutineDetailScreen';
 import GroupBoardScreen from '../../screens/home/GroupBoardScreen';
+import RankBoardScreen from '../../screens/home/RankBoardScreen';
 import GroupRoutineSearchScreen from '../../screens/home/GroupRoutineSearchScreen';
 import GroupRoutineDetailScreen from '../../screens/home/GroupRoutineDetailScreen';
 import CreateGroupRoutineScreen from '../../screens/home/CreateGroupRoutineScreen';
@@ -31,6 +32,7 @@ const HomeStack = () => {
         component={PersonalRoutineDetailScreen}
       />
       <Stack.Screen name="GroupBoard" component={GroupBoardScreen} />
+      <Stack.Screen name="RankBoard" component={RankBoardScreen} />
       <Stack.Screen
         name="GroupRoutineSearch"
         component={GroupRoutineSearchScreen}
