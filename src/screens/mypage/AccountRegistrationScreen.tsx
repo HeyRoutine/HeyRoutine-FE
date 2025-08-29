@@ -8,6 +8,7 @@ import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useSendAccountCode } from '../../hooks/user/useUser';
 import { useErrorHandler } from '../../hooks/common/useErrorHandler';
+import { useUserStore } from '../../store';
 
 interface IAccountRegistrationScreenProps {
   navigation: any;
@@ -19,6 +20,9 @@ const AccountRegistrationScreen = ({
   const [accountNumber, setAccountNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // 사용자 정보에서 기존 계좌번호 가져오기
+  const { userInfo } = useUserStore();
+
   // 계좌 인증번호 전송 훅
   const { mutate: sendAccountCode, isPending: isSendingCode } =
     useSendAccountCode();
@@ -26,19 +30,22 @@ const AccountRegistrationScreen = ({
   // 공통 에러 처리 훅
   const { handleApiError } = useErrorHandler();
 
-  // 계좌번호 유효성 검사 (임시)
+  // 계좌번호 유효성 검사
   const isAccountValid = accountNumber.length >= 10;
+  const isAccountMatch = accountNumber === userInfo?.bankAccount;
 
   useEffect(() => {
     if (accountNumber.length > 0 && !isAccountValid) {
-      setErrorMessage('존재하지 않는 계좌번호입니다.');
+      setErrorMessage('계좌번호는 10자리 이상 입력해주세요.');
+    } else if (accountNumber.length > 0 && !isAccountMatch) {
+      setErrorMessage('등록된 계좌번호와 일치하지 않습니다.');
     } else {
       setErrorMessage('');
     }
-  }, [accountNumber, isAccountValid]);
+  }, [accountNumber, isAccountValid, isAccountMatch]);
 
   const handleRequestAuth = () => {
-    if (isAccountValid) {
+    if (isAccountValid && isAccountMatch) {
       // 1원 인증 요청 API 호출
       sendAccountCode(
         { account: accountNumber },
@@ -67,6 +74,7 @@ const AccountRegistrationScreen = ({
 
       <Content>
         <Title>계좌번호를{'\n'}입력해주세요.</Title>
+        <Subtitle>신한 {userInfo?.bankAccount}</Subtitle>
       </Content>
 
       {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
@@ -84,14 +92,14 @@ const AccountRegistrationScreen = ({
         <CustomButton
           text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
           onPress={handleRequestAuth}
-          disabled={!isAccountValid || isSendingCode}
+          disabled={!isAccountValid || !isAccountMatch || isSendingCode}
           backgroundColor={
-            isAccountValid && !isSendingCode
+            isAccountValid && isAccountMatch && !isSendingCode
               ? theme.colors.primary
               : theme.colors.gray200
           }
           textColor={
-            isAccountValid && !isSendingCode
+            isAccountValid && isAccountMatch && !isSendingCode
               ? theme.colors.white
               : theme.colors.gray500
           }
@@ -119,6 +127,14 @@ const Title = styled.Text`
   line-height: 34px;
   margin-top: 16px;
   margin-bottom: 12px;
+`;
+
+const Subtitle = styled.Text`
+  font-size: 16px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
+  margin-top: 8px;
+  text-align: flex-start;
 `;
 
 const ErrorMessage = styled.Text`
