@@ -160,32 +160,14 @@ const RoutineSuggestionModal: React.FC<RoutineSuggestionModalProps> = ({
   // 이모지 ID를 URL로 매핑하는 함수 (성능 최적화)
   const getEmojiUrl = (emojiId: number) => {
     if (!emojiId || !emojis || emojis.length === 0) {
-      console.log(
-        '🔍 이모지 매핑 실패 - emojiId:',
-        emojiId,
-        'emojis 길이:',
-        emojis?.length,
-      );
       return '📝'; // 기본 아이콘
     }
 
     const emoji = emojis.find((e) => e.emojiId === emojiId);
     if (!emoji || !emoji.emojiUrl) {
-      console.log(
-        '🔍 이모지 찾기 실패 - emojiId:',
-        emojiId,
-        '찾은 emoji:',
-        emoji,
-      );
       return '📝'; // 기본 아이콘
     }
 
-    console.log(
-      '🔍 이모지 매핑 성공 - emojiId:',
-      emojiId,
-      'emojiUrl:',
-      emoji.emojiUrl,
-    );
     return emoji.emojiUrl;
   };
 

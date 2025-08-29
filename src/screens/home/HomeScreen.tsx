@@ -64,10 +64,13 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const today = new Date();
 
   const getStartOfWeekMonday = (date: Date) => {
-    const copied = new Date(date);
+    const copied = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     const day = copied.getDay();
     const diffToMonday = (day + 6) % 7;
-    copied.setHours(0, 0, 0, 0);
     copied.setDate(copied.getDate() - diffToMonday);
     return copied;
   };
@@ -84,8 +87,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const startOfWeek = getStartOfWeekMonday(selectedDate);
   const weekData = Array.from({ length: 7 }).map((_, idx) => {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + idx);
+    const d = new Date(
+      startOfWeek.getFullYear(),
+      startOfWeek.getMonth(),
+      startOfWeek.getDate() + idx,
+    );
     return {
       day: dayLabels[idx],
       date: d.getDate(),
@@ -103,9 +109,10 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     selectedDays: string[];
     completedDays: string[];
     routineNums?: number;
+    startDate?: string;
   };
 
-  const selectedDateString = selectedDate.toISOString().split('T')[0];
+  const selectedDateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
   const dayIndex = selectedDate.getDay();
   // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
   const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
@@ -174,6 +181,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         selectedDays: item.dayOfWeek,
         completedDays: item.successDay || [],
         routineNums: item.routineNums || 0,
+        startDate: item.startDate, // 시작 날짜 추가
       })),
     ) || [];
 
@@ -217,7 +225,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   ];
 
   // API에서 반환된 루틴들을 그대로 사용 (클라이언트 필터링 제거)
-  console.log('🔍 API 반환 루틴:', {
+  console.log('🔍 홈 화면 루틴 조회:', {
     selectedDate: selectedDateString,
     selectedDay: selectedDay,
     selectedDayLabel,
@@ -227,6 +235,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       id: r.id,
       title: r.title,
       selectedDays: r.selectedDays,
+      startDate: r.startDate, // 시작 날짜 추가
     })),
   });
 
@@ -309,11 +318,15 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   };
 
   const handleDateSelect = (date: Date) => {
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
+    // 날짜만 복사하고 시간은 설정하지 않음
+    const newDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     console.log('🔍 날짜 선택됨:', {
-      oldDate: selectedDate.toISOString().split('T')[0],
-      newDate: newDate.toISOString().split('T')[0],
+      oldDate: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`,
+      newDate: `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`,
       oldDay: selectedDay,
       newDay: (() => {
         const dayIndex = newDate.getDay();

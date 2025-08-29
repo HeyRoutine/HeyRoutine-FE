@@ -424,7 +424,7 @@ const InputContainer = styled.View`
 const NameInput = styled(TextInput)`
   font-family: ${theme.fonts.SemiBold};
   font-size: 28px;
-  color: ${theme.colors.gray300};
+  color: ${theme.colors.gray800};
   padding: 16px 0;
   text-align: center;
 `;

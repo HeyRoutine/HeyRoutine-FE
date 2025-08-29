@@ -602,6 +602,7 @@ export interface PersonalRoutineListItem {
   percent: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
   dayOfWeek: DayType[]; // ['월', '화', '수'] 형식
   successDay: DayType[]; // 이번 주 성공한 요일들
+  startDate?: string; // 시작 날짜 (YYYY-MM-DD 형식)
 }
 
 // 개인루틴 리스트 조회 응답 타입
