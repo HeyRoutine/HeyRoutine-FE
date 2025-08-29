@@ -412,7 +412,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 timeRange={item.timeRange}
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}
-                routineNums={selectedTab === 1 ? item.routineNums : undefined}
+                routineNums={item.routineNums}
                 onPress={() => handleRoutinePress(item.id)}
               />
             )}

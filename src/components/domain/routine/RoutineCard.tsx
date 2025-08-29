@@ -206,14 +206,15 @@ const TimeText = styled.Text`
 const BottomRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
 `;
 
 const DayContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  align-items: center;
   gap: 4px;
   flex: 1;
   margin-left: 8px;
@@ -242,4 +243,5 @@ const RoutineCountText = styled.Text`
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
+  align-self: center;
 `;

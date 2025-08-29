@@ -510,6 +510,12 @@ const PersonalRoutineDetailScreen = ({
               <RoutineTime>
                 {formatTimeWithPeriod(routineData?.startTime || '00:00')} -{' '}
                 {formatTimeWithPeriod(routineData?.endTime || '00:00')}
+                {routineData?.routineNums && (
+                  <RoutineCountText>
+                    {' '}
+                    • {routineData.routineNums}개 항목
+                  </RoutineCountText>
+                )}
               </RoutineTime>
             </HeaderLeft>
             {!isEditMode && (
@@ -916,4 +922,11 @@ const AddTemplateText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray600};
+`;
+
+const RoutineCountText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray500};
+  margin-left: 4px;
 `;
