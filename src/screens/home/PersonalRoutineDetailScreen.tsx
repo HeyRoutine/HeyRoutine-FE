@@ -406,26 +406,29 @@ const PersonalRoutineDetailScreen = ({
 
     setActiveRoutineId(routineData.id.toString());
 
-    // ActiveRoutineScreen으로 이동
-    const tasksWithRoutineId = routineItems.map((item, index) => {
-      // 정렬된 순서로 routineId 매칭
-      const sortedRoutines = existingRoutinesData?.result
-        ? [...existingRoutinesData.result].sort(
-            (a, b) => a.routineId - b.routineId,
-          )
-        : [];
-      const matchingRoutine = sortedRoutines[index];
+    // 성공하지 않은 루틴만 필터링
+    const incompleteTasks = routineItems
+      .map((item, index) => {
+        // 정렬된 순서로 routineId 매칭
+        const sortedRoutines = existingRoutinesData?.result
+          ? [...existingRoutinesData.result].sort(
+              (a, b) => a.routineId - b.routineId,
+            )
+          : [];
+        const matchingRoutine = sortedRoutines[index];
 
-      return {
-        icon: item.emoji,
-        title: item.text,
-        duration: item.time,
-        routineId: matchingRoutine?.routineId,
-      };
-    });
+        return {
+          icon: item.emoji,
+          title: item.text,
+          duration: item.time,
+          routineId: matchingRoutine?.routineId,
+          isCompleted: item.isCompleted,
+        };
+      })
+      .filter((task) => !task.isCompleted); // 성공하지 않은 루틴만 포함
 
     navigation.navigate('ActiveRoutine', {
-      tasks: tasksWithRoutineId,
+      tasks: incompleteTasks,
       routineName: routineData?.name || '루틴',
       routineId: routineData?.id?.toString(),
     });
@@ -579,11 +582,22 @@ const PersonalRoutineDetailScreen = ({
 
         <CreateButton
           onPress={isEditMode ? handleSave : handleStartRoutine}
-          disabled={!isEditMode && !isTodayInSelectedDays()}
+          disabled={
+            !isEditMode &&
+            (!isTodayInSelectedDays() ||
+              routineItems.every((item) => item.isCompleted))
+          }
           style={{
-            opacity: !isEditMode && !isTodayInSelectedDays() ? 0.5 : 1,
+            opacity:
+              !isEditMode &&
+              (!isTodayInSelectedDays() ||
+                routineItems.every((item) => item.isCompleted))
+                ? 0.5
+                : 1,
             backgroundColor:
-              !isEditMode && !isTodayInSelectedDays()
+              !isEditMode &&
+              (!isTodayInSelectedDays() ||
+                routineItems.every((item) => item.isCompleted))
                 ? theme.colors.gray200
                 : theme.colors.primary,
           }}
@@ -591,7 +605,9 @@ const PersonalRoutineDetailScreen = ({
           <CreateButtonText
             style={{
               color:
-                !isEditMode && !isTodayInSelectedDays()
+                !isEditMode &&
+                (!isTodayInSelectedDays() ||
+                  routineItems.every((item) => item.isCompleted))
                   ? theme.colors.gray400
                   : theme.colors.white,
             }}
