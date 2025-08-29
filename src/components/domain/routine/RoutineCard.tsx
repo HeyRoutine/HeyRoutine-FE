@@ -66,8 +66,11 @@ const RoutineCard = ({
   // 오늘 날짜에 해당하는 요일 계산
   const getTodayDay = () => {
     const today = new Date();
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    return dayNames[today.getDay()];
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    const dayIndex = today.getDay();
+    // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+    const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+    return dayNames[mappedIndex];
   };
 
   const isDayCompleted = (day: string) => {

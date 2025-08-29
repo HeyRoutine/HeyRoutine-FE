@@ -66,8 +66,7 @@ const CreateRoutineScreen = ({
     routineData?.startDate ||
       (() => {
         const today = new Date();
-        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-        return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       })(),
   );
 
