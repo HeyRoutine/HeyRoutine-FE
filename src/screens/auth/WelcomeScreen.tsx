@@ -80,6 +80,9 @@ const WelcomeScreen = ({ navigation, route }: any) => {
                     isMarketing: signupData.isMarketing,
                     // 계좌 인증 상태는 회원가입 시 무조건 false
                     accountCertificationStatus: false,
+                    // 대학교 및 학과 정보 저장
+                    universityId: universityId,
+                    majorId: majorId,
                   });
 
                   // 로그인 상태 변경
