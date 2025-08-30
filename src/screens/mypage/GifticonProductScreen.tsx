@@ -124,7 +124,7 @@ const GifticonProductScreen = ({
           <Divider />
           <Row>
             <Label>상품명</Label>
-            <Value numberOfLines={1}>{title}</Value>
+            <Value>{title}</Value>
           </Row>
           <Divider />
           <Row>
@@ -238,8 +238,8 @@ const ImageBox = styled.View`
   border-radius: 12px;
   overflow: hidden;
   align-self: center;
-  width: 280px;
-  height: 280px;
+  width: 200px;
+  height: 200px;
   background-color: ${theme.colors.white};
 `;
 
@@ -261,9 +261,10 @@ const InfoTable = styled.View`
 
 const Row = styled.View`
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 16px 4px;
+  min-height: 48px;
 `;
 
 const Divider = styled.View`
@@ -280,6 +281,7 @@ const Value = styled.Text`
   font-family: ${theme.fonts.SemiBold};
   color: ${theme.colors.gray900};
   max-width: 70%;
+  flex-shrink: 1;
 `;
 
 const ButtonWrapper = styled.View`

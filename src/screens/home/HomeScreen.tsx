@@ -234,8 +234,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         setHasShownStreakSuccess(true);
         // AsyncStorage에 표시 여부 저장
         await AsyncStorage.setItem('hasShownStreakSuccess', 'true');
-        // StreakSuccessScreen으로 이동
-        navigation.navigate('StreakSuccess');
+        // 분석 탭으로 이동
+        navigation.navigate('Analysis');
       }
     } catch (error) {
       console.error('최대 연속 일수 확인 중 오류:', error);

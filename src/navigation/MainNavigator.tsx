@@ -30,6 +30,7 @@ const MainNavigator = () => {
     'CreateGroupRoutineDetail',
     'AIRecommendation',
     'AIRecommendationResult',
+    'GifticonProduct',
   ];
 
   return (
@@ -123,6 +124,8 @@ const MainNavigator = () => {
             'PointCashoutComplete',
             'NicknameSetting',
             'PasswordSetting',
+            'GifticonProduct',
+            'PointCashout',
           ];
 
           return {
