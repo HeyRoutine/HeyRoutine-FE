@@ -12,6 +12,8 @@ import {
   ShopCategoryListParams,
   ShopCategoryListResponse,
   GetProductDetailResponse,
+  AccountTransferRequest,
+  AccountTransferResponse,
 } from '../../types/api';
 
 // ===== 포인트샵 API 함수들 =====
@@ -99,6 +101,17 @@ export const getProductDetail = async (
 ): Promise<ApiResponse<GetProductDetailResponse>> => {
   const response = await apiClient.get<ApiResponse<GetProductDetailResponse>>(
     `/api/v1/shop/${productId}`,
+  );
+  return response.data;
+};
+
+// 포인트 전환하기
+export const accountTransfer = async (
+  data: AccountTransferRequest,
+): Promise<ApiResponse<AccountTransferResponse>> => {
+  const response = await apiClient.post<ApiResponse<AccountTransferResponse>>(
+    '/api/v1/shop/account-transfer',
+    data,
   );
   return response.data;
 };

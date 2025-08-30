@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -13,6 +14,7 @@ import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
 import { useUserStore, useFinanceStore } from '../../store';
 import { myPoint } from '../../api/shop/shop';
+import { useAccountTransfer } from '../../hooks/shop';
 
 interface IPointCashoutScreenProps {
   navigation: any;
@@ -27,17 +29,32 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
   const { userInfo, deductPoints } = useUserStore();
   const { currentBalance, setCurrentBalance } = useFinanceStore();
 
+  // 포인트 전환 API 훅
+  const { mutate: transferPoints, isPending: isTransferLoading } =
+    useAccountTransfer();
+
   // Legacy: 스토어에서 보유 포인트 사용
   // const maxPoints = userInfo?.points ?? 0;
-
+  // 입금된 현금, 계좌 잔액 조회
   // 서버에서 보유 포인트 조회 (/api/v1/shop/my-point), result가 문자열("10000") 형태
-  const { data: myPointData, isError: isMyPointError } = useQuery({
+  const {
+    data: myPointData,
+    isError: isMyPointError,
+    refetch: refetchMyPoint,
+  } = useQuery({
     queryKey: ['myPoint'],
     queryFn: () => myPoint(),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     retry: 0,
   });
+
+  // 화면에 포커스될 때마다 최신 포인트 조회
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchMyPoint();
+    }, [refetchMyPoint]),
+  );
 
   const maxPoints = React.useMemo(() => {
     if (!myPointData || isMyPointError) return userInfo?.points ?? 0;
@@ -85,39 +102,60 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
 
   const handleConfirmTransfer = () => {
     const amount = parseInt(pointAmount) || 0;
+    const bankAccount = userInfo?.bankAccount!; // 계좌번호는 반드시 존재함
 
-    // Optimistic update: 전역 myPoint 캐시 값을 즉시 차감 반영
-    const prev = queryClient.getQueryData<any>(['myPoint']);
-    if (prev && typeof prev === 'object' && prev !== null) {
-      const r: any = prev.result;
-      const prevNum =
-        typeof r === 'string' || typeof r === 'number'
-          ? Number(r)
-          : Number(userInfo?.points ?? 0);
-      const nextNum = Math.max(0, prevNum - amount);
-      queryClient.setQueryData(['myPoint'], {
-        ...prev,
-        result: String(nextNum),
-      });
-    } else {
-      // 캐시가 없을 때도 최소한 화면상 일관성 유지
-      const base = Number(userInfo?.points ?? 0);
-      const nextNum = Math.max(0, base - amount);
-      queryClient.setQueryData(['myPoint'], {
-        isSuccess: true,
-        code: 'COMMON200',
-        message: '성공입니다.',
-        result: String(nextNum),
-      });
-    }
+    // 포인트 전환 API 호출
+    transferPoints(
+      {
+        account: bankAccount,
+        price: amount.toString(), // 포인트를 문자열로 전달
+      },
+      {
+        onSuccess: (data) => {
+          console.log('🔍 포인트 전환 성공:', data);
 
-    // 스토어 차감 및 잔액 증가
-    deductPoints(amount);
-    setCurrentBalance(currentBalance + amount);
+          // Optimistic update: 전역 myPoint 캐시 값을 즉시 차감 반영
+          const prev = queryClient.getQueryData<any>(['myPoint']);
+          if (prev && typeof prev === 'object' && prev !== null) {
+            const r: any = prev.result;
+            const prevNum =
+              typeof r === 'string' || typeof r === 'number'
+                ? Number(r)
+                : Number(userInfo?.points ?? 0);
+            const nextNum = Math.max(0, prevNum - amount);
+            queryClient.setQueryData(['myPoint'], {
+              ...prev,
+              result: String(nextNum),
+            });
+          } else {
+            // 캐시가 없을 때도 최소한 화면상 일관성 유지
+            const base = Number(userInfo?.points ?? 0);
+            const nextNum = Math.max(0, base - amount);
+            queryClient.setQueryData(['myPoint'], {
+              isSuccess: true,
+              code: 'COMMON200',
+              message: '성공입니다.',
+              result: String(nextNum),
+            });
+          }
 
-    // 모달 닫기 및 완료 화면 이동
-    setIsTransferModalOpen(false);
-    navigation.navigate('PointCashoutComplete', { transferredPoints: amount });
+          // 스토어 차감 및 잔액 증가
+          deductPoints(amount);
+          setCurrentBalance(currentBalance + amount);
+
+          // 모달 닫기 및 완료 화면 이동 (계좌 잔액 포함)
+          setIsTransferModalOpen(false);
+          navigation.navigate('PointCashoutComplete', {
+            transferredPoints: amount,
+            accountBalance: data.result, // API 응답에서 받은 계좌 잔액
+          });
+        },
+        onError: (error) => {
+          console.error('🔍 포인트 전환 실패:', error);
+          // 에러 처리 (필요시 모달 표시 등)
+        },
+      },
+    );
   };
 
   return (
@@ -164,7 +202,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
           />
           <PointButton
             text="전체사용"
-            onPress={() => handlePointChange(2000)}
+            onPress={() => handlePointChange(maxPoints)}
             flex={1.5}
           />
         </ButtonRow>
@@ -175,14 +213,7 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
       <InfoSection>
         <MyPageListItem
           title="입금계좌"
-          rightText="신한은행"
-          rightTextColor={theme.colors.gray900}
-          showArrow={false}
-          disabled={true}
-        />
-        <MyPageListItem
-          title=""
-          rightText="123-12-123456-1"
+          rightText={`신한 ${userInfo?.bankAccount!}`}
           rightTextColor={theme.colors.gray900}
           showArrow={false}
           disabled={true}
@@ -204,8 +235,10 @@ const PointCashoutScreen = ({ navigation }: IPointCashoutScreenProps) => {
       </InfoSection>
 
       <ButtonWrapper>
-        <TransferButton onPress={handleTransfer}>
-          <TransferButtonText>전환하기</TransferButtonText>
+        <TransferButton onPress={handleTransfer} disabled={isTransferLoading}>
+          <TransferButtonText>
+            {isTransferLoading ? '전환 중...' : '전환하기'}
+          </TransferButtonText>
         </TransferButton>
       </ButtonWrapper>
 

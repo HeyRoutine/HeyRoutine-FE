@@ -8,6 +8,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
@@ -124,13 +125,24 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
   // 서버에서 포인트 조회 (/api/v1/shop/my-point), result가 문자열("10000") 형태
   const { userInfo } = useUserStore();
   const storePoints = useUserStore((s) => s.userInfo?.points ?? 0);
-  const { data: myPointData, isError: isMyPointError } = useQuery({
+  const {
+    data: myPointData,
+    isError: isMyPointError,
+    refetch: refetchMyPoint,
+  } = useQuery({
     queryKey: ['myPoint'],
     queryFn: () => myPoint(),
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     retry: 0,
   });
+
+  // 화면에 포커스될 때마다 최신 포인트 조회
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchMyPoint();
+    }, [refetchMyPoint]),
+  );
   const points = React.useMemo(() => {
     if (!myPointData || isMyPointError) return storePoints;
     const r: any = myPointData.result;

@@ -442,6 +442,18 @@ export interface ProductDetailInfo {
 // 물건 상세보기 응답 타입
 export type GetProductDetailResponse = ProductDetailInfo;
 
+// ===== 포인트 전환 =====
+// 포인트 전환 요청 타입
+export interface AccountTransferRequest {
+  account: string; // 계좌번호
+  price: string; // 포인트 (문자열로 전달)
+}
+
+// 포인트 전환 응답 타입
+export interface AccountTransferResponse {
+  result: string; // 현재 통장 잔액 (문자열)
+}
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
