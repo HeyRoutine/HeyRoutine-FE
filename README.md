@@ -12,11 +12,11 @@
 
 ### Front-end
 
-  - TypeScript
-  - React-Native (with Expo)
-  - React-Query (Server State)
-  - Zustand (Client State)
-  - Styled-Components
+  - TypeScript - ver 5.3.3
+  - React-Native (with Expo) - ver 0.74.5
+  - React-Query (Server State) - ver ^5.84.2
+  - Zustand (Client State) - ^5.0.7
+  - Styled-Components - ^5.1.34
 
 -----
 
