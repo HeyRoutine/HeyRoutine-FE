@@ -16,6 +16,7 @@ import { TabNavigation } from '../../components/common';
 import { useAnalysisStore } from '../../store';
 import { getMaxStreak, getWeeklySummary } from '../../api/analysis';
 import { RoutineType, WeeklySummaryItem } from '../../types/api';
+import { useGivePoint } from '../../hooks/analysis';
 
 /**
  * AnalysisScreen의 props 인터페이스
@@ -106,6 +107,9 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   const [maxStreak, setMaxStreak] = useState<number>(0);
   const [loadingStreak, setLoadingStreak] = useState(false);
   const [streakError, setStreakError] = useState<string | null>(null);
+
+  // 포인트 지급 훅
+  const { mutate: givePoint } = useGivePoint();
 
   // 이전 더미 데이터는 API 연동으로 대체합니다.
   // const dailyRoutines = [...];
@@ -241,6 +245,15 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     React.useCallback(() => {
       fetchWeekly();
       fetchMaxStreak();
+      // 포인트 지급 API 호출
+      givePoint(undefined, {
+        onSuccess: (data) => {
+          console.log('🔍 포인트 지급 성공:', data);
+        },
+        onError: (error) => {
+          console.log('🔍 포인트 지급 실패 (정상적인 경우):', error);
+        },
+      });
     }, [selectedTab, startDateStr, endDateStr]),
   );
 

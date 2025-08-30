@@ -11,6 +11,7 @@ import {
   GetWeeklySummaryParams,
   GetWeeklySummaryResponse,
   GetMaxStreakResponse,
+  GivePointResponse,
 } from '../../types/api';
 
 /**
@@ -64,6 +65,31 @@ export const getDailyAnalysis = async (): Promise<ApiResponse<any>> => {
     return response.data;
   } catch (error) {
     console.error('🔍 getDailyAnalysis API 호출 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 연속 1주일 달성 포인트 지급
+ * GET /api/v1/analysis/weekly-bonus
+ */
+export const givePoint = async (): Promise<ApiResponse<GivePointResponse>> => {
+  console.log('🔍 givePoint API 호출 시작');
+
+  try {
+    const response = await apiClient.get<ApiResponse<GivePointResponse>>(
+      '/api/v1/analysis/weekly-bonus',
+    );
+
+    console.log('🔍 givePoint API 응답 성공:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('🔍 givePoint API 호출 실패:', error);
     throw error;
   }
 };

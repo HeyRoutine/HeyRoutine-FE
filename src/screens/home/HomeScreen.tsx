@@ -4,6 +4,7 @@ import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -25,6 +26,7 @@ import {
   useInfiniteMyGroupRoutines,
 } from '../../hooks/routine/group/useGroupRoutines';
 import { useMyInfo } from '../../hooks/user/useUser';
+import { getMaxStreak } from '../../api/analysis';
 
 interface HomeScreenProps {
   navigation: any;
@@ -33,6 +35,7 @@ interface HomeScreenProps {
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
+  const [hasShownStreakSuccess, setHasShownStreakSuccess] = useState(false);
 
   const { selectedDate, setSelectedDate } = useRoutineStore();
   const { setUserInfo } = useUserStore();
@@ -141,10 +144,47 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     refetch: refetchGroupRoutines,
   } = useInfiniteMyGroupRoutines({});
 
+  // 최대 연속 일수 확인 및 성공 화면 표시
+  const checkMaxStreak = async () => {
+    try {
+      const res = await getMaxStreak();
+      if (
+        res.isSuccess &&
+        res.result.streakDays >= 7 &&
+        res.result.streakDays % 7 === 0 &&
+        !hasShownStreakSuccess
+      ) {
+        setHasShownStreakSuccess(true);
+        // AsyncStorage에 표시 여부 저장
+        await AsyncStorage.setItem('hasShownStreakSuccess', 'true');
+        // StreakSuccessScreen으로 이동
+        navigation.navigate('StreakSuccess');
+      }
+    } catch (error) {
+      console.error('최대 연속 일수 확인 중 오류:', error);
+    }
+  };
+
+  // AsyncStorage에서 표시 여부 확인
+  useEffect(() => {
+    const checkShownStatus = async () => {
+      try {
+        const shown = await AsyncStorage.getItem('hasShownStreakSuccess');
+        if (shown === 'true') {
+          setHasShownStreakSuccess(true);
+        }
+      } catch (error) {
+        console.error('AsyncStorage 확인 중 오류:', error);
+      }
+    };
+    checkShownStatus();
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       refetchPersonalRoutines();
       refetchGroupRoutines();
+      checkMaxStreak();
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
   );
 

@@ -723,6 +723,9 @@ export interface GetMaxStreakResponse {
   streakDays: number;
 }
 
+// ===== 분석(Analysis) - 연속 1주일 달성 포인트 지급 =====
+export type GivePointResponse = EmptyResponse;
+
 // 맞춤 금융 상품 추천 API 타입
 export interface RecommendProductItem {
   bankName: string;
