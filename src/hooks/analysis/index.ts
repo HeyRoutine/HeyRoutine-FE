@@ -5,3 +5,4 @@ export { useCategoryAnalysis } from './useCategoryAnalysis';
 export { useWeeklySpendingAnalysis } from './useWeeklySpendingAnalysis';
 export { useGetDailyAnalysis } from './useDailyAnalysis';
 export { useGivePoint } from './useGivePoint';
+export { useRcmdConsumptionRoutine } from './useRcmdConsumptionRoutine';

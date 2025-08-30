@@ -12,6 +12,8 @@ import {
   GetWeeklySummaryResponse,
   GetMaxStreakResponse,
   GivePointResponse,
+  RcmdConsumptionRoutineParams,
+  RcmdConsumptionRoutineResponse,
 } from '../../types/api';
 
 /**
@@ -90,6 +92,36 @@ export const givePoint = async (): Promise<ApiResponse<GivePointResponse>> => {
     return response.data;
   } catch (error) {
     console.error('🔍 givePoint API 호출 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 소비 루틴 맞춤 추천
+ * GET /api/v1/analysis/rcmd-cosumRoutine
+ */
+export const rcmdConsumptionRoutine = async (
+  params: RcmdConsumptionRoutineParams,
+): Promise<RcmdConsumptionRoutineResponse> => {
+  console.log('🔍 rcmdConsumptionRoutine API 호출 시작');
+
+  try {
+    const response = await apiClient.get<RcmdConsumptionRoutineResponse>(
+      '/api/v1/analysis/rcmd-cosumRoutine',
+      {
+        params,
+      },
+    );
+
+    console.log('🔍 rcmdConsumptionRoutine API 응답 성공:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('🔍 rcmdConsumptionRoutine API 호출 실패:', error);
     throw error;
   }
 };

@@ -794,3 +794,32 @@ export interface SurveyRequest {
 }
 
 export type SurveyResponse = ApiResponse<string>;
+
+// ===== 분석(Analysis) - 소비 루틴 맞춤 추천 =====
+
+// 소비 루틴 맞춤 추천 요청 파라미터
+export interface RcmdConsumptionRoutineParams {
+  categorySpendings: CategorySpendingItem[];
+}
+
+// 소비자 분석 정보
+export interface ConsumerInfo {
+  consumerType: string; // 소비자 타입 (최대 8자)
+  text: string; // 소비 카테고리에 대한 분석 (최대 70자)
+}
+
+// 추천 루틴 정보
+export interface RecommendRoutineItem {
+  emojiUrl: string; // 이모지 URL
+  routineName: string; // 추천하는 루틴 네임 (최대 20자)
+}
+
+// 소비 루틴 맞춤 추천 응답 result 타입
+export interface RcmdConsumptionRoutineResult {
+  analysis: ConsumerInfo;
+  recommendRoutine: RecommendRoutineItem[];
+}
+
+// 소비 루틴 맞춤 추천 응답 타입
+export type RcmdConsumptionRoutineResponse =
+  ApiResponse<RcmdConsumptionRoutineResult>;
