@@ -152,6 +152,7 @@ const TimePickerModal = ({
       onRequestClose={onRequestClose}
       dismissible={false}
     >
+      <ModalTitle>수행 시간 선택</ModalTitle>
       <TimePickerContainer>
         <SelectionOverlay />
 
@@ -226,6 +227,14 @@ const TimePickerModal = ({
 };
 
 export default React.memo(TimePickerModal);
+
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-bottom: 24px;
+`;
 
 const CompleteButton = styled.TouchableOpacity`
   background-color: ${theme.colors.primary};
