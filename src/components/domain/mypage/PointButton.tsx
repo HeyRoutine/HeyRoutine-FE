@@ -33,7 +33,8 @@ export default PointButton;
 const ButtonContainer = styled.TouchableOpacity<{ flex: number }>`
   flex: ${(props) => props.flex};
   padding: 12px 8px;
-  background-color: ${theme.colors.gray100};
+  background-color: ${theme.colors.white};
+  border: 1px solid ${theme.colors.primary};
   border-radius: 8px;
   align-items: center;
   justify-content: center;
