@@ -7,6 +7,7 @@ import { theme } from '../../../styles/theme';
 import {
   useGroupGuestbooks,
   useCreateGroupGuestbook,
+  useDeleteGroupGuestbook,
 } from '../../../hooks/routine/group/useGroupRoutines';
 import { useUserStore } from '../../../store/userStore';
 import BottomSheetDialog from '../../common/BottomSheetDialog';
@@ -40,6 +41,8 @@ const GuestbookModal = ({
   );
   const { mutate: createGuestbook, isPending: isCreating } =
     useCreateGroupGuestbook();
+  const { mutate: deleteGuestbook, isPending: isDeleting } =
+    useDeleteGroupGuestbook();
 
   // 초기 로딩 시 맨 아래로 스크롤
   useEffect(() => {
@@ -116,10 +119,27 @@ const GuestbookModal = ({
   };
 
   const handleConfirmDelete = () => {
-    console.log('🔍 방명록 삭제:', selectedMessageId);
-    // TODO: 삭제 API 호출
-    setIsDeleteModalVisible(false);
-    setSelectedMessageId(null);
+    if (selectedMessageId) {
+      console.log('🔍 방명록 삭제:', selectedMessageId);
+      deleteGuestbook(
+        {
+          groupRoutineListId,
+          guestbookId: selectedMessageId.toString(),
+        },
+        {
+          onSuccess: () => {
+            console.log('🔍 방명록 삭제 성공');
+            setIsDeleteModalVisible(false);
+            setSelectedMessageId(null);
+          },
+          onError: (error) => {
+            console.error('🔍 방명록 삭제 실패:', error);
+            setIsDeleteModalVisible(false);
+            setSelectedMessageId(null);
+          },
+        },
+      );
+    }
   };
 
   return (
