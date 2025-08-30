@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { theme } from '../../../styles/theme';
 import BottomSheetDialog from '../../common/BottomSheetDialog';
@@ -25,6 +26,14 @@ const EmojiPickerModal = ({
   onEmojiSelect,
   categories = ['생활', '소비', '식사', '학습', '건강', '취미'],
 }: EmojiPickerModalProps) => {
+  // 화면 너비를 기준으로 이모지 크기와 간격 계산
+  const screenWidth = Dimensions.get('window').width;
+  const containerPadding = 24; // 좌우 패딩
+  const availableWidth = screenWidth - containerPadding * 2;
+  const numColumns = 6;
+  const gap = 8; // 이모지 간 간격
+  const totalGaps = numColumns - 1; // 총 간격 수
+  const emojiSize = (availableWidth - totalGaps * gap) / numColumns;
   const [selectedCategory, setSelectedCategory] = useState(
     categories.length > 0 ? categories[0] : '생활',
   );
@@ -72,13 +81,21 @@ const EmojiPickerModal = ({
         data={emojis}
         keyExtractor={(item, index) => `${item.emojiId}-${index}`}
         renderItem={({ item }) => (
-          <EmojiButton onPress={() => handleEmojiPress(item.emojiUrl)}>
-            <SvgImage uri={item.emojiUrl} width={20} height={20} />
+          <EmojiButton
+            onPress={() => handleEmojiPress(item.emojiUrl)}
+            size={emojiSize}
+            gap={gap}
+          >
+            <SvgImage
+              uri={item.emojiUrl}
+              width={emojiSize * 0.4}
+              height={emojiSize * 0.4}
+            />
           </EmojiButton>
         )}
         numColumns={6}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => <EmptyText>이모지가 없습니다.</EmptyText>}
+        ListEmptyComponent={() => null}
         ListHeaderComponent={() =>
           isLoadingEmojis ? <LoadingText>로딩 중...</LoadingText> : null
         }
@@ -117,14 +134,14 @@ const EmojiFlatList = styled(FlatList)`
   height: 300px;
 `;
 
-const EmojiButton = styled(TouchableOpacity)`
-  width: 50px;
-  height: 50px;
+const EmojiButton = styled(TouchableOpacity)<{ size: number; gap: number }>`
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
   background-color: ${theme.colors.gray50};
   border-radius: 12px;
   align-items: center;
   justify-content: center;
-  margin: 5px;
+  margin: ${({ gap }) => gap / 2}px;
 `;
 
 const EmojiText = styled.Text`
