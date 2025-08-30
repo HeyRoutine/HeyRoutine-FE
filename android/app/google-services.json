@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "128783128985",
+    "project_id": "heyroutine-6c67e",
+    "storage_bucket": "heyroutine-6c67e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128783128985:android:834ec2cec7643b91c85b08",
+        "android_client_info": {
+          "package_name": "com.shinhan.heyroutine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjxzCLWdPOGlI2I_pNRvQ5PcgX0VpfN30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
