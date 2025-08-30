@@ -52,7 +52,12 @@ const RoutineItemAdder = ({
         {isCompleted ? (
           <Ionicons name="checkmark" size={24} color={theme.colors.primary} />
         ) : selectedEmoji && selectedEmoji.trim() !== '' ? (
-          <EmojiImage source={{ uri: selectedEmoji }} resizeMode="contain" />
+          // 이모지가 URL인지 텍스트 이모지인지 판단 (성능 최적화)
+          selectedEmoji.startsWith('http') ? (
+            <SvgImage uri={selectedEmoji} width={24} height={24} />
+          ) : (
+            <EmojiText>{selectedEmoji}</EmojiText>
+          )
         ) : (
           <Ionicons name="add" size={28} color={theme.colors.gray400} />
         )}

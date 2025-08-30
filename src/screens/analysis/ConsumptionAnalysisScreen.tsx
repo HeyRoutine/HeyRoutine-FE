@@ -157,10 +157,6 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
       weeklyData: JSON.stringify(weeklyData, null, 2),
     });
 
-    // 카테고리 소비 데이터 전달
-    const categorySpendings = categoryData?.result?.categorySpendings || [];
-    console.log('🔍 전달할 카테고리 소비 데이터:', categorySpendings);
-
     navigation.replace('Loading', {
       title: 'AI 루틴 추천 중...',
       description: '당신에게 맞는 최적의 루틴을 찾고 있어요',
@@ -170,7 +166,6 @@ const ConsumptionAnalysisScreen = ({ navigation }: any) => {
         { text: '최적화된 루틴 생성...', status: 'pending' },
       ],
       nextScreen: 'RoutineSuggestion',
-      categorySpendings: categorySpendings, // 카테고리 소비 데이터 전달
     });
   };
 

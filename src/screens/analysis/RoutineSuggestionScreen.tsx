@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components/native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { ScrollView, Image, View, BackHandler, FlatList } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { ScrollView, Image, View, BackHandler } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/common/Header';
@@ -18,25 +18,9 @@ const characterImg = require('../../assets/images/character_mori.png');
 
 const RoutineSuggestionScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const [selectedRoutines, setSelectedRoutines] = useState<string[]>([]);
 
-  // 하드코딩된 추천 루틴 데이터
-  const hardcodedRoutines = [
-    '매일 아침 도시락 싸서 다니기',
-    '식비 예산 세우고 지키기',
-    '쇼핑 전 장바구니 목록 작성하기',
-    '충동구매 24시간 대기하기',
-    '주간 식비 정리하기',
-    '온라인 쇼핑 카트 3일간 보관하기',
-  ];
-
-  const handleRoutineToggle = (routineId: string) => {
-    setSelectedRoutines((prev) =>
-      prev.includes(routineId)
-        ? prev.filter((id) => id !== routineId)
-        : [...prev, routineId],
-    );
-  };
+  // 추천 루틴 데이터 가져오기 (현재 받아오는 데이터 없음 - 나중에 4개만 추가 예정)
+  const { data: recommendData, isLoading, error } = useRecommendDaily();
 
   // 하드웨어 백 버튼 처리
   useFocusEffect(
@@ -63,7 +47,10 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
         onBackPress={() => navigation.replace('ConsumptionAnalysis')}
       />
 
-      <MainContent>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* AI 안내 버블 */}
         <BotMessageSection>
           <BubbleCard
@@ -91,19 +78,48 @@ const RoutineSuggestionScreen = ({ navigation }: any) => {
             <SectionTitle>추천 루틴</SectionTitle>
           </SectionHeader>
 
-          <RoutineScrollView showsVerticalScrollIndicator={false}>
-            {hardcodedRoutines.map((routine, index) => (
-              <RoutineItem key={index}>
-                <RoutineText>{routine}</RoutineText>
-              </RoutineItem>
-            ))}
-          </RoutineScrollView>
+          {isLoading && <LoadingText>추천 루틴을 불러오는 중...</LoadingText>}
+
+          {error && <ErrorText>추천 루틴을 불러오는데 실패했습니다.</ErrorText>}
+
+          {!isLoading &&
+            !error &&
+            recommendData?.result?.items?.length === 0 && (
+              <EmptyText>추천 루틴이 없습니다.</EmptyText>
+            )}
+
+          {recommendData?.result?.items?.map((routine, index) => (
+            <RoutineItem key={index}>
+              <IconSquare color={index % 2 === 0 ? '#FFE4B5' : '#D3F0E2'}>
+                <RoutineIcon source={RoutineIcon} resizeMode="contain" />
+              </IconSquare>
+              <RoutineText>{routine}</RoutineText>
+            </RoutineItem>
+          ))}
         </SectionCard>
-      </MainContent>
+
+        {/* 본문 끝 */}
+      </ScrollView>
 
       <CharacterDecoration>
         <CharacterImage source={characterImg} resizeMode="contain" />
       </CharacterDecoration>
+
+      {/* 화면 오른쪽 하단 고정 CTA */}
+      <CTAFloat>
+        <CTAButton>
+          <CTAContent>
+            <CTAIcon name="add-circle-outline" size={18} />
+            <CTAText>추천받은 루틴 추가하러 가기</CTAText>
+          </CTAContent>
+        </CTAButton>
+        <CTAButton style={{ marginTop: 10 }}>
+          <CTAContent>
+            <CTAIcon name="settings-outline" size={18} />
+            <CTAText>커스텀 루틴 설정하기</CTAText>
+          </CTAContent>
+        </CTAButton>
+      </CTAFloat>
     </Container>
   );
 };
@@ -113,11 +129,6 @@ export default RoutineSuggestionScreen;
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${theme.colors.white};
-`;
-
-const MainContent = styled.View`
-  flex: 1;
-  padding-bottom: 120px;
 `;
 
 const Highlight = styled.Text`
@@ -143,7 +154,6 @@ const SectionCard = styled.View`
   padding: 12px;
   background-color: ${theme.colors.gray50};
   border-radius: 16px;
-  height: 300px;
 `;
 
 const SectionHeader = styled.View`
@@ -189,15 +199,6 @@ const RoutineIcon = styled(Image)`
 const RoutineText = styled.Text`
   font-family: ${theme.fonts.Medium};
   color: ${theme.colors.gray900};
-  flex: 1;
-`;
-
-const CheckButton = styled.TouchableOpacity<{ isSelected: boolean }>`
-  padding: 4px;
-`;
-
-const RoutineScrollView = styled.ScrollView`
-  flex: 1;
 `;
 
 const CTAFloat = styled.View`

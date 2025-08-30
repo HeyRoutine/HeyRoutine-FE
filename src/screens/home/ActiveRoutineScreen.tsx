@@ -245,14 +245,16 @@ const ActiveRoutineScreen = ({ navigation, route }: any) => {
                   reverse
                 />
                 <TimerContent>
-                  {tasks[activeTaskIndex]?.icon ? (
+                  {tasks[activeTaskIndex]?.icon?.startsWith('http') ? (
                     <SvgImage
                       uri={tasks[activeTaskIndex].icon}
                       width={86}
                       height={86}
                     />
                   ) : (
-                    <BreadIcon>⏰</BreadIcon>
+                    <BreadIcon>
+                      {tasks[activeTaskIndex]?.icon || '⏰'}
+                    </BreadIcon>
                   )}
                   <TimeLeft>{formatTime(timeLeft)}</TimeLeft>
                   <TotalTime>

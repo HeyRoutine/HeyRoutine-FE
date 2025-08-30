@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from './styles/theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SplashScreen from './screens/auth/SplashScreen';
 import MainNavigator from './navigation/MainNavigator';
@@ -52,15 +51,16 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      console.log('푸시 알림 권한이 거부되었습니다.');
-      return null;
+      handleRegistrationError(
+        'Permission not granted to get push token for push notification!',
+      );
+      return;
     }
     const projectId =
       Constants?.expoConfig?.extra?.eas?.projectId ??
       Constants?.easConfig?.projectId;
     if (!projectId) {
-      console.log('Project ID를 찾을 수 없습니다.');
-      return null;
+      handleRegistrationError('Project ID not found');
     }
     try {
       const pushTokenString = (
@@ -68,20 +68,13 @@ async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
-      console.log('🔍 FCM 토큰 발급 성공:', pushTokenString);
-
-      // 토큰을 AsyncStorage에 저장
-      await AsyncStorage.setItem('fcmToken', pushTokenString);
-      await AsyncStorage.setItem('fcmTokenIssued', 'true');
-
+      console.log(pushTokenString);
       return pushTokenString;
     } catch (e: unknown) {
-      console.error('🔍 FCM 토큰 발급 실패:', e);
-      return null;
+      handleRegistrationError(`${e}`);
     }
   } else {
-    console.log('실제 기기에서만 푸시 알림을 사용할 수 있습니다.');
-    return null;
+    handleRegistrationError('Must use physical device for push notifications');
   }
 }
 //
@@ -125,21 +118,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    // 1. FCM 토큰 발급 (앱 시작 시 한 번만)
-    const initializeFCMToken = async () => {
-      try {
-        const hasTokenBeenIssued = await AsyncStorage.getItem('fcmTokenIssued');
-        if (hasTokenBeenIssued !== 'true') {
-          console.log('🔍 FCM 토큰 발급 시작...');
-          await registerForPushNotificationsAsync();
-        } else {
-          console.log('🔍 FCM 토큰이 이미 발급되었습니다.');
-        }
-      } catch (error) {
-        console.error('🔍 FCM 토큰 초기화 실패:', error);
-      }
-    };
-
     // 2. 알림 수신 리스너 등록 (앱 실행 중 알림 도착 시)
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
@@ -155,9 +133,8 @@ export default function App() {
         // 알림에 포함된 데이터에 접근하고 특정 화면으로 이동하는 등의 로직 처리 가능
       });
 
-    // 4. 폰트 로딩 완료 후 로딩 상태 변경 및 FCM 토큰 발급
+    // 3. 폰트 로딩 완료 후 로딩 상태 변경
     if (fontsLoaded) {
-      initializeFCMToken();
       setTimeout(() => {
         setIsLoading(false);
       }, 2000);
