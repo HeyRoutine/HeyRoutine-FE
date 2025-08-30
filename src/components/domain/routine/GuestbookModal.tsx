@@ -126,7 +126,7 @@ const GuestbookModal = ({
     <Modal
       visible={isVisible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <ModalOverlay>
@@ -332,7 +332,7 @@ const GuestbookItemContainer = styled.View`
   background-color: ${theme.colors.white};
   border-radius: 12px;
   padding: 12px;
-  margin-bottom: 12px;
+  /* margin-bottom: 12px; */
   flex-direction: row;
   align-items: flex-start;
 `;
