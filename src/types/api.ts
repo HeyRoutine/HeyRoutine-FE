@@ -523,6 +523,15 @@ export type CreateGroupGuestbookResponse = GuestbookItem;
 // 방명록 삭제 응답 타입
 export type DeleteGroupGuestbookResponse = EmptyResponse;
 
+// FCM 토큰 저장 관련 타입
+export interface FcmTokenRequest {
+  fcmToken: string;
+}
+
+export interface FcmTokenResponse {
+  result: string;
+}
+
 // 루틴 템플릿 아이템 타입
 export interface RoutineTemplateItem {
   templateId: number;

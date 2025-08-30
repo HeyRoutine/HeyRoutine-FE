@@ -5,6 +5,10 @@ import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Alert, Platform } from 'react-native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -27,6 +31,7 @@ import {
 } from '../../hooks/routine/group/useGroupRoutines';
 import { useMyInfo } from '../../hooks/user/useUser';
 import { getMaxStreak } from '../../api/analysis';
+import { useAccountVerification } from '../../hooks/user';
 
 interface HomeScreenProps {
   navigation: any;
@@ -40,8 +45,80 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const { selectedDate, setSelectedDate } = useRoutineStore();
   const { setUserInfo } = useUserStore();
 
+  // FCM 토큰 저장 API 훅
+  const { mutate: saveFcmToken } = useAccountVerification();
+
   // 사용자 정보 조회
   const { data: myInfoData, isLoading: isMyInfoLoading } = useMyInfo();
+
+  // FCM 토큰 발급 및 저장 함수
+  const registerForPushNotificationsAsync = async () => {
+    // 이미 토큰이 발급되었는지 확인
+    const hasTokenBeenIssued = await AsyncStorage.getItem('fcmTokenIssued');
+    if (hasTokenBeenIssued === 'true') {
+      console.log('🔍 FCM 토큰이 이미 발급되었습니다.');
+      return;
+    }
+
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        console.log('푸시 알림 권한이 거부되었습니다.');
+        return;
+      }
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
+      if (!projectId) {
+        console.log('Project ID를 찾을 수 없습니다.');
+        return;
+      }
+      try {
+        const pushTokenString = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data;
+        console.log('🔍 FCM 토큰 발급 성공:', pushTokenString);
+
+        // 서버에 토큰 저장
+        saveFcmToken(
+          { fcmToken: pushTokenString },
+          {
+            onSuccess: (data) => {
+              console.log('🔍 FCM 토큰 저장 성공:', data);
+              // 토큰 발급 완료 표시
+              AsyncStorage.setItem('fcmTokenIssued', 'true');
+            },
+            onError: (error) => {
+              console.error('🔍 FCM 토큰 저장 실패:', error);
+            },
+          },
+        );
+
+        return pushTokenString;
+      } catch (e: unknown) {
+        console.error('🔍 FCM 토큰 발급 실패:', e);
+      }
+    } else {
+      console.log('실제 기기에서만 푸시 알림을 사용할 수 있습니다.');
+    }
+  };
 
   // 사용자 정보가 로드되면 userStore에 저장
   useEffect(() => {
@@ -187,6 +264,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     React.useCallback(() => {
       refetchPersonalRoutines();
       refetchGroupRoutines();
+      // FCM 토큰 발급 및 저장
+      registerForPushNotificationsAsync();
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
   );
 

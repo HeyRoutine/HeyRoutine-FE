@@ -31,6 +31,8 @@ import {
   DeleteUserResponse,
   MajorSearchInfo,
   UniversitySearchInfo,
+  FcmTokenRequest,
+  FcmTokenResponse,
 } from '../../types/api';
 
 // ===== 유저 API 함수들 =====
@@ -267,6 +269,17 @@ export const getUniversities = async (
   const encodedKeyword = encodeURIComponent(keyword);
   const response = await apiClient.get<ApiResponse<UniversitySearchInfo[]>>(
     `/api/v1/user/university?keyword=${encodedKeyword}`,
+  );
+  return response.data;
+};
+
+// FCM 토큰 저장
+export const accountVerification = async (
+  data: FcmTokenRequest,
+): Promise<ApiResponse<FcmTokenResponse>> => {
+  const response = await apiClient.post<ApiResponse<FcmTokenResponse>>(
+    '/api/v1/fcm/token',
+    data,
   );
   return response.data;
 };

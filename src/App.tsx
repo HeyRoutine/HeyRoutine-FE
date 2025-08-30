@@ -118,21 +118,10 @@ export default function App() {
   });
 
   useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then((token) =>
-        // sendTokenToServer(token); // 서버에 토큰 전송하는 함수 (직접 구현 필요)
-        Alert.alert('Push Notification Token', token || 'No token received'),
-      )
-      .catch((error: any) => console.log(error));
-
     // 2. 알림 수신 리스너 등록 (앱 실행 중 알림 도착 시)
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log('알림 수신 (foreground):', notification);
-        Alert.alert(
-          '알림 도착',
-          notification.request.content.body || '내용 없음',
-        );
         setNotification(notification);
       });
 
@@ -140,13 +129,10 @@ export default function App() {
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log('알림 반응:', response);
-        Alert.alert(
-          '알림 반응',
-          response.notification.request.content.body || '내용 없음',
-        );
         // 여기서 response.notification.request.content.data 등을 통해
         // 알림에 포함된 데이터에 접근하고 특정 화면으로 이동하는 등의 로직 처리 가능
       });
+
     // 3. 폰트 로딩 완료 후 로딩 상태 변경
     if (fontsLoaded) {
       setTimeout(() => {
