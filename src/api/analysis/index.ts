@@ -71,14 +71,14 @@ export const getDailyAnalysis = async (): Promise<ApiResponse<any>> => {
 
 /**
  * 연속 1주일 달성 포인트 지급
- * GET /api/v1/analysis/weekly-bonus
+ * POST /api/v1/analysis/weekly-point
  */
 export const givePoint = async (): Promise<ApiResponse<GivePointResponse>> => {
   console.log('🔍 givePoint API 호출 시작');
 
   try {
-    const response = await apiClient.get<ApiResponse<GivePointResponse>>(
-      '/api/v1/analysis/weekly-bonus',
+    const response = await apiClient.post<ApiResponse<GivePointResponse>>(
+      '/api/v1/analysis/weekly-point',
     );
 
     console.log('🔍 givePoint API 응답 성공:', {
