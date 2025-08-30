@@ -38,7 +38,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
 
   // 탭 상태 관리 (로컬 상태로 유지 - 화면 내에서만 사용)
   const [selectedTab, setSelectedTab] = useState(0);
-  const tabs = ['일상 루틴', '금융 루틴'];
+  const tabs = ['생활 루틴', '소비 루틴'];
 
   // 탭 변경 핸들러
   const handleTabChange = (index: number) => {
@@ -103,8 +103,14 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   const [weeklyError, setWeeklyError] = useState<string | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklySummaryItem[]>([]);
 
+  // 전체 루틴 데이터 (생활 + 소비)
+  const [allRoutinesData, setAllRoutinesData] = useState<WeeklySummaryItem[]>(
+    [],
+  );
+
   // 최대 연속 일수 상태
   const [maxStreak, setMaxStreak] = useState<number>(0);
+  const [maxStreakRoutineName, setMaxStreakRoutineName] = useState<string>('');
   const [loadingStreak, setLoadingStreak] = useState(false);
   const [streakError, setStreakError] = useState<string | null>(null);
 
@@ -118,6 +124,106 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   // 서버 불린값 → UI 상태 매핑 함수
   const booleanToStatus = (value: boolean): 'completed' | 'incomplete' =>
     value ? 'completed' : 'incomplete';
+
+  // 전체 루틴 데이터에서 가장 streak가 긴 루틴 찾기
+  const findMaxStreakRoutine = useMemo(() => {
+    if (allRoutinesData.length === 0) return { name: '', streak: 0 };
+
+    const coalesceBool = (...values: Array<any>): boolean => {
+      for (const value of values) {
+        if (typeof value === 'boolean') return value;
+      }
+      return false;
+    };
+
+    const calculateStreak = (raw: WeeklySummaryItem['dailyStatus']) => {
+      const ds = (raw || {}) as unknown as Record<string, any>;
+      const sunday = coalesceBool(
+        ds.SUNDAY,
+        ds.Sun,
+        ds.SUN,
+        ds['일'],
+        ds['일요일'],
+      );
+      const monday = coalesceBool(
+        ds.MONDAY,
+        ds.Mon,
+        ds.MON,
+        ds['월'],
+        ds['월요일'],
+      );
+      const tuesday = coalesceBool(
+        ds.TUESDAY,
+        ds.Tue,
+        ds.TUE,
+        ds['화'],
+        ds['화요일'],
+      );
+      const wednesday = coalesceBool(
+        ds.WEDNESDAY,
+        ds.Wed,
+        ds.WED,
+        ds['수'],
+        ds['수요일'],
+      );
+      const thursday = coalesceBool(
+        ds.THURSDAY,
+        ds.Thu,
+        ds.THU,
+        ds['목'],
+        ds['목요일'],
+      );
+      const friday = coalesceBool(
+        ds.FRIDAY,
+        ds.Fri,
+        ds.FRI,
+        ds['금'],
+        ds['금요일'],
+      );
+      const saturday = coalesceBool(
+        ds.SATURDAY,
+        ds.Sat,
+        ds.SAT,
+        ds['토'],
+        ds['토요일'],
+      );
+
+      const weekStatus = [
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+      ];
+
+      let maxStreak = 0;
+      let currentStreak = 0;
+
+      for (const status of weekStatus) {
+        if (status) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      }
+
+      return maxStreak;
+    };
+
+    let maxStreakRoutine = { name: '', streak: 0 };
+
+    for (const item of allRoutinesData) {
+      const streak = calculateStreak(item.dailyStatus);
+      if (streak > maxStreakRoutine.streak) {
+        maxStreakRoutine = { name: item.routineTitle, streak };
+      }
+    }
+
+    return maxStreakRoutine;
+  }, [allRoutinesData]);
 
   // API 데이터 → WeeklySummary 컴포넌트 props로 변환
   const mappedRoutines = useMemo(() => {
@@ -199,6 +305,38 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     }));
   }, [weeklyData]);
 
+  // 전체 루틴 데이터 조회 함수
+  const fetchAllRoutines = async () => {
+    try {
+      // 생활 루틴과 소비 루틴 데이터를 모두 가져오기
+      const [dailyRes, financeRes] = await Promise.all([
+        getWeeklySummary({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          routineType: 'DAILY',
+        }),
+        getWeeklySummary({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          routineType: 'FINANCE',
+        }),
+      ]);
+
+      const allData: WeeklySummaryItem[] = [];
+
+      if (dailyRes.isSuccess) {
+        allData.push(...dailyRes.result);
+      }
+      if (financeRes.isSuccess) {
+        allData.push(...financeRes.result);
+      }
+
+      setAllRoutinesData(allData);
+    } catch (e) {
+      console.error('전체 루틴 데이터 조회 실패:', e);
+    }
+  };
+
   // 주간 요약 조회 함수
   const fetchWeekly = async () => {
     setLoadingWeekly(true);
@@ -243,6 +381,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   // 화면에 포커스될 때마다 데이터 새로 불러오기
   useFocusEffect(
     React.useCallback(() => {
+      fetchAllRoutines(); // 전체 루틴 데이터 가져오기
       fetchWeekly();
       fetchMaxStreak();
       // 포인트 지급 API 호출
@@ -294,10 +433,13 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
           <AchievementCard
             title="최대 연속"
             achievement={`${maxStreak}일 달성`}
-            routineName={selectedTab === 0 ? '일상 루틴' : '금융 루틴'}
+            routineName={
+              findMaxStreakRoutine.name ||
+              (selectedTab === 0 ? '생활 루틴' : '소비 루틴')
+            }
             points={0}
             progress={Math.min((maxStreak / 7) * 100, 100)}
-            daysLeft={Math.max(7 - maxStreak, 0)}
+            daysLeft={7}
           />
 
           {/* AI 분석 카드 */}

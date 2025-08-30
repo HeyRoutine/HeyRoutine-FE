@@ -92,7 +92,6 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
   // 사용자 설정 상태 (서버 데이터 우선, 로컬 데이터 fallback)
   const marketingConsent =
     myInfoData?.result?.isMarketing ?? userInfo?.isMarketing ?? false;
-  const notificationConsent = userInfo?.notificationConsent ?? true;
 
   // 서버에서 받은 사용자 정보로 로컬 상태 업데이트
   useEffect(() => {
@@ -138,10 +137,6 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
         },
       },
     );
-  };
-
-  const handleNotificationConsentChange = (value: boolean) => {
-    updateUserInfo({ notificationConsent: value });
   };
 
   // 프로필 이미지 선택 및 업데이트 핸들러
@@ -254,13 +249,7 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       title: '전화번호 설정',
       onPress: () => navigation.navigate('PhoneNumberSetting'),
     },
-    {
-      id: 'notification',
-      type: 'toggle',
-      title: '알림 설정',
-      toggleValue: notificationConsent,
-      onToggleChange: handleNotificationConsentChange,
-    },
+
     {
       id: 'marketing',
       type: 'toggle',
