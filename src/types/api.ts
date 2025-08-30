@@ -312,6 +312,7 @@ export type AuthCheckResponse = string; // UUID 형식의 문자열
 // 계좌 인증번호 전송 요청 타입
 export interface SendAccountCodeRequest {
   account: string;
+  fcmToken?: string;
 }
 
 // 계좌 인증번호 전송 응답 타입
@@ -797,7 +798,7 @@ export type SurveyResponse = ApiResponse<string>;
 
 // ===== 분석(Analysis) - 소비 루틴 맞춤 추천 =====
 
-// 소비 루틴 맞춤 추천 요청 파라미터
+// 소비 루틴 맞춤 추천 요청 파라미터 (GET 요청 쿼리 파라미터)
 export interface RcmdConsumptionRoutineParams {
   categorySpendings: CategorySpendingItem[];
 }

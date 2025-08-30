@@ -117,11 +117,6 @@ const AIRecommendationResultScreen = ({
         >
           {routines.map((routine) => (
             <RoutineCard key={routine.id}>
-              {/* 이미지 공간 (나중에 이미지 추가 예정) */}
-              <ImagePlaceholder>
-                <ImageText>{routine.icon}</ImageText>
-              </ImagePlaceholder>
-
               <RoutineText>{routine.title}</RoutineText>
               <CheckButton
                 onPress={() => handleRoutineToggle(routine.id)}
@@ -281,18 +276,4 @@ const ErrorText = styled.Text`
   font-size: 16px;
   color: ${theme.colors.error};
   text-align: center;
-`;
-
-const ImagePlaceholder = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: ${theme.colors.gray100};
-  justify-content: center;
-  align-items: center;
-  margin-right: 12px;
-`;
-
-const ImageText = styled.Text`
-  font-size: 20px;
 `;

@@ -111,6 +111,14 @@ const PersonalRoutineDetailScreen = ({
       isLoadingTemplates,
       isLoadingEmojis,
     });
+
+    // 이모지 데이터 샘플 로그
+    if (emojisData?.result?.items && emojisData.result.items.length > 0) {
+      console.log(
+        '🔍 이모지 데이터 샘플:',
+        emojisData.result.items.slice(0, 3),
+      );
+    }
   }, [templatesData, emojisData, isLoadingTemplates, isLoadingEmojis]);
 
   const handleDeleteRoutine = () => {
@@ -157,8 +165,11 @@ const PersonalRoutineDetailScreen = ({
       const existingItems = sortedRoutines.map((routine: any) => {
         const isCompleted = routine.isCompleted || routine.completed || false;
 
+        // 이모지 URL을 그대로 사용
+        const emojiText = routine.emojiUrl;
+
         return {
-          emoji: routine.emojiUrl,
+          emoji: emojiText,
           text: routine.routineName,
           time: `${routine.time}분`,
           isCompleted: isCompleted,
@@ -172,7 +183,7 @@ const PersonalRoutineDetailScreen = ({
     ) {
       setRoutineItems([]);
     }
-  }, [existingRoutinesData]);
+  }, [existingRoutinesData, emojisData]);
 
   useFocusEffect(
     React.useCallback(() => {

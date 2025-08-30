@@ -162,8 +162,8 @@ const AIRecommendationScreen = ({
       const surveyResult = await submitSurvey({ surveyList });
       console.log('설문 제출 성공:', surveyResult);
 
-      // 1초 대기 후 daily analysis GET 요청
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // 3초 대기 후 daily analysis GET 요청
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       const analysisResult = await getDailyAnalysis();
       console.log(
         '🔍 Daily Analysis API 응답:',
