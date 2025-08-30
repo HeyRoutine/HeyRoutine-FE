@@ -63,7 +63,7 @@ const DepartmentScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>5/7</ProgressText>}
+        rightComponent={<ProgressText>5/6</ProgressText>}
       />
 
       <Content>

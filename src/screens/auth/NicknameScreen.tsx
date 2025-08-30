@@ -106,7 +106,7 @@ const NicknameScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>3/7</ProgressText>}
+        rightComponent={<ProgressText>3/6</ProgressText>}
       />
 
       <Content>

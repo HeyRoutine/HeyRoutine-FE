@@ -63,7 +63,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>2/7</ProgressText>}
+        rightComponent={<ProgressText>2/6</ProgressText>}
       />
 
       <Content>
