@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import {
@@ -49,16 +50,20 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
   // 주간 네비게이션 기준 날짜 (해당 주의 아무 날짜여도 됨; +/-7일 이동)
   const [weekAnchorDate, setWeekAnchorDate] = useState(new Date());
-  const selectedDayIndex = weekAnchorDate.getDay(); // 0: 일요일, 1: 월요일, ...
+  // selectedDayIndex를 월요일(0)~일요일(6) 기준으로 변환
+  const selectedDayIndex =
+    weekAnchorDate.getDay() === 0 ? 6 : weekAnchorDate.getDay() - 1; // 0: 월요일, 1: 화요일, ..., 6: 일요일
 
-  // 주간 범위 계산 (일요일 시작 ~ 토요일 끝 기준)
+  // 주간 범위 계산 (월요일 시작 ~ 일요일 끝 기준)
   const { startDateStr, endDateStr, dateRangeLabel } = useMemo(() => {
     // getDay(): 0(일)~6(토)
     const dayOfWeek = weekAnchorDate.getDay();
-    const sunday = new Date(weekAnchorDate);
-    sunday.setDate(weekAnchorDate.getDate() - dayOfWeek);
-    const saturday = new Date(sunday);
-    saturday.setDate(sunday.getDate() + 6);
+    const monday = new Date(weekAnchorDate);
+    // 월요일(1)부터 시작하도록 조정
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    monday.setDate(weekAnchorDate.getDate() - daysFromMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
 
     const toYmd = (d: Date) => {
       const yyyy = d.getFullYear();
@@ -69,9 +74,9 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     const toKoreanLabel = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 
     return {
-      startDateStr: toYmd(sunday),
-      endDateStr: toYmd(saturday),
-      dateRangeLabel: `${toKoreanLabel(sunday)} - ${toKoreanLabel(saturday)}`,
+      startDateStr: toYmd(monday),
+      endDateStr: toYmd(sunday),
+      dateRangeLabel: `${toKoreanLabel(monday)} - ${toKoreanLabel(sunday)}`,
     };
   }, [weekAnchorDate]);
 
@@ -173,13 +178,13 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
       );
 
       const order = [
-        sunday,
         monday,
         tuesday,
         wednesday,
         thursday,
         friday,
         saturday,
+        sunday,
       ];
       return order.map(booleanToStatus);
     };
@@ -190,53 +195,54 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     }));
   }, [weeklyData]);
 
-  // 탭 변경 및 주간 범위 변경 시 주간 요약 조회
-  useEffect(() => {
-    const fetchWeekly = async () => {
-      setLoadingWeekly(true);
-      setWeeklyError(null);
-      try {
-        const routineType: RoutineType =
-          selectedTab === 0 ? 'DAILY' : 'FINANCE';
-        const res = await getWeeklySummary({
-          startDate: startDateStr,
-          endDate: endDateStr,
-          routineType,
-        });
-        if (res.isSuccess) {
-          setWeeklyData(res.result);
-        } else {
-          setWeeklyError(res.message || '주간 요약 조회 실패');
-        }
-      } catch (e) {
-        setWeeklyError('주간 요약 조회 중 오류가 발생했어요.');
-      } finally {
-        setLoadingWeekly(false);
+  // 주간 요약 조회 함수
+  const fetchWeekly = async () => {
+    setLoadingWeekly(true);
+    setWeeklyError(null);
+    try {
+      const routineType: RoutineType = selectedTab === 0 ? 'DAILY' : 'FINANCE';
+      const res = await getWeeklySummary({
+        startDate: startDateStr,
+        endDate: endDateStr,
+        routineType,
+      });
+      if (res.isSuccess) {
+        setWeeklyData(res.result);
+      } else {
+        setWeeklyError(res.message || '주간 요약 조회 실패');
       }
-    };
-    fetchWeekly();
-  }, [selectedTab, startDateStr, endDateStr]);
+    } catch (e) {
+      setWeeklyError('주간 요약 조회 중 오류가 발생했어요.');
+    } finally {
+      setLoadingWeekly(false);
+    }
+  };
 
-  // 최대 연속 일수 조회
-  useEffect(() => {
-    const fetchMaxStreak = async () => {
-      setLoadingStreak(true);
-      setStreakError(null);
-      try {
-        const res = await getMaxStreak();
-        if (res.isSuccess) {
-          setMaxStreak(res.result.streakDays ?? 0);
-        } else {
-          setStreakError(res.message || '최대 연속 일수 조회 실패');
-        }
-      } catch (e) {
-        setStreakError('최대 연속 일수 조회 중 오류가 발생했어요.');
-      } finally {
-        setLoadingStreak(false);
+  // 최대 연속 일수 조회 함수
+  const fetchMaxStreak = async () => {
+    setLoadingStreak(true);
+    setStreakError(null);
+    try {
+      const res = await getMaxStreak();
+      if (res.isSuccess) {
+        setMaxStreak(res.result.streakDays ?? 0);
+      } else {
+        setStreakError(res.message || '최대 연속 일수 조회 실패');
       }
-    };
-    fetchMaxStreak();
-  }, []);
+    } catch (e) {
+      setStreakError('최대 연속 일수 조회 중 오류가 발생했어요.');
+    } finally {
+      setLoadingStreak(false);
+    }
+  };
+
+  // 화면에 포커스될 때마다 데이터 새로 불러오기
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchWeekly();
+      fetchMaxStreak();
+    }, [selectedTab, startDateStr, endDateStr]),
+  );
 
   // AI 분석 카드 클릭 핸들러
   const handleAIAnalysisPress = () => {

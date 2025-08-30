@@ -471,56 +471,49 @@ const GroupRoutineDetailScreen = ({
         onSuccess: () => {
           console.log('🔍 루틴 상태 업데이트 성공:', task.name, newStatus);
 
-          // 개별 루틴 상태 업데이트 성공 후, 서버에서 최신 데이터를 가져와서 모든 세부 루틴 완료 여부 확인
-          queryClient
-            .invalidateQueries({
-              queryKey: ['groupRoutineDetail', routineId],
-            })
-            .then(() => {
-              // 서버에서 최신 데이터를 가져온 후 확인
-              const currentData = queryClient.getQueryData([
-                'groupRoutineDetail',
-                routineId,
-              ]) as any;
-              if (currentData?.result) {
-                const routineInfos = currentData.result.routineInfos || [];
-                const allCompleted =
-                  routineInfos.length > 0 &&
-                  routineInfos.every((r: any) => r.isCompleted);
+          // 로컬 상태에서 모든 세부 루틴 완료 여부 확인
+          const currentData = queryClient.getQueryData([
+            'groupRoutineDetail',
+            routineId,
+          ]) as any;
+          if (currentData?.result) {
+            const routineInfos = currentData.result.routineInfos || [];
+            const allCompleted =
+              routineInfos.length > 0 &&
+              routineInfos.every((r: any) => r.isCompleted);
 
-                if (allCompleted) {
-                  console.log(
-                    '🔍 모든 세부 루틴이 완료되었습니다. 전체 기록 업데이트 호출',
-                  );
-                  // 모든 세부 루틴이 완료된 경우 전체 기록 업데이트 API 호출
-                  updateGroupRoutineRecord.mutate(
-                    {
-                      groupRoutineListId: routineId,
-                      data: { status: true },
-                    },
-                    {
-                      onSuccess: () => {
-                        console.log('🔍 전체 기록 업데이트 성공');
-                        // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
-                        queryClient.invalidateQueries({
-                          queryKey: ['myGroupRoutines'],
-                        });
-                        queryClient.invalidateQueries({
-                          queryKey: ['groupRoutines'],
-                        });
-                      },
-                      onError: (error: any) => {
-                        console.error('🔍 전체 기록 업데이트 실패:', error);
-                        // 422 에러는 무시 (이미 완료된 상태)
-                        if (error?.response?.status !== 422) {
-                          console.error('🔍 예상치 못한 에러:', error);
-                        }
-                      },
-                    },
-                  );
-                }
-              }
-            });
+            if (allCompleted) {
+              console.log(
+                '🔍 모든 세부 루틴이 완료되었습니다. 전체 기록 업데이트 호출',
+              );
+              // 모든 세부 루틴이 완료된 경우 전체 기록 업데이트 API 호출
+              updateGroupRoutineRecord.mutate(
+                {
+                  groupRoutineListId: routineId,
+                  data: { status: true },
+                },
+                {
+                  onSuccess: () => {
+                    console.log('🔍 전체 기록 업데이트 성공');
+                    // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
+                    queryClient.invalidateQueries({
+                      queryKey: ['myGroupRoutines'],
+                    });
+                    queryClient.invalidateQueries({
+                      queryKey: ['groupRoutines'],
+                    });
+                  },
+                  onError: (error: any) => {
+                    console.error('🔍 전체 기록 업데이트 실패:', error);
+                    // 422 에러는 무시 (이미 완료된 상태)
+                    if (error?.response?.status !== 422) {
+                      console.error('🔍 예상치 못한 에러:', error);
+                    }
+                  },
+                },
+              );
+            }
+          }
         },
         onError: (error) => {
           console.error('🔍 루틴 상태 업데이트 실패:', error);
