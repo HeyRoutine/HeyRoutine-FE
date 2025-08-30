@@ -59,7 +59,7 @@ const RankBoardScreen = ({ navigation }: any) => {
     : '이번 주 최고의 성과를 보여준 학과';
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="랭크 보드" onBackPress={() => navigation.goBack()} />
+      <Header title="실시간 랭킹" onBackPress={() => navigation.goBack()} />
       <Content>
         <TabNavigation
           selectedIndex={selectedTab}

@@ -280,6 +280,12 @@ const GroupRoutineDetailScreen = ({
     setIsEditRoutineModalVisible(false);
   };
 
+  // 루틴 완료 상태 확인 (progressText에서 퍼센트 추출)
+  const isRoutineCompleted = (() => {
+    const progressMatch = routine.progressText.match(/(\d+)%/);
+    return progressMatch ? parseInt(progressMatch[1]) === 100 : false;
+  })();
+
   const handleEditRoutineDetail = () => {
     setIsMenuVisible(false);
     setIsEditRoutineDetailModalVisible(true);
@@ -482,37 +488,36 @@ const GroupRoutineDetailScreen = ({
               routineInfos.length > 0 &&
               routineInfos.every((r: any) => r.isCompleted);
 
-            if (allCompleted) {
-              console.log(
-                '🔍 모든 세부 루틴이 완료되었습니다. 전체 기록 업데이트 호출',
-              );
-              // 모든 세부 루틴이 완료된 경우 전체 기록 업데이트 API 호출
-              updateGroupRoutineRecord.mutate(
-                {
-                  groupRoutineListId: routineId,
-                  data: { status: true },
+            // 전체 기록 업데이트 API 호출 (완료/미완료 상태에 관계없이)
+            updateGroupRoutineRecord.mutate(
+              {
+                groupRoutineListId: routineId,
+                data: { status: allCompleted },
+              },
+              {
+                onSuccess: () => {
+                  console.log('🔍 전체 기록 업데이트 성공');
+                  // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
+                  queryClient.invalidateQueries({
+                    queryKey: ['myGroupRoutines'],
+                  });
+                  queryClient.invalidateQueries({
+                    queryKey: ['groupRoutines'],
+                  });
+                  // 단체 루틴 상세 데이터도 다시 조회하여 참여자 목록 업데이트
+                  queryClient.invalidateQueries({
+                    queryKey: ['groupRoutineDetail', routineId],
+                  });
                 },
-                {
-                  onSuccess: () => {
-                    console.log('🔍 전체 기록 업데이트 성공');
-                    // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
-                    queryClient.invalidateQueries({
-                      queryKey: ['myGroupRoutines'],
-                    });
-                    queryClient.invalidateQueries({
-                      queryKey: ['groupRoutines'],
-                    });
-                  },
-                  onError: (error: any) => {
-                    console.error('🔍 전체 기록 업데이트 실패:', error);
-                    // 422 에러는 무시 (이미 완료된 상태)
-                    if (error?.response?.status !== 422) {
-                      console.error('🔍 예상치 못한 에러:', error);
-                    }
-                  },
+                onError: (error: any) => {
+                  console.error('🔍 전체 기록 업데이트 실패:', error);
+                  // 422 에러는 무시 (이미 완료된 상태)
+                  if (error?.response?.status !== 422) {
+                    console.error('🔍 예상치 못한 에러:', error);
+                  }
                 },
-              );
-            }
+              },
+            );
           }
         },
         onError: (error) => {
@@ -826,8 +831,20 @@ const GroupRoutineDetailScreen = ({
               <MoreButton onPress={handleEditRoutine}>
                 <MoreButtonText>루틴 수정</MoreButtonText>
               </MoreButton>
-              <MoreButton onPress={handleEditRoutineDetail}>
-                <MoreButtonText>상세 루틴 수정</MoreButtonText>
+              <MoreButton
+                onPress={handleEditRoutineDetail}
+                disabled={isRoutineCompleted}
+                style={{ opacity: isRoutineCompleted ? 0.5 : 1 }}
+              >
+                <MoreButtonText
+                  style={{
+                    color: isRoutineCompleted
+                      ? theme.colors.gray500
+                      : theme.colors.gray900,
+                  }}
+                >
+                  상세 루틴 수정
+                </MoreButtonText>
               </MoreButton>
               <DeleteButton onPress={handleDeleteRoutine}>
                 <DeleteButtonText>삭제</DeleteButtonText>

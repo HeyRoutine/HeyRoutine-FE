@@ -123,7 +123,6 @@ const MainNavigator = () => {
             'PointCashoutComplete',
             'NicknameSetting',
             'PasswordSetting',
-            'PhoneNumberSetting',
           ];
 
           return {

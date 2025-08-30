@@ -243,12 +243,6 @@ const ProfileEditScreen = ({ navigation }: IProfileEditScreenProps) => {
       title: '닉네임 설정',
       onPress: () => navigation.navigate('NicknameSetting'),
     },
-    {
-      id: 'phone',
-      type: 'item',
-      title: '전화번호 설정',
-      onPress: () => navigation.navigate('PhoneNumberSetting'),
-    },
 
     {
       id: 'marketing',

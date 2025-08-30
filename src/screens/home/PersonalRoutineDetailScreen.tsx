@@ -138,6 +138,9 @@ const PersonalRoutineDetailScreen = ({
     setDeleteModalVisible(false);
   };
 
+  // 루틴 완료 상태 확인 (백엔드에서 percent로 받아옴)
+  const isRoutineCompleted = routineData?.percent === 100;
+
   useEffect(() => {
     setEditMode(false);
   }, [setEditMode]);
@@ -513,23 +516,22 @@ const PersonalRoutineDetailScreen = ({
               <RoutineTime>
                 {formatTimeWithPeriod(routineData?.startTime || '00:00')} -{' '}
                 {formatTimeWithPeriod(routineData?.endTime || '00:00')}
-                {routineData?.routineNums && (
-                  <RoutineCountText>
-                    {' '}
-                    • {routineData.routineNums}개 항목
-                  </RoutineCountText>
-                )}
               </RoutineTime>
             </HeaderLeft>
-            {!isEditMode && (
-              <MoreIconButton onPress={handleMorePress}>
-                <Ionicons
-                  name="ellipsis-horizontal"
-                  size={20}
-                  color={theme.colors.gray600}
-                />
-              </MoreIconButton>
-            )}
+            <HeaderRight>
+              {routineData?.percent !== undefined && (
+                <ProgressText>{routineData.percent}%</ProgressText>
+              )}
+              {!isEditMode && (
+                <MoreIconButton onPress={handleMorePress}>
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={20}
+                    color={theme.colors.gray600}
+                  />
+                </MoreIconButton>
+              )}
+            </HeaderRight>
           </HeaderContent>
           <DayOfWeekSelector
             selectedDays={selectedDays}
@@ -655,8 +657,20 @@ const PersonalRoutineDetailScreen = ({
           <MoreButton onPress={handleEditRoutine}>
             <MoreButtonText>루틴 수정</MoreButtonText>
           </MoreButton>
-          <MoreButton onPress={handleEditRoutineDetail}>
-            <MoreButtonText>상세 루틴 수정</MoreButtonText>
+          <MoreButton
+            onPress={handleEditRoutineDetail}
+            disabled={isRoutineCompleted}
+            style={{ opacity: isRoutineCompleted ? 0.5 : 1 }}
+          >
+            <MoreButtonText
+              style={{
+                color: isRoutineCompleted
+                  ? theme.colors.gray500
+                  : theme.colors.gray900,
+              }}
+            >
+              상세 루틴 수정
+            </MoreButtonText>
           </MoreButton>
           <DeleteButton onPress={handleDeleteRoutine}>
             <DeleteButtonText>삭제</DeleteButtonText>
@@ -792,6 +806,12 @@ const HeaderContent = styled.View`
 
 const HeaderLeft = styled.View`
   flex: 1;
+`;
+
+const HeaderRight = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
 `;
 
 const DaySelectorCard = styled.View`
@@ -945,4 +965,11 @@ const RoutineCountText = styled.Text`
   font-size: 12px;
   color: ${theme.colors.gray500};
   margin-left: 4px;
+`;
+
+const ProgressText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
+  font-weight: 600;
+  color: ${theme.colors.primary};
 `;

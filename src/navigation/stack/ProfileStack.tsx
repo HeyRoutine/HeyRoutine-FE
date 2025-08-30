@@ -13,7 +13,6 @@ import PointCashoutScreen from '../../screens/mypage/PointCashoutScreen';
 import PointCashoutCompleteScreen from '../../screens/mypage/PointCashoutCompleteScreen';
 import NicknameSettingScreen from '../../screens/mypage/NicknameSettingScreen';
 import PasswordSettingScreen from '../../screens/mypage/PasswordSettingScreen';
-import PhoneNumberSettingScreen from '../../screens/mypage/PhoneNumberSettingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,10 +43,6 @@ const ProfileStack = () => {
       />
       <Stack.Screen name="NicknameSetting" component={NicknameSettingScreen} />
       <Stack.Screen name="PasswordSetting" component={PasswordSettingScreen} />
-      <Stack.Screen
-        name="PhoneNumberSetting"
-        component={PhoneNumberSettingScreen}
-      />
     </Stack.Navigator>
   );
 };

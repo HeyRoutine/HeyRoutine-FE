@@ -403,6 +403,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             endTime: routine.timeRange.split(' ~ ')[1],
             days: routine.selectedDays,
             category: routine.category,
+            percent: routine.progress, // percent 값 추가
+            routineNums: routine.routineNums, // routineNums 값도 추가
           },
         });
       }
