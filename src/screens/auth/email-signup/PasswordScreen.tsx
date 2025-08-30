@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../../components/common/Header';
 import CustomInput from '../../../components/common/CustomInput';
@@ -62,7 +63,7 @@ const PasswordScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>2/5</ProgressText>}
+        rightComponent={<ProgressText>2/6</ProgressText>}
       />
 
       <Content>
@@ -159,9 +160,9 @@ const ErrorMessage = styled.Text`
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 60px 24px 0 24px;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

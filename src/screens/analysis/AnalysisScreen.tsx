@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import {
@@ -15,6 +16,7 @@ import { TabNavigation } from '../../components/common';
 import { useAnalysisStore } from '../../store';
 import { getMaxStreak, getWeeklySummary } from '../../api/analysis';
 import { RoutineType, WeeklySummaryItem } from '../../types/api';
+import { useGivePoint } from '../../hooks/analysis';
 
 /**
  * AnalysisScreen의 props 인터페이스
@@ -36,7 +38,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
 
   // 탭 상태 관리 (로컬 상태로 유지 - 화면 내에서만 사용)
   const [selectedTab, setSelectedTab] = useState(0);
-  const tabs = ['일상 루틴', '금융 루틴'];
+  const tabs = ['생활 루틴', '소비 루틴'];
 
   // 탭 변경 핸들러
   const handleTabChange = (index: number) => {
@@ -46,19 +48,23 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   };
 
   // 주간 데이터 헤더
-  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
   // 주간 네비게이션 기준 날짜 (해당 주의 아무 날짜여도 됨; +/-7일 이동)
   const [weekAnchorDate, setWeekAnchorDate] = useState(new Date());
-  const selectedDayIndex = weekAnchorDate.getDay(); // 0: 일요일, 1: 월요일, ...
+  // selectedDayIndex를 월요일(0)~일요일(6) 기준으로 변환
+  const selectedDayIndex =
+    weekAnchorDate.getDay() === 0 ? 6 : weekAnchorDate.getDay() - 1; // 0: 월요일, 1: 화요일, ..., 6: 일요일
 
-  // 주간 범위 계산 (일요일 시작 ~ 토요일 끝 기준)
+  // 주간 범위 계산 (월요일 시작 ~ 일요일 끝 기준)
   const { startDateStr, endDateStr, dateRangeLabel } = useMemo(() => {
     // getDay(): 0(일)~6(토)
     const dayOfWeek = weekAnchorDate.getDay();
-    const sunday = new Date(weekAnchorDate);
-    sunday.setDate(weekAnchorDate.getDate() - dayOfWeek);
-    const saturday = new Date(sunday);
-    saturday.setDate(sunday.getDate() + 6);
+    const monday = new Date(weekAnchorDate);
+    // 월요일(1)부터 시작하도록 조정
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    monday.setDate(weekAnchorDate.getDate() - daysFromMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
 
     const toYmd = (d: Date) => {
       const yyyy = d.getFullYear();
@@ -69,9 +75,9 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     const toKoreanLabel = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 
     return {
-      startDateStr: toYmd(sunday),
-      endDateStr: toYmd(saturday),
-      dateRangeLabel: `${toKoreanLabel(sunday)} - ${toKoreanLabel(saturday)}`,
+      startDateStr: toYmd(monday),
+      endDateStr: toYmd(sunday),
+      dateRangeLabel: `${toKoreanLabel(monday)} - ${toKoreanLabel(sunday)}`,
     };
   }, [weekAnchorDate]);
 
@@ -97,10 +103,19 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   const [weeklyError, setWeeklyError] = useState<string | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklySummaryItem[]>([]);
 
+  // 전체 루틴 데이터 (생활 + 소비)
+  const [allRoutinesData, setAllRoutinesData] = useState<WeeklySummaryItem[]>(
+    [],
+  );
+
   // 최대 연속 일수 상태
   const [maxStreak, setMaxStreak] = useState<number>(0);
+  const [maxStreakRoutineName, setMaxStreakRoutineName] = useState<string>('');
   const [loadingStreak, setLoadingStreak] = useState(false);
   const [streakError, setStreakError] = useState<string | null>(null);
+
+  // 포인트 지급 훅
+  const { mutate: givePoint } = useGivePoint();
 
   // 이전 더미 데이터는 API 연동으로 대체합니다.
   // const dailyRoutines = [...];
@@ -109,6 +124,106 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
   // 서버 불린값 → UI 상태 매핑 함수
   const booleanToStatus = (value: boolean): 'completed' | 'incomplete' =>
     value ? 'completed' : 'incomplete';
+
+  // 전체 루틴 데이터에서 가장 streak가 긴 루틴 찾기
+  const findMaxStreakRoutine = useMemo(() => {
+    if (allRoutinesData.length === 0) return { name: '', streak: 0 };
+
+    const coalesceBool = (...values: Array<any>): boolean => {
+      for (const value of values) {
+        if (typeof value === 'boolean') return value;
+      }
+      return false;
+    };
+
+    const calculateStreak = (raw: WeeklySummaryItem['dailyStatus']) => {
+      const ds = (raw || {}) as unknown as Record<string, any>;
+      const sunday = coalesceBool(
+        ds.SUNDAY,
+        ds.Sun,
+        ds.SUN,
+        ds['일'],
+        ds['일요일'],
+      );
+      const monday = coalesceBool(
+        ds.MONDAY,
+        ds.Mon,
+        ds.MON,
+        ds['월'],
+        ds['월요일'],
+      );
+      const tuesday = coalesceBool(
+        ds.TUESDAY,
+        ds.Tue,
+        ds.TUE,
+        ds['화'],
+        ds['화요일'],
+      );
+      const wednesday = coalesceBool(
+        ds.WEDNESDAY,
+        ds.Wed,
+        ds.WED,
+        ds['수'],
+        ds['수요일'],
+      );
+      const thursday = coalesceBool(
+        ds.THURSDAY,
+        ds.Thu,
+        ds.THU,
+        ds['목'],
+        ds['목요일'],
+      );
+      const friday = coalesceBool(
+        ds.FRIDAY,
+        ds.Fri,
+        ds.FRI,
+        ds['금'],
+        ds['금요일'],
+      );
+      const saturday = coalesceBool(
+        ds.SATURDAY,
+        ds.Sat,
+        ds.SAT,
+        ds['토'],
+        ds['토요일'],
+      );
+
+      const weekStatus = [
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+      ];
+
+      let maxStreak = 0;
+      let currentStreak = 0;
+
+      for (const status of weekStatus) {
+        if (status) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      }
+
+      return maxStreak;
+    };
+
+    let maxStreakRoutine = { name: '', streak: 0 };
+
+    for (const item of allRoutinesData) {
+      const streak = calculateStreak(item.dailyStatus);
+      if (streak > maxStreakRoutine.streak) {
+        maxStreakRoutine = { name: item.routineTitle, streak };
+      }
+    }
+
+    return maxStreakRoutine;
+  }, [allRoutinesData]);
 
   // API 데이터 → WeeklySummary 컴포넌트 props로 변환
   const mappedRoutines = useMemo(() => {
@@ -173,13 +288,13 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
       );
 
       const order = [
-        sunday,
         monday,
         tuesday,
         wednesday,
         thursday,
         friday,
         saturday,
+        sunday,
       ];
       return order.map(booleanToStatus);
     };
@@ -190,53 +305,96 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
     }));
   }, [weeklyData]);
 
-  // 탭 변경 및 주간 범위 변경 시 주간 요약 조회
-  useEffect(() => {
-    const fetchWeekly = async () => {
-      setLoadingWeekly(true);
-      setWeeklyError(null);
-      try {
-        const routineType: RoutineType =
-          selectedTab === 0 ? 'DAILY' : 'FINANCE';
-        const res = await getWeeklySummary({
+  // 전체 루틴 데이터 조회 함수
+  const fetchAllRoutines = async () => {
+    try {
+      // 생활 루틴과 소비 루틴 데이터를 모두 가져오기
+      const [dailyRes, financeRes] = await Promise.all([
+        getWeeklySummary({
           startDate: startDateStr,
           endDate: endDateStr,
-          routineType,
-        });
-        if (res.isSuccess) {
-          setWeeklyData(res.result);
-        } else {
-          setWeeklyError(res.message || '주간 요약 조회 실패');
-        }
-      } catch (e) {
-        setWeeklyError('주간 요약 조회 중 오류가 발생했어요.');
-      } finally {
-        setLoadingWeekly(false);
-      }
-    };
-    fetchWeekly();
-  }, [selectedTab, startDateStr, endDateStr]);
+          routineType: 'DAILY',
+        }),
+        getWeeklySummary({
+          startDate: startDateStr,
+          endDate: endDateStr,
+          routineType: 'FINANCE',
+        }),
+      ]);
 
-  // 최대 연속 일수 조회
-  useEffect(() => {
-    const fetchMaxStreak = async () => {
-      setLoadingStreak(true);
-      setStreakError(null);
-      try {
-        const res = await getMaxStreak();
-        if (res.isSuccess) {
-          setMaxStreak(res.result.streakDays ?? 0);
-        } else {
-          setStreakError(res.message || '최대 연속 일수 조회 실패');
-        }
-      } catch (e) {
-        setStreakError('최대 연속 일수 조회 중 오류가 발생했어요.');
-      } finally {
-        setLoadingStreak(false);
+      const allData: WeeklySummaryItem[] = [];
+
+      if (dailyRes.isSuccess) {
+        allData.push(...dailyRes.result);
       }
-    };
-    fetchMaxStreak();
-  }, []);
+      if (financeRes.isSuccess) {
+        allData.push(...financeRes.result);
+      }
+
+      setAllRoutinesData(allData);
+    } catch (e) {
+      console.error('전체 루틴 데이터 조회 실패:', e);
+    }
+  };
+
+  // 주간 요약 조회 함수
+  const fetchWeekly = async () => {
+    setLoadingWeekly(true);
+    setWeeklyError(null);
+    try {
+      const routineType: RoutineType = selectedTab === 0 ? 'DAILY' : 'FINANCE';
+      const res = await getWeeklySummary({
+        startDate: startDateStr,
+        endDate: endDateStr,
+        routineType,
+      });
+      if (res.isSuccess) {
+        setWeeklyData(res.result);
+      } else {
+        setWeeklyError(res.message || '주간 요약 조회 실패');
+      }
+    } catch (e) {
+      setWeeklyError('주간 요약 조회 중 오류가 발생했어요.');
+    } finally {
+      setLoadingWeekly(false);
+    }
+  };
+
+  // 최대 연속 일수 조회 함수
+  const fetchMaxStreak = async () => {
+    setLoadingStreak(true);
+    setStreakError(null);
+    try {
+      const res = await getMaxStreak();
+      if (res.isSuccess) {
+        setMaxStreak(res.result.streakDays ?? 0);
+      } else {
+        setStreakError(res.message || '최대 연속 일수 조회 실패');
+      }
+    } catch (e) {
+      setStreakError('최대 연속 일수 조회 중 오류가 발생했어요.');
+    } finally {
+      setLoadingStreak(false);
+    }
+  };
+
+  // 화면에 포커스될 때마다 데이터 새로 불러오기
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchAllRoutines(); // 전체 루틴 데이터 가져오기
+      fetchWeekly();
+      fetchMaxStreak();
+      // 포인트 지급 API 호출
+      givePoint(undefined, {
+        onSuccess: (data) => {
+          console.log('🔍 포인트 지급 성공:', data);
+        },
+        onError: (error) => {
+          console.log('🔍 포인트 지급 실패 (정상적인 경우):', error);
+        },
+      });
+    }, [selectedTab, startDateStr, endDateStr]),
+  );
 
   // AI 분석 카드 클릭 핸들러
   const handleAIAnalysisPress = () => {
@@ -245,7 +403,18 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
       console.log('AI 분석 및 팁 화면으로 이동');
     } else {
       // 금융 루틴 - 소비패턴 분석
-      navigation.navigate('ConsumptionAnalysis');
+      navigation.navigate('Loading', {
+        title: '소비패턴 분석 중...',
+        description: 'AI가 당신의 소비 패턴을 분석하고 있어요',
+        statusItems: [
+          { text: '소비 내역 수집...', status: 'pending' },
+          { text: '카테고리별 분석...', status: 'pending' },
+          { text: 'AI 패턴 분석...', status: 'pending' },
+          { text: '분석 결과 생성...', status: 'pending' },
+        ],
+        nextScreen: 'ConsumptionAnalysis',
+        duration: 5000,
+      });
     }
   };
 
@@ -264,10 +433,13 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
           <AchievementCard
             title="최대 연속"
             achievement={`${maxStreak}일 달성`}
-            routineName={selectedTab === 0 ? '일상 루틴' : '금융 루틴'}
+            routineName={
+              findMaxStreakRoutine.name ||
+              (selectedTab === 0 ? '생활 루틴' : '소비 루틴')
+            }
             points={0}
-            progress={Math.min((maxStreak / 7) * 100, 100)}
-            daysLeft={Math.max(7 - maxStreak, 0)}
+            progress={maxStreak >= 7 ? 0 : Math.min((maxStreak / 7) * 100, 100)}
+            daysLeft={7}
           />
 
           {/* AI 분석 카드 */}

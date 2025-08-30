@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Image } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 import { theme } from '../../styles/theme';
 import CustomButton from '../../components/common/CustomButton';
 import Header from '../../components/common/Header';
-import OtpInput from '../../components/common/OtpInput';
+import OtpInput, { OtpInputRef } from '../../components/common/OtpInput';
 import Timer from '../../components/common/Timer';
 import {
   useVerifyAccountCode,
@@ -18,6 +18,7 @@ const AccountVerificationScreen = ({ navigation, route }: any) => {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3분 타이머
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoadingCode, setIsLoadingCode] = useState(false);
 
   // route.params에서 계좌번호 가져오기
   const { accountNumber } = route.params || {};
@@ -36,15 +37,62 @@ const AccountVerificationScreen = ({ navigation, route }: any) => {
   const isButtonEnabled = code.length === 4;
   const isTimeUp = timeLeft === 0;
 
-  // 타이머 로직 (UI 표시용)
+  // 타이머 로직 (UI 표시용) - useRef로 최적화
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  const otpInputRef = React.useRef<OtpInputRef>(null);
+
+  // 화면 진입 시 자동으로 1원 인증번호 요청
   useEffect(() => {
-    if (timeLeft === 0) return;
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
+    if (accountNumber) {
+      setIsLoadingCode(true);
+      // 1원 인증번호 요청
+      resendAccountCode(
+        { account: accountNumber },
+        {
+          onSuccess: (data) => {
+            console.log('🔍 계좌 인증번호 요청 성공:', data);
+            setIsLoadingCode(false);
+
+            // 5초 후 자동으로 인증번호 입력
+            setTimeout(() => {
+              setCode(data.result);
+              // 마지막 입력창에 포커스 이동
+              setTimeout(() => {
+                otpInputRef.current?.focusLastInput();
+              }, 100);
+            }, 5000);
+          },
+          onError: (error) => {
+            console.error('🔍 계좌 인증번호 요청 실패:', error);
+            setIsLoadingCode(false);
+            handleApiError(error);
+            setErrorMessage('인증번호 요청에 실패했습니다.');
+          },
+        },
+      );
+    }
+  }, [accountNumber, resendAccountCode, handleApiError]);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [timeLeft]); // timeLeft를 의존성 배열에 추가
 
   const handleVerify = () => {
     if (!isButtonEnabled || isTimeUp) return;
@@ -75,7 +123,8 @@ const AccountVerificationScreen = ({ navigation, route }: any) => {
 
   const handleCodeChange = (text: string) => {
     setCode(text);
-    setErrorMessage(''); // 입력 시 에러 상태 초기화
+    // 입력할 때마다 에러 메시지 초기화
+    if (errorMessage) setErrorMessage('');
   };
 
   const handleResendCode = () => {
@@ -90,10 +139,31 @@ const AccountVerificationScreen = ({ navigation, route }: any) => {
       {
         onSuccess: (data) => {
           console.log('🔍 계좌 인증번호 재전송 성공:', data);
+
+          // 기존 타이머 정리
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+
           // 타이머 리셋 및 입력값 초기화
           setTimeLeft(180);
           setCode('');
           setErrorMessage('');
+
+          // 첫 번째 입력창에 포커스 이동
+          setTimeout(() => {
+            otpInputRef.current?.focusFirstInput();
+          }, 100);
+
+          // 5초 후 자동으로 인증번호 입력
+          setTimeout(() => {
+            setCode(data.result);
+            // 마지막 입력창에 포커스 이동
+            setTimeout(() => {
+              otpInputRef.current?.focusLastInput();
+            }, 100);
+          }, 5000);
         },
         onError: (error) => {
           console.error('🔍 계좌 인증번호 재전송 실패:', error);
@@ -109,61 +179,63 @@ const AccountVerificationScreen = ({ navigation, route }: any) => {
     <Container>
       <Header onBackPress={() => navigation.goBack()} />
 
-      <Content>
-        <Title>계좌 인증을 해주세요</Title>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <Content>
+          <Title>계좌 인증을 해주세요</Title>
 
-        <Description>
-          계좌 거래내역에서 입금한 1원의 입금자명을 확인 후{'\n'}
-          4자리 숫자를 입력해 주세요
-        </Description>
+          <Description>
+            계좌 거래내역에서 입금한 1원의 입금자명을 확인 후{'\n'}
+            4자리 숫자를 입력해 주세요
+          </Description>
 
-        <Timer timeLeft={timeLeft} isTimeUp={isTimeUp} />
+          <Timer timeLeft={timeLeft} isTimeUp={isTimeUp} />
 
-        <OtpInput
-          code={code}
-          onChangeText={handleCodeChange}
-          maxLength={4}
-          autoFocus={true}
-        />
+          <OtpInput
+            ref={otpInputRef}
+            code={code}
+            onChangeText={handleCodeChange}
+            maxLength={4}
+            autoFocus={true}
+          />
 
-        <ResendButton onPress={handleResendCode} disabled={isResending}>
-          <ResendText disabled={isResending}>
-            {isResending ? '재발송 중...' : '1원 입금 재발송'}
-          </ResendText>
-        </ResendButton>
+          <ResendButton onPress={handleResendCode} disabled={isResending}>
+            <ResendText disabled={isResending}>
+              {isResending ? '재발송 중...' : '1원 입금 재발송'}
+            </ResendText>
+          </ResendButton>
 
-        <ErrorContainer>
-          {isTimeUp ? (
-            <ErrorMessage>인증 시간이 만료되었습니다.</ErrorMessage>
-          ) : errorMessage ? (
-            <ErrorMessage>{errorMessage}</ErrorMessage>
-          ) : null}
-        </ErrorContainer>
+          <ErrorContainer>
+            {isTimeUp ? (
+              <ErrorMessage>인증 시간이 만료되었습니다.</ErrorMessage>
+            ) : errorMessage ? (
+              <ErrorMessage>{errorMessage}</ErrorMessage>
+            ) : null}
+          </ErrorContainer>
+        </Content>
 
-        <CharacterImage
-          source={require('../../assets/images/character_shoo.png')}
-          resizeMode="contain"
-        />
-      </Content>
-
-      {/* 하단 버튼 */}
-      <ButtonWrapper>
-        <CustomButton
-          text={isVerifying ? '인증 중...' : '인증하기'}
-          onPress={handleVerify}
-          disabled={!isButtonEnabled || isTimeUp || isVerifying}
-          backgroundColor={
-            isButtonEnabled && !isTimeUp && !isVerifying
-              ? theme.colors.primary
-              : theme.colors.gray200
-          }
-          textColor={
-            isButtonEnabled && !isTimeUp && !isVerifying
-              ? theme.colors.white
-              : theme.colors.gray500
-          }
-        />
-      </ButtonWrapper>
+        {/* 하단 버튼 */}
+        <ButtonWrapper>
+          <CustomButton
+            text={isVerifying ? '인증 중...' : '인증하기'}
+            onPress={handleVerify}
+            disabled={!isButtonEnabled || isTimeUp || isVerifying}
+            backgroundColor={
+              isButtonEnabled && !isTimeUp && !isVerifying
+                ? theme.colors.primary
+                : theme.colors.gray200
+            }
+            textColor={
+              isButtonEnabled && !isTimeUp && !isVerifying
+                ? theme.colors.white
+                : theme.colors.gray500
+            }
+          />
+        </ButtonWrapper>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -225,14 +297,6 @@ const ErrorMessage = styled.Text`
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
-`;
-
-// 오른쪽 아래, 아래보다는 조금 위
-const CharacterImage = styled.Image`
-  position: absolute;
-  bottom: -24px;
-  right: -240px;
-  height: 280px;
 `;
 
 const ButtonWrapper = styled.View`

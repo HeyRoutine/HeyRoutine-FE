@@ -36,13 +36,15 @@ const CreateGroupRoutineScreen = ({
     routineData?.description || '',
   );
   const [selectedCategory, setSelectedCategory] = useState(
-    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
+    routineData?.routineType === 'FINANCE' ? 'finance' : 'life',
   );
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.dayTypes || [],
   );
-  const [startTime, setStartTime] = useState(routineData?.startTime || '');
-  const [endTime, setEndTime] = useState(routineData?.endTime || '');
+  const [startTime, setStartTime] = useState(
+    routineData?.startTime || '오전 00:00',
+  );
+  const [endTime, setEndTime] = useState(routineData?.endTime || '오전 00:00');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -157,22 +159,33 @@ const CreateGroupRoutineScreen = ({
 
   // 시간을 HH:mm 형식으로 변환하는 함수 (API 요청용)
   const formatTimeForAPI = (time: string): string => {
-    // HH:mm 형식을 그대로 반환 (단체 루틴은 HH:mm 형식 사용)
-    return time;
+    // "오전 9:00" 또는 "오후 2:30" 형식을 "09:00" 또는 "14:30"으로 변환
+    if (time.includes('오전')) {
+      const hourStr = time.replace('오전 ', '').split(':')[0];
+      const minute = time.split(':')[1];
+      // 오전 12시는 00:00으로 변환
+      const hourNum = hourStr === '12' ? 0 : parseInt(hourStr);
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+    } else if (time.includes('오후')) {
+      const hourStr = time.replace('오후 ', '').split(':')[0];
+      const minute = time.split(':')[1];
+      // 오후 12시는 12:00으로 변환 (12 + 0 = 12)
+      const hourNum = hourStr === '12' ? 12 : parseInt(hourStr) + 12;
+      return `${hourNum.toString().padStart(2, '0')}:${minute}`;
+    }
+    return time; // 이미 HH:mm 형식이면 그대로 반환
   };
 
   const handleStartTimeSelect = (time: string | number) => {
     if (typeof time === 'string') {
-      const displayTime = formatTimeForDisplay(time);
-      setStartTime(displayTime);
+      setStartTime(time);
     }
     setShowStartTimePicker(false);
   };
 
   const handleEndTimeSelect = (time: string | number) => {
     if (typeof time === 'string') {
-      const displayTime = formatTimeForDisplay(time);
-      setEndTime(displayTime);
+      setEndTime(time);
     }
     setShowEndTimePicker(false);
   };
@@ -283,7 +296,7 @@ const CreateGroupRoutineScreen = ({
         onRequestClose={() => setShowStartTimePicker(false)}
         onTimeSelect={handleStartTimeSelect}
         type="time"
-        initialTime="09:00"
+        initialTime={startTime}
       />
 
       {/* 종료 시간 선택 모달 */}
@@ -292,7 +305,7 @@ const CreateGroupRoutineScreen = ({
         onRequestClose={() => setShowEndTimePicker(false)}
         onTimeSelect={handleEndTimeSelect}
         type="time"
-        initialTime="11:00"
+        initialTime={endTime}
       />
     </Container>
   );
@@ -349,7 +362,7 @@ const InputContainer = styled.View`
 const NameInput = styled(TextInput)`
   font-family: ${theme.fonts.SemiBold};
   font-size: 28px;
-  color: ${theme.colors.gray300};
+  color: #000000;
   padding: 16px 0;
   text-align: center;
 `;

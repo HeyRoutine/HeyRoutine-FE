@@ -3,6 +3,7 @@ import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -40,12 +41,23 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
     if (!imageUri) {
       // 이미지가 없으면 바로 다음으로
       setSignupProfileImage(null);
+      // 시연용: 약관 동의 절차 건너뛰기
       // route.params로 모든 데이터 전달
       const { email: routeEmail, password, nickname } = route.params || {};
-      navigation.navigate('TermsAgreeMent', {
+      const { universityId, majorId } = useAuthStore.getState().signupData;
+      // navigation.navigate('TermsAgreeMent', {
+      //   email: routeEmail,
+      //   password,
+      //   nickname,
+      // });
+
+      // 바로 Welcome 화면으로 이동
+      navigation.navigate('Welcome', {
         email: routeEmail,
         password,
         nickname,
+        universityId,
+        majorId,
       });
       return;
     }
@@ -67,13 +79,27 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
       // Zustand 스토어에 업로드된 이미지 URL 저장
       setSignupProfileImage(imageUrl);
 
+      // 시연용: 약관 동의 절차 건너뛰기
       // route.params로 모든 데이터 전달
       const { email: routeEmail, password, nickname } = route.params || {};
-      navigation.navigate('TermsAgreeMent', {
+      const { universityId, majorId } = useAuthStore.getState().signupData;
+      // navigation.navigate('TermsAgreeMent', {
+      //   email: routeEmail,
+      //   password,
+      //   nickname,
+      //   profileImage: imageUrl,
+      //   universityId,
+      //   majorId,
+      // });
+
+      // 바로 Welcome 화면으로 이동
+      navigation.navigate('Welcome', {
         email: routeEmail,
         password,
         nickname,
         profileImage: imageUrl,
+        universityId,
+        majorId,
       });
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
@@ -86,7 +112,7 @@ const ProfileImageScreen = ({ navigation, route }: any) => {
     <Container>
       <Header
         onBackPress={() => navigation.goBack()}
-        rightComponent={<ProgressText>4/5</ProgressText>}
+        rightComponent={<ProgressText>6/6</ProgressText>}
       />
 
       <Content>

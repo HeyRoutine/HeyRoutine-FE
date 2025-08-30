@@ -117,8 +117,11 @@ const GroupRoutineDetailScreen = ({
 
     // 모든 루틴이 완료되었다면 오늘 날짜의 요일만 완료된 요일로 설정
     const today = new Date();
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayDay = dayNames[today.getDay()];
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    const dayIndex = today.getDay();
+    // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+    const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+    const todayDay = dayNames[mappedIndex];
 
     const completedDays =
       allCompleted && groupRoutineInfo?.dayOfWeek?.includes(todayDay)
@@ -277,6 +280,12 @@ const GroupRoutineDetailScreen = ({
     setIsEditRoutineModalVisible(false);
   };
 
+  // 루틴 완료 상태 확인 (progressText에서 퍼센트 추출)
+  const isRoutineCompleted = (() => {
+    const progressMatch = routine.progressText.match(/(\d+)%/);
+    return progressMatch ? parseInt(progressMatch[1]) === 100 : false;
+  })();
+
   const handleEditRoutineDetail = () => {
     setIsMenuVisible(false);
     setIsEditRoutineDetailModalVisible(true);
@@ -419,8 +428,11 @@ const GroupRoutineDetailScreen = ({
     const selectedDays = groupRoutineInfo?.dayOfWeek || [];
 
     // 오늘 요일이 선택된 요일에 포함되는지 확인
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayDay = dayNames[today.getDay()];
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    const dayIndex = today.getDay();
+    // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+    const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+    const todayDay = dayNames[mappedIndex];
 
     const isTodayInSelectedDays = selectedDays.includes(todayDay);
 
@@ -465,56 +477,48 @@ const GroupRoutineDetailScreen = ({
         onSuccess: () => {
           console.log('🔍 루틴 상태 업데이트 성공:', task.name, newStatus);
 
-          // 개별 루틴 상태 업데이트 성공 후, 서버에서 최신 데이터를 가져와서 모든 세부 루틴 완료 여부 확인
-          queryClient
-            .invalidateQueries({
-              queryKey: ['groupRoutineDetail', routineId],
-            })
-            .then(() => {
-              // 서버에서 최신 데이터를 가져온 후 확인
-              const currentData = queryClient.getQueryData([
-                'groupRoutineDetail',
-                routineId,
-              ]) as any;
-              if (currentData?.result) {
-                const routineInfos = currentData.result.routineInfos || [];
-                const allCompleted =
-                  routineInfos.length > 0 &&
-                  routineInfos.every((r: any) => r.isCompleted);
+          // 로컬 상태에서 모든 세부 루틴 완료 여부 확인
+          const currentData = queryClient.getQueryData([
+            'groupRoutineDetail',
+            routineId,
+          ]) as any;
+          if (currentData?.result) {
+            const routineInfos = currentData.result.routineInfos || [];
+            const allCompleted =
+              routineInfos.length > 0 &&
+              routineInfos.every((r: any) => r.isCompleted);
 
-                if (allCompleted) {
-                  console.log(
-                    '🔍 모든 세부 루틴이 완료되었습니다. 전체 기록 업데이트 호출',
-                  );
-                  // 모든 세부 루틴이 완료된 경우 전체 기록 업데이트 API 호출
-                  updateGroupRoutineRecord.mutate(
-                    {
-                      groupRoutineListId: routineId,
-                      data: { status: true },
-                    },
-                    {
-                      onSuccess: () => {
-                        console.log('🔍 전체 기록 업데이트 성공');
-                        // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
-                        queryClient.invalidateQueries({
-                          queryKey: ['myGroupRoutines'],
-                        });
-                        queryClient.invalidateQueries({
-                          queryKey: ['groupRoutines'],
-                        });
-                      },
-                      onError: (error: any) => {
-                        console.error('🔍 전체 기록 업데이트 실패:', error);
-                        // 422 에러는 무시 (이미 완료된 상태)
-                        if (error?.response?.status !== 422) {
-                          console.error('🔍 예상치 못한 에러:', error);
-                        }
-                      },
-                    },
-                  );
-                }
-              }
-            });
+            // 전체 기록 업데이트 API 호출 (완료/미완료 상태에 관계없이)
+            updateGroupRoutineRecord.mutate(
+              {
+                groupRoutineListId: routineId,
+                data: { status: allCompleted },
+              },
+              {
+                onSuccess: () => {
+                  console.log('🔍 전체 기록 업데이트 성공');
+                  // 홈 화면과 단체 게시판 화면의 데이터도 업데이트
+                  queryClient.invalidateQueries({
+                    queryKey: ['myGroupRoutines'],
+                  });
+                  queryClient.invalidateQueries({
+                    queryKey: ['groupRoutines'],
+                  });
+                  // 단체 루틴 상세 데이터도 다시 조회하여 참여자 목록 업데이트
+                  queryClient.invalidateQueries({
+                    queryKey: ['groupRoutineDetail', routineId],
+                  });
+                },
+                onError: (error: any) => {
+                  console.error('🔍 전체 기록 업데이트 실패:', error);
+                  // 422 에러는 무시 (이미 완료된 상태)
+                  if (error?.response?.status !== 422) {
+                    console.error('🔍 예상치 못한 에러:', error);
+                  }
+                },
+              },
+            );
+          }
         },
         onError: (error) => {
           console.error('🔍 루틴 상태 업데이트 실패:', error);
@@ -827,8 +831,20 @@ const GroupRoutineDetailScreen = ({
               <MoreButton onPress={handleEditRoutine}>
                 <MoreButtonText>루틴 수정</MoreButtonText>
               </MoreButton>
-              <MoreButton onPress={handleEditRoutineDetail}>
-                <MoreButtonText>상세 루틴 수정</MoreButtonText>
+              <MoreButton
+                onPress={handleEditRoutineDetail}
+                disabled={isRoutineCompleted}
+                style={{ opacity: isRoutineCompleted ? 0.5 : 1 }}
+              >
+                <MoreButtonText
+                  style={{
+                    color: isRoutineCompleted
+                      ? theme.colors.gray500
+                      : theme.colors.gray900,
+                  }}
+                >
+                  상세 루틴 수정
+                </MoreButtonText>
               </MoreButton>
               <DeleteButton onPress={handleDeleteRoutine}>
                 <DeleteButtonText>삭제</DeleteButtonText>

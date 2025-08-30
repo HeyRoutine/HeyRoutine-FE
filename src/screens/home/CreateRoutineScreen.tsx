@@ -19,7 +19,13 @@ import { RoutineType, DayType } from '../../types/api';
 
 interface CreateRoutineScreenProps {
   navigation: any;
-  route: { params?: { mode?: 'create' | 'edit'; routineData?: any } };
+  route: {
+    params?: {
+      mode?: 'create' | 'edit';
+      routineData?: any;
+      aiSelectedRoutines?: any[];
+    };
+  };
 }
 
 const CreateRoutineScreen = ({
@@ -28,11 +34,12 @@ const CreateRoutineScreen = ({
 }: CreateRoutineScreenProps) => {
   const mode = route?.params?.mode || 'create';
   const routineData = route?.params?.routineData;
+  const aiSelectedRoutines = route?.params?.aiSelectedRoutines || [];
 
   // 기존 데이터로 초기화 (수정 모드인 경우)
   const [routineName, setRoutineName] = useState(routineData?.title || '');
   const [selectedCategory, setSelectedCategory] = useState(
-    routineData?.routineType === 'DAILY' ? 'life' : 'finance',
+    routineData?.routineType === 'FINANCE' ? 'finance' : 'life',
   );
   // 요일 순서 정의 (월화수목금토일)
   const dayOrder = ['월', '화', '수', '목', '금', '토', '일'];
@@ -59,8 +66,7 @@ const CreateRoutineScreen = ({
     routineData?.startDate ||
       (() => {
         const today = new Date();
-        const koreaTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-        return `${koreaTime.getFullYear()}-${String(koreaTime.getMonth() + 1).padStart(2, '0')}-${String(koreaTime.getDate()).padStart(2, '0')}`;
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       })(),
   );
 
@@ -142,6 +148,7 @@ const CreateRoutineScreen = ({
               startDate: selectedStartDate,
               routineListId: data.result?.id, // 생성된 루틴 리스트 ID
             },
+            aiSelectedRoutines: aiSelectedRoutines, // AI 선택 루틴 데이터 전달
           });
         },
         onError: (error) => {
@@ -417,7 +424,7 @@ const InputContainer = styled.View`
 const NameInput = styled(TextInput)`
   font-family: ${theme.fonts.SemiBold};
   font-size: 28px;
-  color: ${theme.colors.gray300};
+  color: ${theme.colors.gray800};
   padding: 16px 0;
   text-align: center;
 `;

@@ -6,6 +6,18 @@ export interface ApiResponse<T> {
   result: T;
 }
 
+// 학과 검색 결과 타입
+export interface MajorSearchInfo {
+  id: number;
+  name: string;
+}
+
+// 대학교 검색 결과 타입
+export interface UniversitySearchInfo {
+  id: number;
+  name: string;
+}
+
 // 단체루틴 타입
 export type RoutineType = 'DAILY' | 'FINANCE';
 
@@ -195,6 +207,8 @@ export interface SignUpRequest {
   nickname: string;
   profileImage: string;
   roles: string[];
+  universityId: number;
+  majorId: number;
   isMarketing: boolean;
 }
 
@@ -214,6 +228,8 @@ export interface MyInfoResponse {
   point?: number;
   isMarketing: boolean;
   accountCertificationStatus: boolean;
+  university?: string;
+  major?: string;
 }
 
 // 마케팅 수신동의 업데이트 요청 타입
@@ -299,7 +315,32 @@ export interface SendAccountCodeRequest {
 }
 
 // 계좌 인증번호 전송 응답 타입
-export type SendAccountCodeResponse = string; // "해당 계좌는 유효합니다."
+export type SendAccountCodeResponse = string; // 4자리 인증번호 (예: "1234")
+
+// 랭킹 조회 관련 타입
+export type RankingType = 'university' | 'major';
+
+export interface MyRankInfo {
+  rank: number;
+  universityName: string;
+  majorName: string;
+  score: number;
+}
+
+export interface RankInfo {
+  rank: number;
+  name: string;
+  score: number;
+}
+
+export interface RankingResponse {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  myItem: MyRankInfo;
+  items: RankInfo[];
+}
 
 // 계좌 인증번호 인증 요청 타입
 export interface VerifyAccountCodeRequest {
@@ -401,6 +442,18 @@ export interface ProductDetailInfo {
 // 물건 상세보기 응답 타입
 export type GetProductDetailResponse = ProductDetailInfo;
 
+// ===== 포인트 전환 =====
+// 포인트 전환 요청 타입
+export interface AccountTransferRequest {
+  account: string; // 계좌번호
+  price: string; // 포인트 (문자열로 전달)
+}
+
+// 포인트 전환 응답 타입
+export interface AccountTransferResponse {
+  result: string; // 현재 통장 잔액 (문자열)
+}
+
 // 미참여자용 단체루틴 상세 조회 응답 타입
 export interface NonParticipantGroupRoutineDetailResponse {
   isAdmin: boolean;
@@ -469,6 +522,15 @@ export type CreateGroupGuestbookResponse = GuestbookItem;
 
 // 방명록 삭제 응답 타입
 export type DeleteGroupGuestbookResponse = EmptyResponse;
+
+// FCM 토큰 저장 관련 타입
+export interface FcmTokenRequest {
+  fcmToken: string;
+}
+
+export interface FcmTokenResponse {
+  result: string;
+}
 
 // 루틴 템플릿 아이템 타입
 export interface RoutineTemplateItem {
@@ -561,6 +623,7 @@ export interface PersonalRoutineListItem {
   percent: number; // 현재 루틴 진행 퍼센트(소숫점 최대 1자리)
   dayOfWeek: DayType[]; // ['월', '화', '수'] 형식
   successDay: DayType[]; // 이번 주 성공한 요일들
+  startDate?: string; // 시작 날짜 (YYYY-MM-DD 형식)
 }
 
 // 개인루틴 리스트 조회 응답 타입
@@ -681,6 +744,9 @@ export interface GetMaxStreakResponse {
   streakDays: number;
 }
 
+// ===== 분석(Analysis) - 연속 1주일 달성 포인트 지급 =====
+export type GivePointResponse = EmptyResponse;
+
 // 맞춤 금융 상품 추천 API 타입
 export interface RecommendProductItem {
   bankName: string;
@@ -728,3 +794,32 @@ export interface SurveyRequest {
 }
 
 export type SurveyResponse = ApiResponse<string>;
+
+// ===== 분석(Analysis) - 소비 루틴 맞춤 추천 =====
+
+// 소비 루틴 맞춤 추천 요청 파라미터
+export interface RcmdConsumptionRoutineParams {
+  categorySpendings: CategorySpendingItem[];
+}
+
+// 소비자 분석 정보
+export interface ConsumerInfo {
+  consumerType: string; // 소비자 타입 (최대 8자)
+  text: string; // 소비 카테고리에 대한 분석 (최대 70자)
+}
+
+// 추천 루틴 정보
+export interface RecommendRoutineItem {
+  emojiUrl: string; // 이모지 URL
+  routineName: string; // 추천하는 루틴 네임 (최대 20자)
+}
+
+// 소비 루틴 맞춤 추천 응답 result 타입
+export interface RcmdConsumptionRoutineResult {
+  analysis: ConsumerInfo;
+  recommendRoutine: RecommendRoutineItem[];
+}
+
+// 소비 루틴 맞춤 추천 응답 타입
+export type RcmdConsumptionRoutineResponse =
+  ApiResponse<RcmdConsumptionRoutineResult>;

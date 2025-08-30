@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Image, ActivityIndicator } from 'react-native';
+import {
+  Image,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../../styles/theme';
 import CustomButton from '../../../components/common/CustomButton';
@@ -30,15 +36,29 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 
   const isButtonEnabled = code.length === 6;
 
-  // 타이머 로직 (UI 표시용)
+  // 타이머 로직 (UI 표시용) - useRef로 최적화
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    if (timeLeft === 0) return;
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
+    if (timeLeft === 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []); // 의존성 배열을 비워서 한 번만 실행
 
   // 재발송 쿨다운은 사용하지 않습니다 (항상 활성화 요구사항)
 
@@ -91,8 +111,16 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     const payload: MailSendRequest = { email } as any;
     try {
       setResendState('loading');
-      // 누른 순간 타이머 3분(180초)으로 리셋
+
+      // 기존 타이머 정리
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      // 타이머 3분(180초)으로 리셋
       setTimeLeft(180);
+
       // 입력값은 유지 (요구사항 없음). 필요하면 아래 주석 해제
       // setCode('');
       const res = await mailSend(payload);
@@ -110,13 +138,24 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     }
   };
 
-  useEffect(() => {
-    // 화면 진입 시 인증메일 발송
-    sendVerificationMail();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      // 화면 진입 시 인증메일 발송
+      sendVerificationMail();
+
+      // 화면을 벗어날 때 타이머 정리
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    }, []),
+  );
 
   const handleCodeChange = (text: string) => {
     setCode(text);
+    // 입력할 때마다 에러 메시지 초기화
     if (verifyError) setVerifyError(null);
   };
 
@@ -129,61 +168,61 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
         }
       />
 
-      <Content>
-        <Title>
-          안전한 사용을 위해{'\n'}
-          이메일 인증을 해주세요.
-        </Title>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <Content>
+          <Title>
+            안전한 사용을 위해{'\n'}
+            이메일 인증을 해주세요.
+          </Title>
 
-        <Timer timeLeft={timeLeft} />
+          <Timer timeLeft={timeLeft} />
 
-        <OtpInput
-          code={code}
-          onChangeText={handleCodeChange}
-          maxLength={6}
-          autoFocus={true}
-        />
+          <OtpInput
+            code={code}
+            onChangeText={handleCodeChange}
+            maxLength={6}
+            autoFocus={true}
+          />
 
-        <ResendButton onPress={sendVerificationMail} activeOpacity={0.7}>
-          {resendState === 'loading' ? (
-            <ResendRow>
-              <ActivityIndicator size="small" color={theme.colors.gray600} />
-              <ResendText disabled>재발송 중...</ResendText>
-            </ResendRow>
-          ) : resendState === 'done' ? (
-            <ResendRow>
-              <Ionicons
-                name="checkmark-circle"
-                size={16}
-                color={theme.colors.primary}
-              />
-              <ResendText>재발송 완료</ResendText>
-            </ResendRow>
-          ) : (
-            <ResendText>인증번호 재발송</ResendText>
-          )}
-        </ResendButton>
+          <ResendButton onPress={sendVerificationMail} activeOpacity={0.7}>
+            {resendState === 'loading' ? (
+              <ResendRow>
+                <ActivityIndicator size="small" color={theme.colors.gray600} />
+                <ResendText disabled>재발송 중...</ResendText>
+              </ResendRow>
+            ) : resendState === 'done' ? (
+              <ResendRow>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={16}
+                  color={theme.colors.primary}
+                />
+                <ResendText>재발송 완료</ResendText>
+              </ResendRow>
+            ) : (
+              <ResendText>인증번호 재발송</ResendText>
+            )}
+          </ResendButton>
 
-        {verifyError ? <ErrorText>{verifyError}</ErrorText> : null}
+          {verifyError ? <ErrorText>{verifyError}</ErrorText> : null}
+        </Content>
 
-        <CharacterImage
-          source={require('../../../assets/images/character_shoo.png')}
-          resizeMode="contain"
-          pointerEvents="none"
-        />
-      </Content>
-
-      {/* 하단 버튼 */}
-      <ButtonWrapper>
-        <CustomButton
-          text="인증하기"
-          onPress={handleVerify}
-          // TODO: 6자리 숫자 입력 후 인증하기 버튼 활성화 + 타이머 종료 후 인증하기 버튼 비활성화
-          // disabled={!isButtonEnabled}
-          backgroundColor={theme.colors.primary}
-          textColor={theme.colors.white}
-        />
-      </ButtonWrapper>
+        {/* 하단 버튼 */}
+        <ButtonWrapper>
+          <CustomButton
+            text="인증하기"
+            onPress={handleVerify}
+            // TODO: 6자리 숫자 입력 후 인증하기 버튼 활성화 + 타이머 종료 후 인증하기 버튼 비활성화
+            // disabled={!isButtonEnabled}
+            backgroundColor={theme.colors.primary}
+            textColor={theme.colors.white}
+          />
+        </ButtonWrapper>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -239,14 +278,6 @@ const ErrorText = styled.Text`
   color: ${theme.colors.error};
   font-family: ${theme.fonts.Regular};
   font-size: 13px;
-`;
-
-// 오른쪽 아래, 아래보다는 조금 위
-const CharacterImage = styled.Image`
-  position: absolute;
-  bottom: -24px;
-  right: -240px;
-  height: 280px;
 `;
 
 const ButtonWrapper = styled.View`

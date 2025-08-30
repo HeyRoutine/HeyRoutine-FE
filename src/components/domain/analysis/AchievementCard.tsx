@@ -51,7 +51,7 @@ const AchievementCard = ({
           <PointIconContainer>
             <PointImage source={require('../../../assets/images/point.png')} />
           </PointIconContainer>
-          <PointText>+{points} p</PointText>
+          <PointText>+100 p</PointText>
         </RightSection>
       </TopSection>
       <BottomSection>

@@ -6,7 +6,7 @@ import { FlatList } from 'react-native';
 import Header from '../../components/common/Header';
 import TabNavigation from '../../components/common/TabNavigation';
 import { theme } from '../../styles/theme';
-import { useRankList } from '../../hooks/ranking/useRankList';
+import { useGetRanking } from '../../hooks/ranking/useRankList';
 
 // 화면 표시용 아이템 타입 (API 응답 매핑 후 사용)
 interface UiRankItem {
@@ -23,18 +23,18 @@ const RankBoardScreen = ({ navigation }: any) => {
     data: universityData,
     isLoading: isUniversityLoading,
     isFetching: isUniversityFetching,
-  } = useRankList({ type: 'university', page: 0, size: 20 }, selectedTab === 0);
+  } = useGetRanking('university', selectedTab === 0);
 
   const {
     data: majorData,
     isLoading: isMajorLoading,
     isFetching: isMajorFetching,
-  } = useRankList({ type: 'major', page: 0, size: 20 }, selectedTab === 1);
+  } = useGetRanking('major', selectedTab === 1);
 
   const schoolRankData = useMemo<UiRankItem[]>(() => {
     const items = universityData?.result?.items || [];
-    return items.map((it) => ({
-      id: `${it.rank}`,
+    return items.map((it, index) => ({
+      id: `university-${it.rank}-${index}`,
       name: it.name,
       score: it.score,
       rank: it.rank,
@@ -43,8 +43,8 @@ const RankBoardScreen = ({ navigation }: any) => {
 
   const departmentRankData = useMemo<UiRankItem[]>(() => {
     const items = majorData?.result?.items || [];
-    return items.map((it) => ({
-      id: `${it.rank}`,
+    return items.map((it, index) => ({
+      id: `major-${it.rank}-${index}`,
       name: it.name,
       score: it.score,
       rank: it.rank,
@@ -59,7 +59,7 @@ const RankBoardScreen = ({ navigation }: any) => {
     : '이번 주 최고의 성과를 보여준 학과';
   return (
     <Container edges={['top', 'left', 'right']}>
-      <Header title="랭크 보드" onBackPress={() => navigation.goBack()} />
+      <Header title="실시간 랭킹" onBackPress={() => navigation.goBack()} />
       <Content>
         <TabNavigation
           selectedIndex={selectedTab}
@@ -69,55 +69,61 @@ const RankBoardScreen = ({ navigation }: any) => {
         <Top3Container>
           <Top3Title>{top3TitleText}</Top3Title>
           <Top3SubTitle>{top3SubTitleText}</Top3SubTitle>
-            <Top3Row>
-              {/* 2위 */}
-              {listData[1] && (
-                <TopItem style={{ marginTop: 8 }}>
-                  <LogoWrapper size={64} variant="silver">
-                    <LogoImage source={require('../../assets/images/default_profile.png')} />
-                    <RankBadge variant="silver">
-                      <RankBadgeText>2</RankBadgeText>
-                    </RankBadge>
-                  </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[1].name}</SchoolName>
-                  <ScoreBadge variant="silver">
-                    <ScoreText>{listData[1].score}점</ScoreText>
-                  </ScoreBadge>
-                </TopItem>
-              )}
+          <Top3Row>
+            {/* 2위 */}
+            {listData[1] && (
+              <TopItem style={{ marginTop: 8 }}>
+                <LogoWrapper size={64} variant="silver">
+                  <LogoImage
+                    source={require('../../assets/images/default_profile.png')}
+                  />
+                  <RankBadge variant="silver">
+                    <RankBadgeText>2</RankBadgeText>
+                  </RankBadge>
+                </LogoWrapper>
+                <SchoolName numberOfLines={1}>{listData[1].name}</SchoolName>
+                <ScoreBadge variant="silver">
+                  <ScoreText>{listData[1].score}점</ScoreText>
+                </ScoreBadge>
+              </TopItem>
+            )}
 
-              {/* 1위 (중앙 강조) */}
-              {listData[0] && (
-                <TopItem style={{ marginHorizontal: 12, marginTop: -6 }}>
-                  <LogoWrapper size={88} variant="gold">
-                    <LogoImage source={require('../../assets/images/default_profile.png')} />
-                    <RankBadge variant="gold">
-                      <RankBadgeText>1</RankBadgeText>
-                    </RankBadge>
-                  </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[0].name}</SchoolName>
-                  <ScoreBadge variant="gold">
-                    <ScoreText>{listData[0].score}점</ScoreText>
-                  </ScoreBadge>
-                </TopItem>
-              )}
+            {/* 1위 (중앙 강조) */}
+            {listData[0] && (
+              <TopItem style={{ marginHorizontal: 12, marginTop: -6 }}>
+                <LogoWrapper size={88} variant="gold">
+                  <LogoImage
+                    source={require('../../assets/images/default_profile.png')}
+                  />
+                  <RankBadge variant="gold">
+                    <RankBadgeText>1</RankBadgeText>
+                  </RankBadge>
+                </LogoWrapper>
+                <SchoolName numberOfLines={1}>{listData[0].name}</SchoolName>
+                <ScoreBadge variant="gold">
+                  <ScoreText>{listData[0].score}점</ScoreText>
+                </ScoreBadge>
+              </TopItem>
+            )}
 
-              {/* 3위 */}
-              {listData[2] && (
-                <TopItem style={{ marginTop: 8 }}>
-                  <LogoWrapper size={64} variant="bronze">
-                    <LogoImage source={require('../../assets/images/default_profile.png')} />
-                    <RankBadge variant="bronze">
-                      <RankBadgeText>3</RankBadgeText>
-                    </RankBadge>
-                  </LogoWrapper>
-                  <SchoolName numberOfLines={1}>{listData[2].name}</SchoolName>
-                  <ScoreBadge variant="bronze">
-                    <ScoreText>{listData[2].score}점</ScoreText>
-                  </ScoreBadge>
-                </TopItem>
-              )}
-            </Top3Row>
+            {/* 3위 */}
+            {listData[2] && (
+              <TopItem style={{ marginTop: 8 }}>
+                <LogoWrapper size={64} variant="bronze">
+                  <LogoImage
+                    source={require('../../assets/images/default_profile.png')}
+                  />
+                  <RankBadge variant="bronze">
+                    <RankBadgeText>3</RankBadgeText>
+                  </RankBadge>
+                </LogoWrapper>
+                <SchoolName numberOfLines={1}>{listData[2].name}</SchoolName>
+                <ScoreBadge variant="bronze">
+                  <ScoreText>{listData[2].score}점</ScoreText>
+                </ScoreBadge>
+              </TopItem>
+            )}
+          </Top3Row>
         </Top3Container>
         <FlatList
           data={listData}
@@ -225,7 +231,10 @@ const TopItem = styled.View`
   align-items: center;
 `;
 
-const LogoWrapper = styled.View<{ size: number; variant: 'gold' | 'silver' | 'bronze' }>`
+const LogoWrapper = styled.View<{
+  size: number;
+  variant: 'gold' | 'silver' | 'bronze';
+}>`
   width: ${(p) => p.size}px;
   height: ${(p) => p.size}px;
   border-radius: ${(p) => p.size / 2}px;
@@ -233,7 +242,12 @@ const LogoWrapper = styled.View<{ size: number; variant: 'gold' | 'silver' | 'br
   align-items: center;
   justify-content: center;
   border-width: 3px;
-  border-color: ${(p) => (p.variant === 'gold' ? '#F4C542' : p.variant === 'silver' ? '#C0C4CC' : '#D88C4E')};
+  border-color: ${(p) =>
+    p.variant === 'gold'
+      ? '#F4C542'
+      : p.variant === 'silver'
+        ? '#C0C4CC'
+        : '#D88C4E'};
   background-color: ${theme.colors.gray100};
 `;
 
@@ -252,7 +266,12 @@ const RankBadge = styled.View<{ variant: 'gold' | 'silver' | 'bronze' }>`
   border-radius: 13px;
   align-items: center;
   justify-content: center;
-  background-color: ${(p) => (p.variant === 'gold' ? '#F4C542' : p.variant === 'silver' ? '#C0C4CC' : '#D88C4E')};
+  background-color: ${(p) =>
+    p.variant === 'gold'
+      ? '#F4C542'
+      : p.variant === 'silver'
+        ? '#C0C4CC'
+        : '#D88C4E'};
   border-width: 2px;
   border-color: ${theme.colors.white};
   z-index: 10;
@@ -275,7 +294,12 @@ const ScoreBadge = styled.View<{ variant: 'gold' | 'silver' | 'bronze' }>`
   margin-top: 6px;
   padding: 6px 10px;
   border-radius: 18px;
-  background-color: ${(p) => (p.variant === 'gold' ? '#F4C542' : p.variant === 'silver' ? '#69707A' : '#F97316')};
+  background-color: ${(p) =>
+    p.variant === 'gold'
+      ? '#F4C542'
+      : p.variant === 'silver'
+        ? '#69707A'
+        : '#F97316'};
 `;
 
 const ScoreText = styled.Text`
@@ -283,5 +307,3 @@ const ScoreText = styled.Text`
   font-size: 12px;
   color: ${theme.colors.white};
 `;
-
-

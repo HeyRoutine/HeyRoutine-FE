@@ -4,6 +4,11 @@ import { ScrollView, TouchableOpacity, View, FlatList } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Alert, Platform } from 'react-native';
 
 import { theme } from '../../styles/theme';
 import Header from '../../components/common/Header';
@@ -25,6 +30,8 @@ import {
   useInfiniteMyGroupRoutines,
 } from '../../hooks/routine/group/useGroupRoutines';
 import { useMyInfo } from '../../hooks/user/useUser';
+import { getMaxStreak } from '../../api/analysis';
+import { useAccountVerification } from '../../hooks/user';
 
 interface HomeScreenProps {
   navigation: any;
@@ -33,12 +40,85 @@ interface HomeScreenProps {
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
+  const [hasShownStreakSuccess, setHasShownStreakSuccess] = useState(false);
 
   const { selectedDate, setSelectedDate } = useRoutineStore();
   const { setUserInfo } = useUserStore();
 
+  // FCM 토큰 저장 API 훅
+  const { mutate: saveFcmToken } = useAccountVerification();
+
   // 사용자 정보 조회
   const { data: myInfoData, isLoading: isMyInfoLoading } = useMyInfo();
+
+  // FCM 토큰 발급 및 저장 함수
+  const registerForPushNotificationsAsync = async () => {
+    // 이미 토큰이 발급되었는지 확인
+    const hasTokenBeenIssued = await AsyncStorage.getItem('fcmTokenIssued');
+    if (hasTokenBeenIssued === 'true') {
+      console.log('🔍 FCM 토큰이 이미 발급되었습니다.');
+      return;
+    }
+
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        console.log('푸시 알림 권한이 거부되었습니다.');
+        return;
+      }
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
+      if (!projectId) {
+        console.log('Project ID를 찾을 수 없습니다.');
+        return;
+      }
+      try {
+        const pushTokenString = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data;
+        console.log('🔍 FCM 토큰 발급 성공:', pushTokenString);
+
+        // 서버에 토큰 저장
+        saveFcmToken(
+          { fcmToken: pushTokenString },
+          {
+            onSuccess: (data) => {
+              console.log('🔍 FCM 토큰 저장 성공:', data);
+              // 토큰 발급 완료 표시
+              AsyncStorage.setItem('fcmTokenIssued', 'true');
+            },
+            onError: (error) => {
+              console.error('🔍 FCM 토큰 저장 실패:', error);
+            },
+          },
+        );
+
+        return pushTokenString;
+      } catch (e: unknown) {
+        console.error('🔍 FCM 토큰 발급 실패:', e);
+      }
+    } else {
+      console.log('실제 기기에서만 푸시 알림을 사용할 수 있습니다.');
+    }
+  };
 
   // 사용자 정보가 로드되면 userStore에 저장
   useEffect(() => {
@@ -64,10 +144,13 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const today = new Date();
 
   const getStartOfWeekMonday = (date: Date) => {
-    const copied = new Date(date);
+    const copied = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     const day = copied.getDay();
     const diffToMonday = (day + 6) % 7;
-    copied.setHours(0, 0, 0, 0);
     copied.setDate(copied.getDate() - diffToMonday);
     return copied;
   };
@@ -84,8 +167,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const startOfWeek = getStartOfWeekMonday(selectedDate);
   const weekData = Array.from({ length: 7 }).map((_, idx) => {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + idx);
+    const d = new Date(
+      startOfWeek.getFullYear(),
+      startOfWeek.getMonth(),
+      startOfWeek.getDate() + idx,
+    );
     return {
       day: dayLabels[idx],
       date: d.getDate(),
@@ -103,12 +189,14 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     selectedDays: string[];
     completedDays: string[];
     routineNums?: number;
+    startDate?: string;
   };
 
-  const selectedDateString = selectedDate.toISOString().split('T')[0];
-  const selectedDay = ['일', '월', '화', '수', '목', '금', '토'][
-    selectedDate.getDay()
-  ];
+  const selectedDateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+  const dayIndex = selectedDate.getDay();
+  // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+  const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+  const selectedDay = ['월', '화', '수', '목', '금', '토', '일'][mappedIndex];
 
   const {
     data: personalRoutinesData,
@@ -133,10 +221,51 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     refetch: refetchGroupRoutines,
   } = useInfiniteMyGroupRoutines({});
 
+  // 최대 연속 일수 확인 및 성공 화면 표시
+  const checkMaxStreak = async () => {
+    try {
+      const res = await getMaxStreak();
+      if (
+        res.isSuccess &&
+        res.result.streakDays >= 7 &&
+        res.result.streakDays % 7 === 0 &&
+        !hasShownStreakSuccess
+      ) {
+        setHasShownStreakSuccess(true);
+        // AsyncStorage에 표시 여부 저장
+        await AsyncStorage.setItem('hasShownStreakSuccess', 'true');
+        // 분석 탭으로 이동
+        navigation.navigate('Analysis');
+      }
+    } catch (error) {
+      console.error('최대 연속 일수 확인 중 오류:', error);
+    }
+  };
+
+  // AsyncStorage에서 표시 여부 확인 및 최대 연속 일수 확인
+  useEffect(() => {
+    const checkShownStatus = async () => {
+      try {
+        const shown = await AsyncStorage.getItem('hasShownStreakSuccess');
+        if (shown === 'true') {
+          setHasShownStreakSuccess(true);
+        } else {
+          // 표시되지 않았다면 최대 연속 일수 확인
+          checkMaxStreak();
+        }
+      } catch (error) {
+        console.error('AsyncStorage 확인 중 오류:', error);
+      }
+    };
+    checkShownStatus();
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       refetchPersonalRoutines();
       refetchGroupRoutines();
+      // FCM 토큰 발급 및 저장
+      registerForPushNotificationsAsync();
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
   );
 
@@ -173,6 +302,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         selectedDays: item.dayOfWeek,
         completedDays: item.successDay || [],
         routineNums: item.routineNums || 0,
+        startDate: item.startDate, // 시작 날짜 추가
       })),
     ) || [];
 
@@ -182,8 +312,11 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
         page.result?.items?.map((item) => {
           // 진행률이 100%인 경우 오늘 날짜의 요일만 완료된 것으로 표시
           const today = new Date();
-          const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-          const todayDay = dayNames[today.getDay()];
+          const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+          const dayIndex = today.getDay();
+          // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+          const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+          const todayDay = dayNames[mappedIndex];
 
           const completedDays =
             (item.percent || 0) >= 100 && item.dayOfWeek.includes(todayDay)
@@ -205,12 +338,15 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     ) || [];
 
   // 선택된 날짜의 요일
-  const selectedDayLabel = ['일', '월', '화', '수', '목', '금', '토'][
-    selectedDate.getDay()
+  const dayIndex2 = selectedDate.getDay();
+  // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+  const mappedIndex2 = dayIndex2 === 0 ? 6 : dayIndex2 - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+  const selectedDayLabel = ['월', '화', '수', '목', '금', '토', '일'][
+    mappedIndex2
   ];
 
   // API에서 반환된 루틴들을 그대로 사용 (클라이언트 필터링 제거)
-  console.log('🔍 API 반환 루틴:', {
+  console.log('🔍 홈 화면 루틴 조회:', {
     selectedDate: selectedDateString,
     selectedDay: selectedDay,
     selectedDayLabel,
@@ -220,6 +356,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       id: r.id,
       title: r.title,
       selectedDays: r.selectedDays,
+      startDate: r.startDate, // 시작 날짜 추가
     })),
   });
 
@@ -266,6 +403,8 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
             endTime: routine.timeRange.split(' ~ ')[1],
             days: routine.selectedDays,
             category: routine.category,
+            percent: routine.progress, // percent 값 추가
+            routineNums: routine.routineNums, // routineNums 값도 추가
           },
         });
       }
@@ -293,7 +432,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const handleAICreateRoutine = () => {
     setShowAddRoutineModal(false);
-    navigation.navigate('AIRecommendation');
+    navigation.navigate('AIRecommendation', { fromHome: true });
   };
 
   const handleManualCreateRoutine = () => {
@@ -302,13 +441,22 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
   };
 
   const handleDateSelect = (date: Date) => {
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
+    // 날짜만 복사하고 시간은 설정하지 않음
+    const newDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     console.log('🔍 날짜 선택됨:', {
-      oldDate: selectedDate.toISOString().split('T')[0],
-      newDate: newDate.toISOString().split('T')[0],
+      oldDate: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`,
+      newDate: `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`,
       oldDay: selectedDay,
-      newDay: ['일', '월', '화', '수', '목', '금', '토'][newDate.getDay()],
+      newDay: (() => {
+        const dayIndex = newDate.getDay();
+        // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+        const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+        return ['월', '화', '수', '목', '금', '토', '일'][mappedIndex];
+      })(),
     });
     setSelectedDate(newDate);
   };
@@ -400,7 +548,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 timeRange={item.timeRange}
                 selectedDays={item.selectedDays}
                 completedDays={item.completedDays}
-                routineNums={selectedTab === 1 ? item.routineNums : undefined}
+                routineNums={item.routineNums}
                 onPress={() => handleRoutinePress(item.id)}
               />
             )}

@@ -11,6 +11,9 @@ import {
   GetWeeklySummaryParams,
   GetWeeklySummaryResponse,
   GetMaxStreakResponse,
+  GivePointResponse,
+  RcmdConsumptionRoutineParams,
+  RcmdConsumptionRoutineResponse,
 } from '../../types/api';
 
 /**
@@ -48,8 +51,77 @@ export const getMaxStreak = async (): Promise<
  * GET /api/v1/analysis/daily
  */
 export const getDailyAnalysis = async (): Promise<ApiResponse<any>> => {
-  const response = await apiClient.get<ApiResponse<any>>(
-    '/api/v1/analysis/daily',
-  );
-  return response.data;
+  console.log('🔍 getDailyAnalysis API 호출 시작');
+
+  try {
+    const response = await apiClient.get<ApiResponse<any>>(
+      '/api/v1/analysis/daily',
+    );
+
+    console.log('🔍 getDailyAnalysis API 응답 성공:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('🔍 getDailyAnalysis API 호출 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 연속 1주일 달성 포인트 지급
+ * POST /api/v1/analysis/weekly-point
+ */
+export const givePoint = async (): Promise<ApiResponse<GivePointResponse>> => {
+  console.log('🔍 givePoint API 호출 시작');
+
+  try {
+    const response = await apiClient.post<ApiResponse<GivePointResponse>>(
+      '/api/v1/analysis/weekly-point',
+    );
+
+    console.log('🔍 givePoint API 응답 성공:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('🔍 givePoint API 호출 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 소비 루틴 맞춤 추천
+ * GET /api/v1/analysis/rcmd-cosumRoutine
+ */
+export const rcmdConsumptionRoutine = async (
+  params: RcmdConsumptionRoutineParams,
+): Promise<RcmdConsumptionRoutineResponse> => {
+  console.log('🔍 rcmdConsumptionRoutine API 호출 시작');
+
+  try {
+    const response = await apiClient.get<RcmdConsumptionRoutineResponse>(
+      '/api/v1/analysis/rcmd-cosumRoutine',
+      {
+        params,
+      },
+    );
+
+    console.log('🔍 rcmdConsumptionRoutine API 응답 성공:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('🔍 rcmdConsumptionRoutine API 호출 실패:', error);
+    throw error;
+  }
 };

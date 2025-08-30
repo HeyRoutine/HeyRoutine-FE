@@ -5,6 +5,7 @@ import AnalysisScreen from '../../screens/analysis/AnalysisScreen';
 import ConsumptionAnalysisScreen from '../../screens/analysis/ConsumptionAnalysisScreen';
 import FinancialProductScreen from '../../screens/analysis/FinancialProductScreen';
 import RoutineSuggestionScreen from '../../screens/analysis/RoutineSuggestionScreen';
+import StreakSuccessScreen from '../../screens/analysis/StreakSuccessScreen';
 import LoadingScreen from '../../screens/common/LoadingScreen';
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +26,7 @@ const AnalysisStack = () => {
         name="RoutineSuggestion"
         component={RoutineSuggestionScreen}
       />
+      <Stack.Screen name="StreakSuccess" component={StreakSuccessScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />
     </Stack.Navigator>
   );

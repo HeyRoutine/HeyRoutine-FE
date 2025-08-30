@@ -67,6 +67,7 @@ export const useBuyProduct = () => {
       queryClient.invalidateQueries({ queryKey: ['myPoint'] });
       queryClient.invalidateQueries({ queryKey: ['shopList'] });
       queryClient.invalidateQueries({ queryKey: ['shopCategoryList'] });
+      queryClient.invalidateQueries({ queryKey: ['productDetail'] });
     },
   });
 };

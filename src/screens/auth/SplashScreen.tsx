@@ -45,7 +45,7 @@ const BottomContent = styled.View`
 
 const SubTitle = styled.Text`
   font-size: ${theme.fonts.subtitle}px;
-  font-family: ${theme.fonts.SemiBold};
+  font-weight: 600;
   line-height: 28px;
   letter-spacing: 0.1px;
   word-wrap: break-word;
@@ -54,7 +54,7 @@ const SubTitle = styled.Text`
 
 const Title = styled.Text`
   font-size: 64px;
-  font-family: ${theme.fonts.Bold};
+  font-weight: 700;
   color: ${theme.colors.white};
 `;
 

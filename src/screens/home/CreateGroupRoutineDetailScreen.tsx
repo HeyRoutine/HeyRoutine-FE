@@ -122,6 +122,73 @@ const CreateGroupRoutineDetailScreen = ({
     }
   }, [mode, routineData?.RoutineInfos, emojiData?.result?.items]);
 
+  // 시간을 "오전/오후 h:mm" 형식으로 변환하는 함수
+  const formatTimeForDisplay = (time: string): string => {
+    if (!time) return '';
+
+    // 이미 "오전/오후" 형식이면 그대로 반환
+    if (time.includes('오전') || time.includes('오후')) {
+      return time;
+    }
+
+    // HH:mm 형식을 "오전/오후 h:mm" 형식으로 변환
+    if (time.includes(':')) {
+      const [hourStr, minute] = time.split(':');
+      const hour = parseInt(hourStr);
+
+      if (hour === 0) {
+        return `오전 12:${minute}`;
+      } else if (hour < 12) {
+        return `오전 ${hour}:${minute}`;
+      } else if (hour === 12) {
+        return `오후 12:${minute}`;
+      } else {
+        return `오후 ${hour - 12}:${minute}`;
+      }
+    }
+
+    return time;
+  };
+
+  // 시간을 HH:mm 형식으로 변환하는 함수 (API 요청용)
+  const formatTimeForAPI = (time: string): string => {
+    if (!time) return '';
+
+    // 이미 HH:mm 형식이면 그대로 반환
+    if (
+      time.includes(':') &&
+      !time.includes('오전') &&
+      !time.includes('오후')
+    ) {
+      return time;
+    }
+
+    // "오전/오후 h:mm" 형식을 HH:mm 형식으로 변환
+    if (time.includes('오전')) {
+      const timeStr = time.replace('오전 ', '');
+      const [hourStr, minute] = timeStr.split(':');
+      const hour = parseInt(hourStr);
+
+      if (hour === 12) {
+        return `00:${minute}`;
+      } else {
+        return `${hour.toString().padStart(2, '0')}:${minute}`;
+      }
+    } else if (time.includes('오후')) {
+      const timeStr = time.replace('오후 ', '');
+      const [hourStr, minute] = timeStr.split(':');
+      const hour = parseInt(hourStr);
+
+      if (hour === 12) {
+        return `12:${minute}`;
+      } else {
+        return `${(hour + 12).toString().padStart(2, '0')}:${minute}`;
+      }
+    }
+
+    return time;
+  };
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -372,8 +439,8 @@ const CreateGroupRoutineDetailScreen = ({
     const groupRoutineData = {
       title: routineData?.name || '새 단체 루틴',
       description: routineData?.description || '단체 루틴 설명', // 전달받은 설명 사용
-      startTime: routineData?.startTime || '09:00',
-      endTime: routineData?.endTime || '11:00',
+      startTime: formatTimeForAPI(routineData?.startTime) || '09:00',
+      endTime: formatTimeForAPI(routineData?.endTime) || '11:00',
       routineType: (routineData?.category === 'life'
         ? 'DAILY'
         : 'FINANCE') as any,
@@ -444,8 +511,8 @@ const CreateGroupRoutineDetailScreen = ({
           </RoutineTitle>
           <DescriptionText>{routineData.description}</DescriptionText>
           <RoutineTime>
-            {routineData?.startTime || '오후 7:00'} -{' '}
-            {routineData?.endTime || '오후 10:00'}
+            {formatTimeForDisplay(routineData?.startTime) || '오후 7:00'} -{' '}
+            {formatTimeForDisplay(routineData?.endTime) || '오후 10:00'}
           </RoutineTime>
           <DayOfWeekSelector
             selectedDays={selectedDays}

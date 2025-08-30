@@ -138,6 +138,9 @@ const PersonalRoutineDetailScreen = ({
     setDeleteModalVisible(false);
   };
 
+  // 루틴 완료 상태 확인 (백엔드에서 percent로 받아옴)
+  const isRoutineCompleted = routineData?.percent === 100;
+
   useEffect(() => {
     setEditMode(false);
   }, [setEditMode]);
@@ -406,26 +409,29 @@ const PersonalRoutineDetailScreen = ({
 
     setActiveRoutineId(routineData.id.toString());
 
-    // ActiveRoutineScreen으로 이동
-    const tasksWithRoutineId = routineItems.map((item, index) => {
-      // 정렬된 순서로 routineId 매칭
-      const sortedRoutines = existingRoutinesData?.result
-        ? [...existingRoutinesData.result].sort(
-            (a, b) => a.routineId - b.routineId,
-          )
-        : [];
-      const matchingRoutine = sortedRoutines[index];
+    // 성공하지 않은 루틴만 필터링
+    const incompleteTasks = routineItems
+      .map((item, index) => {
+        // 정렬된 순서로 routineId 매칭
+        const sortedRoutines = existingRoutinesData?.result
+          ? [...existingRoutinesData.result].sort(
+              (a, b) => a.routineId - b.routineId,
+            )
+          : [];
+        const matchingRoutine = sortedRoutines[index];
 
-      return {
-        icon: item.emoji,
-        title: item.text,
-        duration: item.time,
-        routineId: matchingRoutine?.routineId,
-      };
-    });
+        return {
+          icon: item.emoji,
+          title: item.text,
+          duration: item.time,
+          routineId: matchingRoutine?.routineId,
+          isCompleted: item.isCompleted,
+        };
+      })
+      .filter((task) => !task.isCompleted); // 성공하지 않은 루틴만 포함
 
     navigation.navigate('ActiveRoutine', {
-      tasks: tasksWithRoutineId,
+      tasks: incompleteTasks,
       routineName: routineData?.name || '루틴',
       routineId: routineData?.id?.toString(),
     });
@@ -487,8 +493,11 @@ const PersonalRoutineDetailScreen = ({
 
   const isTodayInSelectedDays = () => {
     const today = new Date();
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayName = dayNames[today.getDay()];
+    const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    const dayIndex = today.getDay();
+    // getDay()는 0(일요일)부터 6(토요일)까지 반환하므로 매핑 필요
+    const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 일요일(0) -> 6, 월요일(1) -> 0
+    const todayName = dayNames[mappedIndex];
     return selectedDays.includes(todayName);
   };
 
@@ -509,15 +518,20 @@ const PersonalRoutineDetailScreen = ({
                 {formatTimeWithPeriod(routineData?.endTime || '00:00')}
               </RoutineTime>
             </HeaderLeft>
-            {!isEditMode && (
-              <MoreIconButton onPress={handleMorePress}>
-                <Ionicons
-                  name="ellipsis-horizontal"
-                  size={20}
-                  color={theme.colors.gray600}
-                />
-              </MoreIconButton>
-            )}
+            <HeaderRight>
+              {routineData?.percent !== undefined && (
+                <ProgressText>{routineData.percent}%</ProgressText>
+              )}
+              {!isEditMode && (
+                <MoreIconButton onPress={handleMorePress}>
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={20}
+                    color={theme.colors.gray600}
+                  />
+                </MoreIconButton>
+              )}
+            </HeaderRight>
           </HeaderContent>
           <DayOfWeekSelector
             selectedDays={selectedDays}
@@ -570,11 +584,22 @@ const PersonalRoutineDetailScreen = ({
 
         <CreateButton
           onPress={isEditMode ? handleSave : handleStartRoutine}
-          disabled={!isEditMode && !isTodayInSelectedDays()}
+          disabled={
+            !isEditMode &&
+            (!isTodayInSelectedDays() ||
+              routineItems.every((item) => item.isCompleted))
+          }
           style={{
-            opacity: !isEditMode && !isTodayInSelectedDays() ? 0.5 : 1,
+            opacity:
+              !isEditMode &&
+              (!isTodayInSelectedDays() ||
+                routineItems.every((item) => item.isCompleted))
+                ? 0.5
+                : 1,
             backgroundColor:
-              !isEditMode && !isTodayInSelectedDays()
+              !isEditMode &&
+              (!isTodayInSelectedDays() ||
+                routineItems.every((item) => item.isCompleted))
                 ? theme.colors.gray200
                 : theme.colors.primary,
           }}
@@ -582,7 +607,9 @@ const PersonalRoutineDetailScreen = ({
           <CreateButtonText
             style={{
               color:
-                !isEditMode && !isTodayInSelectedDays()
+                !isEditMode &&
+                (!isTodayInSelectedDays() ||
+                  routineItems.every((item) => item.isCompleted))
                   ? theme.colors.gray400
                   : theme.colors.white,
             }}
@@ -630,8 +657,20 @@ const PersonalRoutineDetailScreen = ({
           <MoreButton onPress={handleEditRoutine}>
             <MoreButtonText>루틴 수정</MoreButtonText>
           </MoreButton>
-          <MoreButton onPress={handleEditRoutineDetail}>
-            <MoreButtonText>상세 루틴 수정</MoreButtonText>
+          <MoreButton
+            onPress={handleEditRoutineDetail}
+            disabled={isRoutineCompleted}
+            style={{ opacity: isRoutineCompleted ? 0.5 : 1 }}
+          >
+            <MoreButtonText
+              style={{
+                color: isRoutineCompleted
+                  ? theme.colors.gray500
+                  : theme.colors.gray900,
+              }}
+            >
+              상세 루틴 수정
+            </MoreButtonText>
           </MoreButton>
           <DeleteButton onPress={handleDeleteRoutine}>
             <DeleteButtonText>삭제</DeleteButtonText>
@@ -767,6 +806,12 @@ const HeaderContent = styled.View`
 
 const HeaderLeft = styled.View`
   flex: 1;
+`;
+
+const HeaderRight = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
 `;
 
 const DaySelectorCard = styled.View`
@@ -913,4 +958,18 @@ const AddTemplateText = styled.Text`
   font-family: ${theme.fonts.Medium};
   font-size: 14px;
   color: ${theme.colors.gray600};
+`;
+
+const RoutineCountText = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 12px;
+  color: ${theme.colors.gray500};
+  margin-left: 4px;
+`;
+
+const ProgressText = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
+  font-weight: 600;
+  color: ${theme.colors.primary};
 `;

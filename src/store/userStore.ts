@@ -23,6 +23,10 @@ interface UserInfo {
   bankAccount?: string;
   isMarketing: boolean;
   accountCertificationStatus: boolean;
+  universityId?: number;
+  majorId?: number;
+  university?: string;
+  major?: string;
 }
 
 // 사용자 상태 타입 정의

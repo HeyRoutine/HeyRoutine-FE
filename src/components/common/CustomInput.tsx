@@ -24,6 +24,8 @@ interface ICustomInputProps {
   suffix?: string;
   /** 문자 카운터 표시 여부 */
   showCharCounter?: boolean;
+  /** 선택 상태 (테두리 색상 변경용) */
+  isSelected?: boolean;
 }
 
 /**
@@ -40,11 +42,12 @@ const CustomInput = ({
   onClear,
   suffix,
   showCharCounter = true,
+  isSelected = false,
 }: ICustomInputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   return (
-    <Container>
+    <Container isSelected={isSelected}>
       <StyledInput
         value={value}
         placeholder={placeholder}
@@ -89,17 +92,18 @@ const CustomInput = ({
 export default CustomInput;
 
 // 스타일 컴포넌트 정의
-const Container = styled.View`
+const Container = styled.View<{ isSelected: boolean }>`
   flex-direction: row;
   align-items: center;
   border-bottom-width: 1px;
-  border-color: ${theme.colors.gray300};
+  border-color: ${({ isSelected }) =>
+    isSelected ? theme.colors.primary : theme.colors.gray300};
   width: 100%;
 `;
 
 const StyledInput = styled.TextInput`
   flex: 1;
-  padding: 14px 0;
+  padding: 8px 0;
   font-size: ${theme.fonts.body}px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray900};

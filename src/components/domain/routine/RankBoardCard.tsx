@@ -13,7 +13,7 @@ const RankBoardCard = ({ onPress, iconSource }: RankBoardCardProps) => {
     <Container onPress={onPress}>
       <TextWrapper>
         <Title>실시간</Title>
-        <Subtitle>랭크 보드</Subtitle>
+        <Subtitle>랭킹</Subtitle>
       </TextWrapper>
       {iconSource ? (
         <RightIcon source={iconSource} resizeMode="contain" />
@@ -54,5 +54,3 @@ const RightIcon = styled(Image)`
   width: 64px;
   height: 64px;
 `;
-
-

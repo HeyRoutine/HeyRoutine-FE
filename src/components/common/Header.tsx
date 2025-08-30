@@ -7,8 +7,8 @@ import { theme } from '../../styles/theme';
 interface IHeaderProps {
   /** 헤더 제목 (선택사항) */
   title?: string;
-  /** 뒤로가기 버튼 클릭 핸들러 */
-  onBackPress: () => void;
+  /** 뒤로가기 버튼 클릭 핸들러 (선택사항) */
+  onBackPress?: () => void;
   /** 헤더 우측에 표시할 컴포넌트 (선택사항) */
   rightComponent?: React.ReactNode;
 }
@@ -22,9 +22,17 @@ interface IHeaderProps {
 const Header = ({ title, onBackPress, rightComponent }: IHeaderProps) => {
   return (
     <Container>
-      <BackButton onPress={onBackPress}>
-        <Ionicons name="chevron-back" size={24} color={theme.colors.gray900} />
-      </BackButton>
+      {onBackPress ? (
+        <BackButton onPress={onBackPress}>
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color={theme.colors.gray900}
+          />
+        </BackButton>
+      ) : (
+        <Spacer />
+      )}
       {title ? <Title>{title}</Title> : <Spacer />}
       {rightComponent ? rightComponent : <Spacer />}
     </Container>
@@ -38,6 +46,7 @@ const Container = styled.View`
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
+  min-height: 56px;
 `;
 
 const BackButton = styled.TouchableOpacity`
@@ -51,5 +60,5 @@ const Title = styled.Text`
 `;
 
 const Spacer = styled.View`
-  width: 32px;
+  width: 40px;
 `;

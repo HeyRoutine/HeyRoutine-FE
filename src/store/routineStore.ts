@@ -35,7 +35,11 @@ interface RoutineState {
 // Zustand 스토어 생성
 export const useRoutineStore = create<RoutineState>((set) => ({
   // 초기 상태
-  selectedDate: new Date(),
+  selectedDate: new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    new Date().getDate(),
+  ),
   routineFilter: 'all',
   isCalendarOpen: false,
   isLoading: false,
@@ -67,7 +71,11 @@ export const useRoutineStore = create<RoutineState>((set) => ({
 
   resetRoutineState: () =>
     set({
-      selectedDate: new Date(),
+      selectedDate: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        new Date().getDate(),
+      ),
       routineFilter: 'all',
       isCalendarOpen: false,
       isLoading: false,

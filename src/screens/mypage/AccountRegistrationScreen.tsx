@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import Header from '../../components/common/Header';
 import CustomInput from '../../components/common/CustomInput';
@@ -8,6 +9,7 @@ import CustomButton from '../../components/common/CustomButton';
 import { theme } from '../../styles/theme';
 import { useSendAccountCode } from '../../hooks/user/useUser';
 import { useErrorHandler } from '../../hooks/common/useErrorHandler';
+import { useUserStore } from '../../store';
 
 interface IAccountRegistrationScreenProps {
   navigation: any;
@@ -19,6 +21,9 @@ const AccountRegistrationScreen = ({
   const [accountNumber, setAccountNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // 사용자 정보에서 기존 계좌번호 가져오기
+  const { userInfo } = useUserStore();
+
   // 계좌 인증번호 전송 훅
   const { mutate: sendAccountCode, isPending: isSendingCode } =
     useSendAccountCode();
@@ -26,19 +31,23 @@ const AccountRegistrationScreen = ({
   // 공통 에러 처리 훅
   const { handleApiError } = useErrorHandler();
 
-  // 계좌번호 유효성 검사 (임시)
-  const isAccountValid = accountNumber.length >= 10;
-
-  useEffect(() => {
-    if (accountNumber.length > 0 && !isAccountValid) {
-      setErrorMessage('존재하지 않는 계좌번호입니다.');
-    } else {
-      setErrorMessage('');
+  // 실시간 검증 함수
+  const validateAccount = (text: string) => {
+    if (text.length > 0 && text.length < 10) {
+      return '계좌번호는 10자리 이상 입력해주세요.';
+    } else if (text.length >= 10 && text !== userInfo?.bankAccount) {
+      return '등록된 계좌번호와 일치하지 않습니다.';
     }
-  }, [accountNumber, isAccountValid]);
+    return '';
+  };
+
+  const handleAccountChange = (text: string) => {
+    setAccountNumber(text);
+    setErrorMessage(validateAccount(text));
+  };
 
   const handleRequestAuth = () => {
-    if (isAccountValid) {
+    if (accountNumber.length >= 10 && accountNumber === userInfo?.bankAccount) {
       // 1원 인증 요청 API 호출
       sendAccountCode(
         { account: accountNumber },
@@ -65,38 +74,52 @@ const AccountRegistrationScreen = ({
     <Container>
       <Header title="계좌 등록" onBackPress={() => navigation.goBack()} />
 
-      <Content>
-        <Title>계좌번호를{'\n'}입력해주세요.</Title>
-      </Content>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <Content>
+          <Title>계좌번호를{'\n'}입력해주세요.</Title>
+          <Subtitle>신한 {userInfo?.bankAccount}</Subtitle>
+          {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        </Content>
 
-      {errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
+        <CenterContent>
+          <CustomInput
+            value={accountNumber}
+            onChangeText={handleAccountChange}
+            placeholder="계좌번호를 입력하세요"
+            maxLength={20}
+          />
+        </CenterContent>
 
-      <CenterContent>
-        <CustomInput
-          value={accountNumber}
-          onChangeText={setAccountNumber}
-          placeholder="계좌번호를 입력하세요"
-          maxLength={20}
-        />
-      </CenterContent>
-
-      <ButtonWrapper>
-        <CustomButton
-          text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
-          onPress={handleRequestAuth}
-          disabled={!isAccountValid || isSendingCode}
-          backgroundColor={
-            isAccountValid && !isSendingCode
-              ? theme.colors.primary
-              : theme.colors.gray200
-          }
-          textColor={
-            isAccountValid && !isSendingCode
-              ? theme.colors.white
-              : theme.colors.gray500
-          }
-        />
-      </ButtonWrapper>
+        <ButtonWrapper>
+          <CustomButton
+            text={isSendingCode ? '인증번호 전송 중...' : '1원 인증 요청'}
+            onPress={handleRequestAuth}
+            disabled={
+              accountNumber.length < 10 ||
+              accountNumber !== userInfo?.bankAccount ||
+              isSendingCode
+            }
+            backgroundColor={
+              accountNumber.length >= 10 &&
+              accountNumber === userInfo?.bankAccount &&
+              !isSendingCode
+                ? theme.colors.primary
+                : theme.colors.gray200
+            }
+            textColor={
+              accountNumber.length >= 10 &&
+              accountNumber === userInfo?.bankAccount &&
+              !isSendingCode
+                ? theme.colors.white
+                : theme.colors.gray500
+            }
+          />
+        </ButtonWrapper>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -121,21 +144,26 @@ const Title = styled.Text`
   margin-bottom: 12px;
 `;
 
+const Subtitle = styled.Text`
+  font-size: 16px;
+  font-family: ${theme.fonts.Regular};
+  color: ${theme.colors.gray600};
+  margin-top: 8px;
+  text-align: flex-start;
+`;
+
 const ErrorMessage = styled.Text`
-  position: absolute;
-  top: 200px;
-  left: 24px;
-  right: 24px;
   font-size: 14px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.error};
+  margin-top: 8px;
 `;
 
 const CenterContent = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 100px 24px 0 24px;
+  padding: 0 24px;
 `;
 
 const ButtonWrapper = styled.View`

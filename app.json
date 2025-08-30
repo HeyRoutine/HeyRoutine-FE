@@ -16,6 +16,8 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./android/app/google-services.json",
+
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -28,7 +30,7 @@
     "web": {
       "favicon": "./src/assets/images/favicon.png"
     },
-    "plugins": [],
+    "plugins": ["expo-notifications"],
     "extra": {
       "eas": {
         "projectId": "eb5ddc79-724a-454b-9da5-f464b9742eb4"

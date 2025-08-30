@@ -24,7 +24,7 @@ import {
 
 interface CreateRoutineDetailScreenProps {
   navigation: any;
-  route: { params?: { routineData?: any } };
+  route: { params?: { routineData?: any; aiSelectedRoutines?: any[] } };
 }
 
 const CreateRoutineDetailScreen = ({
@@ -32,6 +32,7 @@ const CreateRoutineDetailScreen = ({
   route,
 }: CreateRoutineDetailScreenProps) => {
   const routineData = route?.params?.routineData;
+  const aiSelectedRoutines = route?.params?.aiSelectedRoutines || [];
   const [selectedDays, setSelectedDays] = useState<string[]>(
     routineData?.days || [],
   );
@@ -81,9 +82,25 @@ const CreateRoutineDetailScreen = ({
   // 이모지 조회 훅 - 모든 이모지를 가져오기 위해 카테고리 필터링 제거
   const { data: emojiData, isLoading: isLoadingEmojis } = useRoutineEmojis({});
 
-  // 기존 루틴 데이터를 화면에 로드
+  // AI 선택 루틴들을 초기 루틴 아이템으로 설정
+  useEffect(() => {
+    if (aiSelectedRoutines.length > 0 && routineItems.length === 0) {
+      const aiRoutineItems = aiSelectedRoutines.map((routine: any) => ({
+        emoji: routine.icon || '📝',
+        emojiId: 1, // 기본 이모지 ID
+        text: routine.title,
+        time: '30분', // 기본 시간
+        isCompleted: false,
+      }));
+
+      setRoutineItems(aiRoutineItems);
+    }
+  }, [aiSelectedRoutines, routineItems.length]);
+
+  // 기존 루틴 데이터를 화면에 로드 (AI 선택 루틴이 없을 때만)
   useEffect(() => {
     if (
+      aiSelectedRoutines.length === 0 && // AI 선택 루틴이 없을 때만
       existingRoutinesData?.result &&
       existingRoutinesData.result.length > 0
     ) {
@@ -97,7 +114,7 @@ const CreateRoutineDetailScreen = ({
 
       setRoutineItems(existingItems);
     }
-  }, [existingRoutinesData]);
+  }, [existingRoutinesData, aiSelectedRoutines.length]);
 
   const handleBack = () => {
     navigation.goBack();

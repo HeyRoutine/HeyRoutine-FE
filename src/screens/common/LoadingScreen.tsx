@@ -20,6 +20,7 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
     nextScreen,
     duration = 3000,
     resultData = null,
+    fromHome = false,
   } = route.params || {};
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -93,6 +94,7 @@ const LoadingScreen = ({ navigation, route }: LoadingScreenProps) => {
         if (nextScreen && navigation && navigation.replace) {
           navigation.replace(nextScreen, {
             resultData: resultData,
+            fromHome: fromHome,
           });
         }
       }, 1000);

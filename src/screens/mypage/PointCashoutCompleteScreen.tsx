@@ -20,9 +20,10 @@ const PointCashoutCompleteScreen = ({
   const { userInfo } = useUserStore();
   const currentPoints = userInfo?.points ?? 0;
 
-  // route.params에서 전환된 포인트 받아오기
-  const { transferredPoints = 2000 } = route.params || {};
+  // route.params에서 전환된 포인트와 계좌 잔액 받아오기
+  const { transferredPoints = 2000, accountBalance = '0' } = route.params || {};
   const transferredCash = Math.floor(transferredPoints * 0.7);
+  const accountBalanceNumber = parseInt(accountBalance) || 0;
 
   return (
     <Container>
@@ -44,36 +45,36 @@ const PointCashoutCompleteScreen = ({
       <InfoSection>
         <MyPageListItem
           title="입금계좌"
-          rightText="신한은행"
-          rightTextColor={theme.colors.gray900}
+          rightText="신한 123121234561"
+          rightTextColor={theme.colors.gray800}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
-          title=""
-          rightText="123-12-123456-1"
-          rightTextColor={theme.colors.gray900}
+          title="입금된 현금"
+          rightText={`${transferredCash.toLocaleString()}원`}
+          rightTextColor={theme.colors.gray800}
+          showArrow={false}
+          disabled={true}
+        />
+        <MyPageListItem
+          title="계좌 잔액"
+          rightText={`${accountBalanceNumber.toLocaleString()}원`}
+          rightTextColor={theme.colors.gray800}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
           title="사용포인트"
           rightText={`${transferredPoints.toLocaleString()}P`}
-          rightTextColor={theme.colors.gray900}
-          showArrow={false}
-          disabled={true}
-        />
-        <MyPageListItem
-          title="현금"
-          rightText={`${transferredCash.toLocaleString()}원`}
-          rightTextColor={theme.colors.gray900}
+          rightTextColor={theme.colors.gray800}
           showArrow={false}
           disabled={true}
         />
         <MyPageListItem
           title="포인트 잔액"
           rightText={`${currentPoints.toLocaleString()}P`}
-          rightTextColor={theme.colors.gray900}
+          rightTextColor={theme.colors.gray800}
           showArrow={false}
           disabled={true}
         />
