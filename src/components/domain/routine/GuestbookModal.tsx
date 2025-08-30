@@ -8,6 +8,9 @@ import {
   useGroupGuestbooks,
   useCreateGroupGuestbook,
 } from '../../../hooks/routine/group/useGroupRoutines';
+import { useUserStore } from '../../../store/userStore';
+import BottomSheetDialog from '../../common/BottomSheetDialog';
+import CustomButton from '../../common/CustomButton';
 
 interface GuestbookModalProps {
   isVisible: boolean;
@@ -24,6 +27,11 @@ const GuestbookModal = ({
 }: GuestbookModalProps) => {
   const [message, setMessage] = useState('');
   const flatListRef = useRef<FlatList>(null);
+  const { userInfo } = useUserStore();
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(
+    null,
+  );
 
   const { data: guestbookData, isLoading } = useGroupGuestbooks(
     groupRoutineListId,
@@ -97,6 +105,23 @@ const GuestbookModal = ({
     return `${diffInDays}일 전`;
   };
 
+  const handleDeletePress = (messageId: number) => {
+    setSelectedMessageId(messageId);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalVisible(false);
+    setSelectedMessageId(null);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log('🔍 방명록 삭제:', selectedMessageId);
+    // TODO: 삭제 API 호출
+    setIsDeleteModalVisible(false);
+    setSelectedMessageId(null);
+  };
+
   return (
     <Modal
       visible={isVisible}
@@ -134,6 +159,8 @@ const GuestbookModal = ({
                 showsVerticalScrollIndicator={true}
                 nestedScrollEnabled={true}
                 renderItem={({ item }) => {
+                  const isMyMessage = userInfo?.nickname === item.nickname;
+
                   return (
                     <GuestbookItemContainer>
                       <ProfileImage
@@ -149,15 +176,25 @@ const GuestbookModal = ({
                           <UserNameText>{item.nickname}</UserNameText>
                           <TimeText>{formatTimeAgo(item.createdAt)}</TimeText>
                         </UserNameTimeContainer>
-                        <MessageText numberOfLines={1} ellipsizeMode="tail">
-                          {item.content}
-                        </MessageText>
+                        <MessageText>{item.content}</MessageText>
                       </UserInfoContainer>
+                      {isMyMessage && (
+                        <DeleteButtonContainer>
+                          <DeleteButton
+                            onPress={() => handleDeletePress(item.id)}
+                          >
+                            <MaterialIcons
+                              name="delete"
+                              size={24}
+                              color={theme.colors.gray500}
+                            />
+                          </DeleteButton>
+                        </DeleteButtonContainer>
+                      )}
                     </GuestbookItemContainer>
                   );
                 }}
                 contentContainerStyle={{ padding: 16 }}
-                showsVerticalScrollIndicator={true}
                 onLayout={() => {
                   // 레이아웃이 완료되면 맨 아래로 스크롤
                   if (
@@ -202,6 +239,34 @@ const GuestbookModal = ({
           </InputContainer>
         </ModalContainer>
       </ModalOverlay>
+
+      {/* 삭제 확인 모달 */}
+      <BottomSheetDialog
+        visible={isDeleteModalVisible}
+        onRequestClose={handleCancelDelete}
+      >
+        <ModalTitle>댓글 삭제</ModalTitle>
+        <ModalSubtitle>정말로 댓글을 삭제하시겠습니까?</ModalSubtitle>
+
+        <ButtonRow>
+          <ButtonWrapper>
+            <CustomButton
+              text="취소"
+              onPress={handleCancelDelete}
+              backgroundColor={theme.colors.gray200}
+              textColor={theme.colors.gray700}
+            />
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <CustomButton
+              text="삭제"
+              onPress={handleConfirmDelete}
+              backgroundColor={theme.colors.error}
+              textColor={theme.colors.white}
+            />
+          </ButtonWrapper>
+        </ButtonRow>
+      </BottomSheetDialog>
     </Modal>
   );
 };
@@ -219,7 +284,7 @@ const ModalContainer = styled.View`
   background-color: ${theme.colors.white};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  height: ${screenHeight * 0.8}px;
+  height: ${screenHeight * 0.5}px;
   width: 100%;
 `;
 
@@ -268,9 +333,8 @@ const GuestbookItemContainer = styled.View`
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 12px;
-  height: 60px;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
 `;
 
 const ProfileContainer = styled.View`
@@ -318,7 +382,8 @@ const MessageText = styled.Text`
   font-family: ${theme.fonts.Regular};
   font-size: 13px;
   color: ${theme.colors.gray800};
-  line-height: 16px;
+  line-height: 18px;
+  flex-wrap: wrap;
 `;
 
 const EmptyContainer = styled.View`
@@ -366,4 +431,43 @@ const SendButton = styled.TouchableOpacity`
   justify-content: center;
   align-items: center;
   margin-left: 8px;
+`;
+
+const DeleteButtonContainer = styled.View`
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+`;
+
+const DeleteButton = styled.TouchableOpacity`
+  width: 24px;
+  height: 24px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalTitle = styled.Text`
+  font-family: ${theme.fonts.SemiBold};
+  font-size: 20px;
+  color: ${theme.colors.gray800};
+  text-align: center;
+  margin-bottom: 16px;
+`;
+
+const ModalSubtitle = styled.Text`
+  font-family: ${theme.fonts.Regular};
+  font-size: 16px;
+  color: ${theme.colors.gray600};
+  text-align: center;
+  line-height: 24px;
+  margin-bottom: 36px;
+`;
+
+const ButtonRow = styled.View`
+  flex-direction: row;
+  gap: 12px;
+`;
+
+const ButtonWrapper = styled.View`
+  flex: 1;
 `;
