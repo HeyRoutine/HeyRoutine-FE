@@ -256,7 +256,11 @@ const PointGifticonScreen = ({ navigation }: IPointGifticonScreenProps) => {
 
   const renderProduct = ({ item }: { item: any }) => (
     <ProductItem onPress={() => handlePressProduct(item)}>
-      <Thumb />
+      {item.imageUrl ? (
+        <ProductImage source={{ uri: item.imageUrl }} resizeMode="contain" />
+      ) : (
+        <Thumb />
+      )}
       <ProductInfo>
         {/* Legacy: {item.title} */}
         <ProductTitle numberOfLines={1}>{item.productName}</ProductTitle>
@@ -438,6 +442,13 @@ const Thumb = styled.View`
   width: 48px;
   height: 48px;
   background-color: ${theme.colors.gray100};
+  border-radius: 8px;
+  margin-right: 12px;
+`;
+
+const ProductImage = styled(Image)`
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
   margin-right: 12px;
 `;

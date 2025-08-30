@@ -438,7 +438,7 @@ const AnalysisScreen = ({ navigation }: IAnalysisScreenProps) => {
               (selectedTab === 0 ? '생활 루틴' : '소비 루틴')
             }
             points={0}
-            progress={Math.min((maxStreak / 7) * 100, 100)}
+            progress={maxStreak >= 7 ? 0 : Math.min((maxStreak / 7) * 100, 100)}
             daysLeft={7}
           />
 

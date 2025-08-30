@@ -8,6 +8,7 @@ import CustomButton from '../../components/common/CustomButton';
 import BottomSheetDialog from '../../components/common/BottomSheetDialog';
 import { theme } from '../../styles/theme';
 import { useBuyProduct, useProductDetail } from '../../hooks/shop/useShop';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface IGifticonProductScreenProps {
   navigation: any;
@@ -36,7 +37,7 @@ const GifticonProductScreen = ({
   const remain = detailResp?.result?.stock ?? product?.remain ?? 0;
   const imageSource = detailResp?.result?.imageUrl
     ? { uri: detailResp.result.imageUrl }
-    : product?.image ?? null; // require(...) 또는 { uri }
+    : (product?.image ?? null); // require(...) 또는 { uri }
 
   const myPoints: number = typeof userPoints === 'number' ? userPoints : 0;
   const hasEnoughPoints = myPoints >= price;
@@ -45,8 +46,11 @@ const GifticonProductScreen = ({
   const [isDoneOpen, setIsDoneOpen] = React.useState(false);
   const [showBarcode, setShowBarcode] = React.useState(false);
 
+  const queryClient = useQueryClient();
+
   // 구매 API 훅 (성공 시 포인트/목록 캐시 무효화)
-  const { mutateAsync: buyProductMutate, isPending: isBuying } = useBuyProduct();
+  const { mutateAsync: buyProductMutate, isPending: isBuying } =
+    useBuyProduct();
 
   const handlePurchase = () => {
     if (!hasEnoughPoints) return;
@@ -89,7 +93,10 @@ const GifticonProductScreen = ({
 
   const handleDoneConfirm = () => {
     setIsDoneOpen(false);
-    // 구매 완료 후 포인트 상점으로 복귀
+    // 구매 완료 후 포인트 상점으로 복귀 (캐시 강제 갱신)
+    queryClient.invalidateQueries({ queryKey: ['shopList'] });
+    queryClient.invalidateQueries({ queryKey: ['shopCategoryList'] });
+    queryClient.invalidateQueries({ queryKey: ['myPoint'] });
     navigation.navigate('PointGifticon');
   };
 
@@ -134,14 +141,24 @@ const GifticonProductScreen = ({
 
       <ButtonWrapper>
         <CustomButton
-          text={hasEnoughPoints ? (isBuying ? '구매 중...' : '구매하기') : '잔액이 부족합니다'}
+          text={
+            hasEnoughPoints
+              ? isBuying
+                ? '구매 중...'
+                : '구매하기'
+              : '잔액이 부족합니다'
+          }
           onPress={handlePurchase}
           disabled={!hasEnoughPoints || isBuying}
           backgroundColor={
-            hasEnoughPoints && !isBuying ? theme.colors.primary : theme.colors.gray200
+            hasEnoughPoints && !isBuying
+              ? theme.colors.primary
+              : theme.colors.gray200
           }
           textColor={
-            hasEnoughPoints && !isBuying ? theme.colors.white : theme.colors.gray500
+            hasEnoughPoints && !isBuying
+              ? theme.colors.white
+              : theme.colors.gray500
           }
         />
       </ButtonWrapper>
@@ -164,21 +181,35 @@ const GifticonProductScreen = ({
 
       <BottomSheetDialog visible={isDoneOpen} onRequestClose={handleCloseDone}>
         <ModalTitle>구매 완료</ModalTitle>
-        {!showBarcode && <ModalMessage>구매가 완료되었습니다.</ModalMessage>}
-        {showBarcode && (
-          <BarcodeBox>
-            <BarcodeImage
-              source={require('../../assets/images/party_popper.png')}
-              resizeMode="contain"
-            />
-            <BarcodeHint>매장 직원에게 바코드를 제시하세요.</BarcodeHint>
-          </BarcodeBox>
+        {!showBarcode && (
+          <>
+            <ModalMessage>구매가 완료되었습니다.</ModalMessage>
+            <ModalButtonsContainer>
+              <ModalButton onPress={handleShowBarcode}>
+                <ModalButtonText>QR코드 보기</ModalButtonText>
+              </ModalButton>
+              <ModalButton onPress={handleDoneConfirm} variant="primary">
+                <ModalButtonText variant="primary">확인</ModalButtonText>
+              </ModalButton>
+            </ModalButtonsContainer>
+          </>
         )}
-        <ModalButtonsContainer>
-          <ModalButton onPress={handleDoneConfirm} variant="primary">
-            <ModalButtonText variant="primary">확인</ModalButtonText>
-          </ModalButton>
-        </ModalButtonsContainer>
+        {showBarcode && (
+          <>
+            <BarcodeBox>
+              <BarcodeImage
+                source={require('../../assets/images/QR.png')}
+                resizeMode="contain"
+              />
+              <BarcodeHint>매장 직원에게 QR코드를 제시하세요.</BarcodeHint>
+            </BarcodeBox>
+            <ModalButtonsContainer>
+              <ModalButton onPress={handleDoneConfirm} variant="primary">
+                <ModalButtonText variant="primary">확인</ModalButtonText>
+              </ModalButton>
+            </ModalButtonsContainer>
+          </>
+        )}
       </BottomSheetDialog>
     </Container>
   );
@@ -273,6 +304,7 @@ const BarcodeImage = styled(Image)`
 
 const BarcodeHint = styled.Text`
   margin-top: 8px;
+  margin-bottom: 8px;
   font-family: ${theme.fonts.Regular};
   color: ${theme.colors.gray600};
 `;
