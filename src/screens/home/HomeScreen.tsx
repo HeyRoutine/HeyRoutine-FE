@@ -165,13 +165,16 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     }
   };
 
-  // AsyncStorage에서 표시 여부 확인
+  // AsyncStorage에서 표시 여부 확인 및 최대 연속 일수 확인
   useEffect(() => {
     const checkShownStatus = async () => {
       try {
         const shown = await AsyncStorage.getItem('hasShownStreakSuccess');
         if (shown === 'true') {
           setHasShownStreakSuccess(true);
+        } else {
+          // 표시되지 않았다면 최대 연속 일수 확인
+          checkMaxStreak();
         }
       } catch (error) {
         console.error('AsyncStorage 확인 중 오류:', error);
@@ -184,7 +187,6 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
     React.useCallback(() => {
       refetchPersonalRoutines();
       refetchGroupRoutines();
-      checkMaxStreak();
     }, [refetchPersonalRoutines, refetchGroupRoutines]),
   );
 

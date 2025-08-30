@@ -102,8 +102,6 @@ export default function App() {
   const { isLoggedIn } = useAuthStore();
   const { onboardingData, completeOnboarding } = useOnboardingStore();
 
-  const [showCelebration, setShowCelebration] = useState(false);
-
   // 온보딩 완료 시 호출되는 함수
   const handleOnboardingComplete = () => {
     completeOnboarding();
@@ -115,8 +113,6 @@ export default function App() {
     'Pretendard-Medium': require('./assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-SemiBold': require('./assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Bold': require('./assets/fonts/Pretendard-Bold.otf'),
-    // 'SchoolSafe-Regular': require('./assets/fonts/Hakgyoansim Dunggeunmiso OTF R.otf'),
-    // 'SchoolSafe-Bold': require('./assets/fonts/Hakgyoansim Dunggeunmiso OTF B.otf'),
     'SchoolSafe-Regular': require('./assets/fonts/Hakgyoansim-Dunggeunmiso-TTF-R.ttf'),
     'SchoolSafe-Bold': require('./assets/fonts/Hakgyoansim-Dunggeunmiso-TTF-B.ttf'),
   });
@@ -155,13 +151,9 @@ export default function App() {
     if (fontsLoaded) {
       setTimeout(() => {
         setIsLoading(false);
-        // 로그인 상태이고 축하 화면을 보여줘야 하는 경우
-        if (isLoggedIn) {
-          setShowCelebration(true);
-        }
       }, 2000);
     }
-  }, [fontsLoaded, isLoggedIn]);
+  }, [fontsLoaded]);
 
   // 온보딩 표시 여부 결정
   const shouldShowOnboarding = !onboardingData.isCompleted && isLoggedIn;
@@ -180,25 +172,6 @@ export default function App() {
                   onComplete={handleOnboardingComplete}
                   initialParams={{
                     nextScreen: 'Result',
-                  }}
-                />
-              </NavigationContainer>
-            ) : showCelebration ? (
-              <NavigationContainer>
-                <ResultScreen
-                  navigation={{
-                    navigate: () => setShowCelebration(false),
-                  }}
-                  route={{
-                    params: {
-                      type: 'celebration',
-                      title: '냥멍이님',
-                      description:
-                        '금융 미션 성공 축하드려요!\n다음 미션도 꼭 성공하실 수 있을꺼에요.',
-                      points: 100,
-                      lottieSource: require('./assets/images/animation/confetti.json'),
-                      onComplete: () => setShowCelebration(false),
-                    },
                   }}
                 />
               </NavigationContainer>
